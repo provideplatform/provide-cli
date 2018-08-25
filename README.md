@@ -14,7 +14,7 @@ Documentation forthcoming.
 
 Documentation forthcoming.
 
-### Daapps API
+### Dapps API
 
 `prvd dapps [subcommand]`
 
