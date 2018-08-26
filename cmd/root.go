@@ -11,6 +11,7 @@ import (
 )
 
 var cfgFile string
+var verbose bool
 
 var rootCmd = &cobra.Command{
 	Use:   "prvd",
@@ -32,7 +33,8 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.provide-cli.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.provide-cli.yaml)")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -65,7 +67,10 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		os.Chmod(viper.ConfigFileUsed(), 0600)
-		fmt.Println("Using configuration:", viper.ConfigFileUsed())
+
+		if verbose {
+			fmt.Println("Using configuration:", viper.ConfigFileUsed())
+		}
 	}
 }
 

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -29,7 +30,11 @@ func listNetworks(cmd *cobra.Command, args []string) {
 		log.Printf("Failed to retrieve networks list; %s", err.Error())
 		os.Exit(1)
 	}
-	log.Printf("Retrieved networks list:\n%s", resp)
+	for i := range resp.([]interface{}) {
+		network := resp.([]interface{})[i].(map[string]interface{})
+		result := fmt.Sprintf("%s\t%s\n", network["id"], network["name"])
+		fmt.Print(result)
+	}
 }
 
 func init() {

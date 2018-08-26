@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -24,5 +25,9 @@ func listApplications(cmd *cobra.Command, args []string) {
 		log.Printf("Failed to retrieve dapps list; %s", err.Error())
 		os.Exit(1)
 	}
-	log.Printf("Retrieved dapps list:\n%s", resp)
+	for i := range resp.([]interface{}) {
+		dapp := resp.([]interface{})[i].(map[string]interface{})
+		result := fmt.Sprintf("%s\t%s\n", dapp["id"], dapp["name"])
+		fmt.Print(result)
+	}
 }
