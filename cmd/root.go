@@ -54,12 +54,19 @@ func initConfig() {
 		// Search config in home directory with name ".provide-cli" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".provide-cli")
+
+		configPath := fmt.Sprintf("%s/.provide-cli.yaml", home)
+		if err := viper.SafeWriteConfigAs(configPath); err != nil {
+			if os.IsNotExist(err) {
+				err = viper.WriteConfigAs(configPath)
+			}
+		}
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		fmt.Println("Using configuration config file: ", viper.ConfigFileUsed())
 	}
 }
