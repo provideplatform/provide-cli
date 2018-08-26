@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"encoding/hex"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/provideservices/provide-go"
 
 	"github.com/spf13/cobra"
@@ -21,6 +24,23 @@ var walletsInitCmd = &cobra.Command{
 }
 
 func createWallet(cmd *cobra.Command, args []string) {
+	if decentralized {
+		publicKey, privateKey, err := provide.GenerateKeyPair()
+		if err != nil {
+			log.Printf("Failed to genereate decentralized keypair; %s", err.Error())
+			os.Exit(1)
+		}
+		secret := hex.EncodeToString(crypto.FromECDSA(privateKey))
+		keypairJSON, err := provide.MarshalEncryptedKey(common.HexToAddress(*publicKey), privateKey, secret)
+		if err != nil {
+			log.Printf("Failed to genereate decentralized keypair; %s", err.Error())
+			os.Exit(1)
+		}
+		result := fmt.Sprintf("%s\t%s\n", *publicKey, string(keypairJSON))
+		fmt.Print(result)
+		return
+	}
+
 	token := requireAPIToken()
 	params := map[string]interface{}{
 		"network_id": networkID,
