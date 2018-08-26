@@ -7,7 +7,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/provideapp/provide-go"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // authenticateCmd represents the authenticate command
@@ -27,9 +29,22 @@ func authenticate(cmd *cobra.Command, args []string) {
 	email := doEmailPrompt()
 	passwd := doPasswordPrompt()
 
-	fmt.Printf("Email/pw: %s :: %s", email, passwd)
-	// TODO: IdentService.authenticate
-	// TODO: if successful, write API token to secure configuration
+	status, resp, err := provide.Authenticate(email, passwd)
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+	if status != 201 {
+		log.Println("Authentication failed")
+		os.Exit(1)
+	}
+
+	if token, tokenOk := resp.(map[string]interface{})["token"].(map[string]interface{}); tokenOk {
+		if apiToken, apiTokenOk := token["token"].(string); apiTokenOk {
+			cacheAPIToken(apiToken)
+			log.Printf("Authentication successful")
+		}
+	}
 }
 
 func doEmailPrompt() string {
@@ -60,4 +75,9 @@ func doPasswordPrompt() string {
 		os.Exit(1)
 	}
 	return strings.Trim(passwd, "\n")
+}
+
+func cacheAPIToken(token string) {
+	viper.Set("token", token)
+	viper.WriteConfig()
 }
