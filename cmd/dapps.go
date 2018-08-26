@@ -18,4 +18,5 @@ var dappsCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(dappsCmd)
 	dappsCmd.AddCommand(dappsListCmd)
+	dappsCmd.AddCommand(dappsInitCmd)
 }
