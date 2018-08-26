@@ -13,6 +13,8 @@ import (
 var cfgFile string
 var verbose bool
 
+var networkID string
+
 var rootCmd = &cobra.Command{
 	Use:   "prvd",
 	Short: "Provide command-line interface",
@@ -34,6 +36,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.provide-cli.yaml)")
+	rootCmd.PersistentFlags().StringVar(&networkID, "network", "", "network id (i.e., the network being used)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
 }
 

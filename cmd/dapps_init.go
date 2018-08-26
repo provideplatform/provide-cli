@@ -10,8 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var name string
-var networkID string
+var dappName string
 
 var dappsInitCmd = &cobra.Command{
 	Use:   "init --name 'my awesome dapp' --network 024ff1ef-7369-4dee-969c-1918c6edb5d4",
@@ -23,7 +22,7 @@ var dappsInitCmd = &cobra.Command{
 func createApplication(cmd *cobra.Command, args []string) {
 	token := requireAPIToken()
 	params := map[string]interface{}{
-		"name": name,
+		"name": dappName,
 		"config": map[string]interface{}{
 			"network_id": networkID,
 		},
@@ -41,9 +40,7 @@ func createApplication(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	dappsInitCmd.Flags().StringVar(&name, "name", "", "name of the dapp")
+	dappsInitCmd.Flags().StringVar(&dappName, "name", "", "name of the dapp")
 	dappsInitCmd.MarkFlagRequired("name")
-
-	dappsInitCmd.Flags().StringVarP(&networkID, "network", "n", "", "network id (i.e., the mainnet for this dapp)")
 	dappsInitCmd.MarkFlagRequired("network")
 }

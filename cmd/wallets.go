@@ -24,4 +24,5 @@ this API.`,
 func init() {
 	rootCmd.AddCommand(walletsCmd)
 	walletsCmd.AddCommand(walletsListCmd)
+	walletsCmd.AddCommand(walletsInitCmd)
 }
