@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/provideapp/provide-go"
+	"github.com/provideservices/provide-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
