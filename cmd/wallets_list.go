@@ -33,7 +33,3 @@ func listWallets(cmd *cobra.Command, args []string) {
 		fmt.Print(result)
 	}
 }
-
-func init() {
-	// networksListCmd.Flags().BoolVarP(&public, "public", "p", false, "filter private networks (false by default)")
-}
