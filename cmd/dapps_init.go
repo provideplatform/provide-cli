@@ -42,5 +42,7 @@ func createApplication(cmd *cobra.Command, args []string) {
 func init() {
 	dappsInitCmd.Flags().StringVar(&dappName, "name", "", "name of the dapp")
 	dappsInitCmd.MarkFlagRequired("name")
+
+	dappsInitCmd.Flags().StringVar(&networkID, "network", "", "network id (i.e., the network being used)")
 	dappsInitCmd.MarkFlagRequired("network")
 }
