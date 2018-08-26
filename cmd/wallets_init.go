@@ -17,7 +17,7 @@ var decentralized bool
 var walletName string
 
 var walletsInitCmd = &cobra.Command{
-	Use:   "init [--decentralized|-d]",
+	Use:   "init [--decentralized|-d] [--network 024ff1ef-7369-4dee-969c-1918c6edb5d4]",
 	Short: "Generate a new keypair for signing transactions and storing value",
 	Long:  `Initialize a new wallet, which may be managed or decentralized.`,
 	Run:   createWallet,

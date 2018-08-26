@@ -8,7 +8,7 @@ import (
 
 var walletsCmd = &cobra.Command{
 	Use:   "wallets",
-	Short: "Managed and decentralized signing identities/crypto wallets",
+	Short: "Generate managed and decentralized signing identities & cryptocurrency wallets",
 	Long: `Various APIs are exposed to provide convenient access to
 elliptic-curve cryptography (ECC) helper methods such as
 generating managed keypairs.

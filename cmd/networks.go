@@ -8,7 +8,7 @@ import (
 
 var networksCmd = &cobra.Command{
 	Use:   "networks",
-	Short: "Access network- and devops-specific functionality made available by the provide API",
+	Short: "Access devops-specific tooling to automate network provisioning and management",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("networks unimplemented")
