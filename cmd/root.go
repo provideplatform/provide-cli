@@ -14,6 +14,7 @@ var cfgFile string
 var verbose bool
 
 var networkID string
+var applicationID string
 
 var rootCmd = &cobra.Command{
 	Use:   "prvd",

@@ -18,4 +18,5 @@ var apiTokensCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(apiTokensCmd)
 	apiTokensCmd.AddCommand(apiTokensListCmd)
+	apiTokensCmd.AddCommand(apiTokensInitCmd)
 }

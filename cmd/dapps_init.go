@@ -11,6 +11,7 @@ import (
 )
 
 var dappName string
+var withoutAPIToken bool
 
 var dappsInitCmd = &cobra.Command{
 	Use:   "init --name 'my awesome dapp' --network 024ff1ef-7369-4dee-969c-1918c6edb5d4",
@@ -34,8 +35,12 @@ func createApplication(cmd *cobra.Command, args []string) {
 	}
 	if status == 201 {
 		dapp := resp.(map[string]interface{})
+		applicationID = dapp["id"].(string)
 		result := fmt.Sprintf("%s\t%s\n", dapp["id"], dapp["name"])
 		fmt.Print(result)
+	}
+	if !withoutAPIToken {
+		createAPIToken(cmd, args)
 	}
 }
 
@@ -45,4 +50,6 @@ func init() {
 
 	dappsInitCmd.Flags().StringVar(&networkID, "network", "", "network id (i.e., the dapp mainnet)")
 	dappsInitCmd.MarkFlagRequired("network")
+
+	dappsInitCmd.Flags().BoolVar(&withoutAPIToken, "without-api-token", false, "do not create a new API token for this dapp")
 }
