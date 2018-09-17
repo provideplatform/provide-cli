@@ -16,6 +16,12 @@ var verbose bool
 var networkID string
 var applicationID string
 
+const (
+	// Note: Viper downcases key names, so hyphenating for better readability.
+	authTokenConfigKey = "auth-token"
+	apiTokenConfigKey  = "api-token"
+)
+
 var rootCmd = &cobra.Command{
 	Use:   "prvd",
 	Short: "Provide command-line interface",
@@ -63,6 +69,8 @@ func initConfig() {
 				err = viper.WriteConfigAs(configPath)
 			}
 		}
+
+		viper.RegisterAlias(authTokenConfigKey, "token")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
@@ -78,7 +86,7 @@ func initConfig() {
 }
 
 func requireAPIToken() string {
-	token := viper.Get("token")
+	token := viper.Get(authTokenConfigKey)
 	if token == nil {
 		log.Printf("Authorized API token required in prvd configuration; have you authenticated or otherwise configured an API token?")
 		os.Exit(1)

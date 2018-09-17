@@ -7,6 +7,7 @@ import (
 
 	"github.com/provideservices/provide-go"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var apiTokensInitCmd = &cobra.Command{
@@ -27,6 +28,10 @@ func createAPIToken(cmd *cobra.Command, args []string) {
 	}
 	if status == 201 {
 		apiToken := resp.(map[string]interface{})
+		if viper.Get(apiTokenConfigKey) == nil {
+			viper.Set(apiTokenConfigKey, apiToken["token"])
+			viper.WriteConfig()
+		}
 		fmt.Printf("API Token\t%s\n", apiToken["token"])
 	} else {
 		fmt.Printf("Failed to create API token; %s", resp)
