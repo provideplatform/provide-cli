@@ -18,8 +18,8 @@ var applicationID string
 
 const (
 	// Note: Viper downcases key names, so hyphenating for better readability.
-	authTokenConfigKey = "auth-token"
-	apiTokenConfigKey  = "api-token"
+	authTokenConfigKey      = "auth-token" // user-scoped API token key
+	apiTokenConfigKeyPrefix = "api-token"  // app-scoped API token key prefix
 )
 
 var rootCmd = &cobra.Command{
@@ -32,6 +32,8 @@ provide.services PaaS.
 Run with the --help flag to see available options`,
 }
 
+// Execute is the default command path,
+// which returns the usage help in the absence of other arguments.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -85,11 +87,46 @@ func initConfig() {
 	}
 }
 
-func requireAPIToken() string {
-	token := viper.Get(authTokenConfigKey)
-	if token == nil {
+func requireUserAuthToken() string {
+	token := ""
+	if viper.IsSet(authTokenConfigKey) {
+		token = viper.GetString(authTokenConfigKey)
+	}
+
+	if token == "" {
 		log.Printf("Authorized API token required in prvd configuration; have you authenticated or otherwise configured an API token?")
 		os.Exit(1)
 	}
-	return token.(string)
+	return token
+}
+
+func requireAPIToken() string {
+	token := ""
+	appAPITokenKey := ""
+	if applicationID != "" {
+		appAPITokenKey = buildConfigKeyWithApp(apiTokenConfigKeyPrefix, applicationID)
+	}
+	if viper.IsSet(appAPITokenKey) {
+		token = viper.GetString(appAPITokenKey)
+	} else {
+		token = requireUserAuthToken()
+	}
+
+	if token == "" {
+		log.Printf("Authorized API token required in prvd configuration; have you authenticated or otherwise configured an API token?")
+		os.Exit(1)
+	}
+	return token
+}
+
+// buildConfigKeyWithApp combines the given prefix and app ID according to a consistent convention.
+// Returns an empty string if the given appID is empty.
+// Viper's getters likewise return empty strings when passed an empty string.
+func buildConfigKeyWithApp(keyPrefix, appID string) string {
+	if appID == "" {
+		// Development-time debugging.
+		log.Println("An application identifier is required for this operation")
+		return ""
+	}
+	return fmt.Sprintf("%s.%s", keyPrefix, appID)
 }

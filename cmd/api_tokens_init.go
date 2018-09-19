@@ -19,7 +19,7 @@ var apiTokensInitCmd = &cobra.Command{
 
 // createAPIToken triggers the generation of an API token for the given network.
 func createAPIToken(cmd *cobra.Command, args []string) {
-	token := requireAPIToken()
+	token := requireUserAuthToken()
 	params := map[string]interface{}{}
 	status, resp, err := provide.CreateApplicationToken(token, applicationID, params)
 	if err != nil {
@@ -28,8 +28,9 @@ func createAPIToken(cmd *cobra.Command, args []string) {
 	}
 	if status == 201 {
 		apiToken := resp.(map[string]interface{})
-		if viper.Get(apiTokenConfigKey) == nil {
-			viper.Set(apiTokenConfigKey, apiToken["token"])
+		appAPITokenKey := buildConfigKeyWithApp(apiTokenConfigKeyPrefix, applicationID)
+		if !viper.IsSet(appAPITokenKey) {
+			viper.Set(appAPITokenKey, apiToken["token"])
 			viper.WriteConfig()
 		}
 		fmt.Printf("API Token\t%s\n", apiToken["token"])
