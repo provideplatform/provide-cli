@@ -11,6 +11,7 @@ import (
 	"github.com/provideservices/provide-go"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var decentralized bool
@@ -25,22 +26,38 @@ var walletsInitCmd = &cobra.Command{
 
 func createWallet(cmd *cobra.Command, args []string) {
 	if decentralized {
-		publicKey, privateKey, err := provide.GenerateKeyPair()
-		if err != nil {
-			log.Printf("Failed to genereate decentralized keypair; %s", err.Error())
-			os.Exit(1)
-		}
-		secret := hex.EncodeToString(crypto.FromECDSA(privateKey))
-		keypairJSON, err := provide.MarshalEncryptedKey(common.HexToAddress(*publicKey), privateKey, secret)
-		if err != nil {
-			log.Printf("Failed to genereate decentralized keypair; %s", err.Error())
-			os.Exit(1)
-		}
-		result := fmt.Sprintf("%s\t%s\n", *publicKey, string(keypairJSON))
-		fmt.Print(result)
+		createDecentralizedWallet()
 		return
 	}
 
+	createManagedWallet()
+}
+
+func init() {
+	walletsInitCmd.Flags().BoolVarP(&decentralized, "decentralized", "d", false, "if the generated keypair is decentralized")
+	walletsInitCmd.Flags().StringVarP(&walletName, "name", "n", "", "human-readable name to associate withe the generated keypair")
+	walletsInitCmd.MarkFlagRequired("network")
+}
+
+// Helpers
+
+func createDecentralizedWallet() {
+	publicKey, privateKey, err := provide.GenerateKeyPair()
+	if err != nil {
+		log.Printf("Failed to genereate decentralized keypair; %s", err.Error())
+		os.Exit(1)
+	}
+	secret := hex.EncodeToString(crypto.FromECDSA(privateKey))
+	keypairJSON, err := provide.MarshalEncryptedKey(common.HexToAddress(*publicKey), privateKey, secret)
+	if err != nil {
+		log.Printf("Failed to genereate decentralized keypair; %s", err.Error())
+		os.Exit(1)
+	}
+	result := fmt.Sprintf("%s\t%s\n", *publicKey, string(keypairJSON))
+	fmt.Print(result)
+}
+
+func createManagedWallet() {
 	token := requireAPIToken()
 	params := map[string]interface{}{
 		"network_id": networkID,
@@ -59,15 +76,14 @@ func createWallet(cmd *cobra.Command, args []string) {
 		if name, nameOk := wallet["name"].(string); nameOk {
 			result = fmt.Sprintf("%s\t%s - %s\n", wallet["id"], name, wallet["address"])
 		}
+		appWalletKey := buildConfigKeyWithApp(walletConfigKeyPartial, applicationID)
+		if !viper.IsSet(appWalletKey) {
+			viper.Set(appWalletKey, wallet["id"])
+			viper.WriteConfig()
+		}
 		fmt.Print(result)
 	} else {
 		fmt.Printf("Failed to generate keypair; %s", resp)
 		os.Exit(1)
 	}
-}
-
-func init() {
-	walletsInitCmd.Flags().BoolVarP(&decentralized, "decentralized", "d", false, "if the generated keypair is decentralized")
-	walletsInitCmd.Flags().StringVarP(&walletName, "name", "n", "", "human-readable name to associate withe the generated keypair")
-	walletsInitCmd.MarkFlagRequired("network")
 }

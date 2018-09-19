@@ -22,6 +22,7 @@ const (
 	// and NOT used by themselves.
 	authTokenConfigKey       = "auth-token" // user-scoped API token key
 	apiTokenConfigKeyPartial = "api-token"  // app-scoped API token key
+	walletConfigKeyPartial   = "wallet"     // app-scoped wallet ID key
 )
 
 var rootCmd = &cobra.Command{
