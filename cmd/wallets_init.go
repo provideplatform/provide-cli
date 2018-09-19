@@ -72,9 +72,9 @@ func createManagedWallet() {
 	}
 	if status == 201 {
 		wallet := resp.(map[string]interface{})
-		result := fmt.Sprintf("%s\t%s\n", wallet["id"], wallet["address"])
+		result := fmt.Sprintf("Wallet %s\t%s\n", wallet["id"], wallet["address"])
 		if name, nameOk := wallet["name"].(string); nameOk {
-			result = fmt.Sprintf("%s\t%s - %s\n", wallet["id"], name, wallet["address"])
+			result = fmt.Sprintf("Wallet %s\t%s - %s\n", name, wallet["id"], wallet["address"])
 		}
 		appWalletKey := buildConfigKeyWithApp(walletConfigKeyPartial, applicationID)
 		if !viper.IsSet(appWalletKey) {

@@ -41,7 +41,7 @@ func createApplication(cmd *cobra.Command, args []string) {
 	if status == 201 {
 		dapp := resp.(map[string]interface{})
 		applicationID = dapp["id"].(string)
-		result := fmt.Sprintf("%s\t%s\n", dapp["id"], dapp["name"])
+		result := fmt.Sprintf("%s\t%s\n", dapp["name"], dapp["id"])
 		fmt.Print(result)
 	}
 	if !withoutAPIToken {

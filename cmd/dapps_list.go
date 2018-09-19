@@ -27,7 +27,7 @@ func listApplications(cmd *cobra.Command, args []string) {
 	}
 	for i := range resp.([]interface{}) {
 		dapp := resp.([]interface{})[i].(map[string]interface{})
-		result := fmt.Sprintf("%s\t%s\n", dapp["id"], dapp["name"])
+		result := fmt.Sprintf("%s\t%s\n", dapp["name"], dapp["id"])
 		fmt.Print(result)
 	}
 }

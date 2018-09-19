@@ -28,7 +28,7 @@ func listWallets(cmd *cobra.Command, args []string) {
 		wallet := resp.([]interface{})[i].(map[string]interface{})
 		result := fmt.Sprintf("%s\t%s\n", wallet["id"], wallet["address"])
 		if name, nameOk := wallet["name"].(string); nameOk {
-			result = fmt.Sprintf("%s\t%s - %s\n", wallet["id"], name, wallet["address"])
+			result = fmt.Sprintf("%s\t%s - %s\n", name, wallet["id"], wallet["address"])
 		}
 		fmt.Print(result)
 	}
