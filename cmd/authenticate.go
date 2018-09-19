@@ -78,6 +78,6 @@ func doPasswordPrompt() string {
 }
 
 func cacheAPIToken(token string) {
-	viper.Set("token", token)
+	viper.Set(authTokenConfigKey, token)
 	viper.WriteConfig()
 }
