@@ -28,7 +28,7 @@ func createAPIToken(cmd *cobra.Command, args []string) {
 	}
 	if status == 201 {
 		apiToken := resp.(map[string]interface{})
-		appAPITokenKey := buildConfigKeyWithApp(apiTokenConfigKeyPrefix, applicationID)
+		appAPITokenKey := buildConfigKeyWithApp(apiTokenConfigKeyPartial, applicationID)
 		if !viper.IsSet(appAPITokenKey) {
 			viper.Set(appAPITokenKey, apiToken["token"])
 			viper.WriteConfig()

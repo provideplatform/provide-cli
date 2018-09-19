@@ -17,9 +17,11 @@ var networkID string
 var applicationID string
 
 const (
-	// Note: Viper downcases key names, so hyphenating for better readability.
-	authTokenConfigKey      = "auth-token" // user-scoped API token key
-	apiTokenConfigKeyPrefix = "api-token"  // app-scoped API token key prefix
+	// Viper downcases key names, so hyphenating for better readability.
+	// 'Partial' keys are to be combined with the application ID they are associated with.
+	// and NOT used by themselves.
+	authTokenConfigKey       = "auth-token" // user-scoped API token key
+	apiTokenConfigKeyPartial = "api-token"  // app-scoped API token key
 )
 
 var rootCmd = &cobra.Command{
@@ -71,8 +73,6 @@ func initConfig() {
 				err = viper.WriteConfigAs(configPath)
 			}
 		}
-
-		viper.RegisterAlias(authTokenConfigKey, "token")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
@@ -104,7 +104,7 @@ func requireAPIToken() string {
 	token := ""
 	appAPITokenKey := ""
 	if applicationID != "" {
-		appAPITokenKey = buildConfigKeyWithApp(apiTokenConfigKeyPrefix, applicationID)
+		appAPITokenKey = buildConfigKeyWithApp(apiTokenConfigKeyPartial, applicationID)
 	}
 	if viper.IsSet(appAPITokenKey) {
 		token = viper.GetString(appAPITokenKey)
@@ -119,14 +119,14 @@ func requireAPIToken() string {
 	return token
 }
 
-// buildConfigKeyWithApp combines the given prefix and app ID according to a consistent convention.
+// buildConfigKeyWithApp combines the given key partial and app ID according to a consistent convention.
 // Returns an empty string if the given appID is empty.
 // Viper's getters likewise return empty strings when passed an empty string.
-func buildConfigKeyWithApp(keyPrefix, appID string) string {
+func buildConfigKeyWithApp(keyPartial, appID string) string {
 	if appID == "" {
 		// Development-time debugging.
 		log.Println("An application identifier is required for this operation")
 		return ""
 	}
-	return fmt.Sprintf("%s.%s", keyPrefix, appID)
+	return fmt.Sprintf("%s.%s", appID, keyPartial)
 }
