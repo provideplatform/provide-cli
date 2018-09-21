@@ -10,6 +10,7 @@ import (
 	"github.com/provideservices/provide-go"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 // authenticateCmd represents the authenticate command
@@ -64,12 +65,12 @@ func doEmailPrompt() string {
 
 func doPasswordPrompt() string {
 	fmt.Print("Password: ")
-	reader := bufio.NewReader(os.Stdin)
-	passwd, err := reader.ReadString('\n')
+	password, err := terminal.ReadPassword(0)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
+	passwd := string(password[:])
 	if passwd == "" {
 		log.Println("Failed to read password from stdin")
 		os.Exit(1)
