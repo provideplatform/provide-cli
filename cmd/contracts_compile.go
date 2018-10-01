@@ -27,7 +27,7 @@ var contractSourcePath string
 var skipOpcodesAnalysis bool
 
 var contractsCompileCmd = &cobra.Command{
-	Use:   "compile ./path/to/project/DappTokenContract.sol --name DappTokenContract [--compiler-version 0.4.25+commit.59dbf8f1] [--analyze-opcodes]",
+	Use:   "compile ./path/to/project/DappTokenContract.sol --name DappTokenContract [--compiler-version 0.4.25+commit.59dbf8f1] [--skip-opcodes-analysis]",
 	Short: "Compile a smart contract from source",
 	Long:  `Compile a smart contract from source, optionally targeting a specific compiler and optionally performing static analysis of assembly metadata to enable a dapp to hook into targeted opcodes observed during contract-internal transaction execution`,
 	Run:   compileContract,
@@ -153,7 +153,7 @@ func getContractDependencies(compilerOutput map[string]interface{}, contractPath
 
 		dependencyContract := compilerOutput["contracts"].(map[string]interface{})[_dependencyContractKey].(map[string]interface{})
 		dependencyContractABI, _ := getContractABI(dependencyContract)
-		dependencyContractBytecode, _ := getContractABI(dependencyContract) // TODO: remove this it is not needed...
+		dependencyContractBytecode, _ := getContractABI(dependencyContract)
 		dependencyContractAssembly, _ := getContractAssembly(dependencyContract)
 
 		var deps map[string]interface{}
@@ -234,7 +234,7 @@ func baseFilenameNoExt(path string) string {
 
 func buildCompileCommand(sourcePath string, optimizerRuns int) string {
 	return fmt.Sprintf("solc --optimize --optimize-runs %d --pretty-json --combined-json abi,asm,ast,bin,bin-runtime,clone-bin,compact-format,devdoc,hashes,interface,metadata,opcodes,srcmap,srcmap-runtime,userdoc -o %s %s", optimizerRuns, compileWorkdir, sourcePath)
-	// TODO: run optimizer over certain sources if identified for frequent use via contract-internal CREATE opcodes?
+	// TODO: run optimizer over certain sources if identified for frequent use via contract-internal CREATE opcodes
 }
 
 func compile(sourcePath string) {
@@ -307,11 +307,7 @@ func compile(sourcePath string) {
 		if strings.Contains(sourcePath, name) {
 			bytecode := meta.(map[string]interface{})["bytecode"].([]byte)
 			invocationSig = fmt.Sprintf("0x%s", string(bytecode))
-
 			artifact = meta.(map[string]interface{})
-
-			// graph := meta.(map[string]interface{})["deps"].(map[string]interface{})
-			log.Printf("TODO: match supported opcodes for %s", name)
 		}
 	}
 
