@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var walletID string
+
 var walletsCmd = &cobra.Command{
 	Use:   "wallets",
 	Short: "Generate managed and decentralized signing identities & cryptocurrency wallets",
