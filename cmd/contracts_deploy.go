@@ -57,8 +57,8 @@ func deployContract(cmd *cobra.Command, args []string) {
 		teardownAndExit(1)
 	}
 	if status == 201 {
-		contract := resp.(map[string]interface{})
-		fmt.Printf("Contract \t%s\n", contract["id"])
+		tx := resp.(map[string]interface{})
+		fmt.Printf("Contract creation transaction: \t%s\n", tx["hash"])
 	} else {
 		fmt.Printf("Failed to deploy contract; %s", resp)
 		teardownAndExit(1)

@@ -33,6 +33,16 @@ var contractsCompileCmd = &cobra.Command{
 	Run:   compileContract,
 }
 
+// CompiledArtifact
+type CompiledArtifact struct {
+	Name     string                 `json:"name"`
+	ABI      []interface{}          `json:"abi"`
+	Assembly []interface{}          `json:"assembly"`
+	Bytecode string                 `json:"bytecode"`
+	Deps     map[string]interface{} `json:"deps"`
+	Raw      json.RawMessage        `json:"raw"`
+}
+
 func shellOut(bash string) error {
 	cmd := exec.Command("bash", "-c", bash)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
@@ -65,13 +75,16 @@ func teardownAndExit(code int) {
 	os.Exit(1)
 }
 
-func getContractABI(compiledContract map[string]interface{}) (*abi.ABI, error) {
+func getContractABI(compiledContract map[string]interface{}) ([]interface{}, error) {
 	abiJSON, ok := compiledContract["abi"].(string)
 	if !ok {
 		log.Printf("Failed to retrieve contract ABI from compiled contract")
 		teardownAndExit(1)
 	}
-	return parseContractABI([]byte(abiJSON))
+
+	_abi := []interface{}{}
+	err := json.Unmarshal([]byte(abiJSON), &_abi)
+	return _abi, err
 }
 
 func getContractAssembly(compiledContract map[string]interface{}) ([]interface{}, error) {
@@ -153,8 +166,9 @@ func getContractDependencies(compilerOutput map[string]interface{}, contractPath
 
 		dependencyContract := compilerOutput["contracts"].(map[string]interface{})[_dependencyContractKey].(map[string]interface{})
 		dependencyContractABI, _ := getContractABI(dependencyContract)
-		dependencyContractBytecode, _ := getContractABI(dependencyContract)
+		dependencyContractBytecode, _ := getContractBytecode(dependencyContract)
 		dependencyContractAssembly, _ := getContractAssembly(dependencyContract)
+		dependencyContractRaw, _ := json.Marshal(contract)
 
 		var deps map[string]interface{}
 
@@ -162,13 +176,13 @@ func getContractDependencies(compilerOutput map[string]interface{}, contractPath
 			deps, _ = getContractDependencies(compilerOutput, dependencyContractPath, dependencyContractSourceMetaKey)
 		}
 
-		dependencies[dependencyContractName] = map[string]interface{}{
-			"name":     dependencyContractName,
-			"abi":      dependencyContractABI,
-			"bytecode": dependencyContractBytecode,
-			"assembly": dependencyContractAssembly,
-			"deps":     deps,
-			"raw":      dependencyContract,
+		dependencies[dependencyContractName] = &CompiledArtifact{
+			Name:     dependencyContractName,
+			ABI:      dependencyContractABI,
+			Assembly: dependencyContractAssembly,
+			Bytecode: string(dependencyContractBytecode),
+			Deps:     deps,
+			Raw:      json.RawMessage(dependencyContractRaw),
 		}
 	}
 
@@ -270,9 +284,11 @@ func compile(sourcePath string) {
 		contractName := keyParts[len(keyParts)-1]
 		contract := contracts[key].(map[string]interface{})
 
-		_abi, _ := getContractABI(contract)
+		parsedABI, _ := getContractABI(contract)
+		_abi, _ := parseContractABI([]byte(contract["abi"].(string)))
 		bytecode, _ := getContractBytecode(contract)
 		assembly, _ := getContractAssembly(contract)
+		raw, _ := json.Marshal(contract)
 
 		contractSourceMetaKey := strings.Replace(sourcePath, name, contractName, -1)
 		contractDependencies, err := getContractDependencies(compilerOutput, sourcePath, contractSourceMetaKey)
@@ -281,13 +297,13 @@ func compile(sourcePath string) {
 			teardownAndExit(1)
 		}
 
-		depGraph[contractName] = map[string]interface{}{
-			"name":     contractName,
-			"abi":      _abi,
-			"bytecode": bytecode,
-			"assembly": assembly,
-			"deps":     contractDependencies,
-			"raw":      contract,
+		depGraph[contractName] = &CompiledArtifact{
+			Name:     contractName,
+			ABI:      parsedABI,
+			Assembly: assembly,
+			Bytecode: string(bytecode),
+			Deps:     contractDependencies,
+			Raw:      json.RawMessage(raw),
 		}
 
 		if name == contractName {
@@ -300,14 +316,14 @@ func compile(sourcePath string) {
 		teardownAndExit(1)
 	}
 
-	var artifact map[string]interface{} // this is the artifact compatible with the provide-cli contract deployment and will be cached on disk temporarily
+	var artifact *CompiledArtifact // this is the artifact compatible with the provide-cli contract deployment and will be cached on disk temporarily
 
 	var invocationSig string
 	for name, meta := range depGraph {
 		if strings.Contains(sourcePath, name) {
-			bytecode := meta.(map[string]interface{})["bytecode"].([]byte)
+			bytecode := meta.(*CompiledArtifact).Bytecode
 			invocationSig = fmt.Sprintf("0x%s", string(bytecode))
-			artifact = meta.(map[string]interface{})
+			artifact = meta.(*CompiledArtifact)
 		}
 	}
 
@@ -333,7 +349,7 @@ func compile(sourcePath string) {
 	}
 
 	invocationSig = fmt.Sprintf("%s%s", invocationSig, common.ToHex(encodedArgv)[8:])
-	artifact["bytecode"] = invocationSig
+	artifact.Bytecode = invocationSig
 
 	artifactJSON, err := json.Marshal(artifact)
 	if err != nil {
