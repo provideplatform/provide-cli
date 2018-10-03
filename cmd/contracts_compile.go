@@ -110,18 +110,18 @@ func getContractOpcodes(compiledContract map[string]interface{}) (string, error)
 	return opcodes, nil
 }
 
-func getContractSwarmHash(compiledContract map[string]interface{}) (*string, error) {
+func getContractFingerprint(compiledContract map[string]interface{}) (*string, error) {
 	bytecode, err := getContractBytecode(compiledContract)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to read contract bytecode; %s", err.Error())
 	}
-	fingerprintIdx := strings.Index(string(bytecode), swarmHashPrefix)
+	fingerprintIdx := strings.LastIndex(string(bytecode), swarmHashPrefix)
 	if fingerprintIdx == -1 {
 		return nil, fmt.Errorf("Unable to resolve contract swarm hash for compiled contract: %s", compiledContract)
 	}
-	swarmHash := string(bytecode)[fingerprintIdx+len(swarmHashPrefix):]
-	swarmHash = swarmHash[0 : len(swarmHash)-4]
-	return &swarmHash, nil
+	fingerprint := string(bytecode)[fingerprintIdx+len(swarmHashPrefix):]
+	fingerprint = fingerprint[0 : len(fingerprint)-4]
+	return &fingerprint, nil
 }
 
 func getContractSource(flattenedSrc string, compiledContract map[string]interface{}, contractPath, contract string) (*string, error) {
@@ -218,7 +218,7 @@ func getContractDependencies(src string, compilerOutput map[string]interface{}, 
 		dependencyContractOpcodes, _ := getContractOpcodes(dependencyContract)
 		dependencyContractRaw, _ := json.Marshal(dependencyContract)
 		dependencyContractSource, _ := getContractSource(src, dependencyContract, dependencyContractPath, dependencyContractName)
-		dependencyContractFingerprint, _ := getContractSwarmHash(dependencyContract)
+		dependencyContractFingerprint, _ := getContractFingerprint(dependencyContract)
 
 		var deps map[string]interface{}
 
@@ -350,7 +350,7 @@ func compile(sourcePath string) {
 		opcodes, _ := getContractOpcodes(contract)
 		raw, _ := json.Marshal(contract)
 		src, _ := getContractSource(string(flattenedSrc), contract, sourcePath, contractName)
-		fingerprint, _ := getContractSwarmHash(contract)
+		fingerprint, _ := getContractFingerprint(contract)
 
 		contractSourceMetaKey := strings.Replace(sourcePath, name, contractName, -1)
 		contractDependencies, err := getContractDependencies(string(flattenedSrc), compilerOutput, sourcePath, contractSourceMetaKey)
