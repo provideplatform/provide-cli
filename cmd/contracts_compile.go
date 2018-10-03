@@ -301,8 +301,6 @@ func baseFilenameNoExt(path string) string {
 
 func buildCompileCommand(sourcePath string, optimizerRuns int) string {
 	return fmt.Sprintf("solc --optimize --optimize-runs %d --pretty-json --metadata-literal --combined-json abi,asm,ast,bin,bin-runtime,clone-bin,compact-format,devdoc,hashes,interface,metadata,opcodes,srcmap,srcmap-runtime,userdoc -o %s %s", optimizerRuns, compileWorkdir, sourcePath)
-	// return fmt.Sprintf("solc --optimize --optimize-runs %d --pretty-json --metadata-literal --asm-json --ast-compact-json --opcodes --bin --bin-runtime --clone-bin --abi --hashes --userdoc --devdoc --metadata -o %s %s", optimizerRuns, compileWorkdir, sourcePath)
-
 	// TODO: run optimizer over certain sources if identified for frequent use via contract-internal CREATE opcodes
 }
 
