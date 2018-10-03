@@ -37,7 +37,7 @@ var contractsCompileCmd = &cobra.Command{
 type CompiledArtifact struct {
 	Name     string                 `json:"name"`
 	ABI      []interface{}          `json:"abi"`
-	Assembly []interface{}          `json:"assembly"`
+	Assembly map[string]interface{} `json:"assembly"`
 	Bytecode string                 `json:"bytecode"`
 	Deps     map[string]interface{} `json:"deps"`
 	Raw      json.RawMessage        `json:"raw"`
@@ -87,16 +87,12 @@ func getContractABI(compiledContract map[string]interface{}) ([]interface{}, err
 	return _abi, err
 }
 
-func getContractAssembly(compiledContract map[string]interface{}) ([]interface{}, error) {
+func getContractAssembly(compiledContract map[string]interface{}) (map[string]interface{}, error) {
 	contractAsm, ok := compiledContract["asm"].(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("Unable to read assembly from compiled contract: %s", compiledContract)
 	}
-	contractAssembly, ok := contractAsm[".code"].([]interface{})
-	if !ok {
-		return nil, fmt.Errorf("Unable to read assembly from compiled contract: %s", compiledContract)
-	}
-	return contractAssembly, nil
+	return contractAsm, nil
 }
 
 func getContractSourceMeta(compilerOutput map[string]interface{}, contract string) (map[string]interface{}, error) {
@@ -168,7 +164,7 @@ func getContractDependencies(compilerOutput map[string]interface{}, contractPath
 		dependencyContractABI, _ := getContractABI(dependencyContract)
 		dependencyContractBytecode, _ := getContractBytecode(dependencyContract)
 		dependencyContractAssembly, _ := getContractAssembly(dependencyContract)
-		dependencyContractRaw, _ := json.Marshal(contract)
+		dependencyContractRaw, _ := json.Marshal(dependencyContract)
 
 		var deps map[string]interface{}
 
