@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -19,9 +20,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const swarmHashPrefix string = "a165627a7a72305820" // 0xa1 0x65 'b' 'z' 'z' 'r' '0' 0x58 0x20
+
 var compileWorkdir string
 var compileArtifactPath string
 var compilerVersion string
+var compilerSemanticVersion string
 var compilerOptimizerRuns int
 var contractSourcePath string
 var skipOpcodesAnalysis bool
@@ -35,12 +39,15 @@ var contractsCompileCmd = &cobra.Command{
 
 // CompiledArtifact
 type CompiledArtifact struct {
-	Name     string                 `json:"name"`
-	ABI      []interface{}          `json:"abi"`
-	Assembly map[string]interface{} `json:"assembly"`
-	Bytecode string                 `json:"bytecode"`
-	Deps     map[string]interface{} `json:"deps"`
-	Raw      json.RawMessage        `json:"raw"`
+	Name        string                 `json:"name"`
+	ABI         []interface{}          `json:"abi"`
+	Assembly    map[string]interface{} `json:"assembly"`
+	Bytecode    string                 `json:"bytecode"`
+	Deps        map[string]interface{} `json:"deps"`
+	Opcodes     string                 `json:"opcodes"`
+	Raw         json.RawMessage        `json:"raw"`
+	Source      string                 `json:"source"`
+	Fingerprint string                 `json:"fingerprint"` // swarm hash
 }
 
 func shellOut(bash string) error {
@@ -95,6 +102,50 @@ func getContractAssembly(compiledContract map[string]interface{}) (map[string]in
 	return contractAsm, nil
 }
 
+func getContractOpcodes(compiledContract map[string]interface{}) (string, error) {
+	opcodes, ok := compiledContract["opcodes"].(string)
+	if !ok {
+		return "", fmt.Errorf("Unable to read opcodes from compiled contract: %s", compiledContract)
+	}
+	return opcodes, nil
+}
+
+func getContractSwarmHash(compiledContract map[string]interface{}) (*string, error) {
+	bytecode, err := getContractBytecode(compiledContract)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to read contract bytecode; %s", err.Error())
+	}
+	fingerprintIdx := strings.Index(string(bytecode), swarmHashPrefix)
+	if fingerprintIdx == -1 {
+		return nil, fmt.Errorf("Unable to resolve contract swarm hash for compiled contract: %s", compiledContract)
+	}
+	swarmHash := string(bytecode)[fingerprintIdx+len(swarmHashPrefix):]
+	swarmHash = swarmHash[0 : len(swarmHash)-4]
+	return &swarmHash, nil
+}
+
+func getContractSource(flattenedSrc string, compiledContract map[string]interface{}, contractPath, contract string) (*string, error) {
+	src := fmt.Sprintf("pragma solidity ^%s\n\n", compilerSemanticVersion)
+	srcmap, err := getContractSourcemap(compiledContract)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to read contract sourcemap; %s", err.Error())
+	}
+	mapParts := strings.Split(*srcmap, ":")
+	begin, _ := strconv.Atoi(mapParts[0])
+	end, _ := strconv.Atoi(mapParts[1])
+	end = begin + end
+	src = fmt.Sprintf("%s%s", src, flattenedSrc[begin:end])
+	return &src, nil
+}
+
+func getContractSourcemap(compiledContract map[string]interface{}) (*string, error) {
+	srcmap, ok := compiledContract["srcmap"].(string)
+	if !ok {
+		return nil, fmt.Errorf("Unable to read contract sourcemap from compiled contract: %s", compiledContract)
+	}
+	return &srcmap, nil
+}
+
 func getContractSourceMeta(compilerOutput map[string]interface{}, contract string) (map[string]interface{}, error) {
 	contractSources, ok := compilerOutput["sources"].(map[string]interface{})
 	if !ok {
@@ -107,7 +158,7 @@ func getContractSourceMeta(compilerOutput map[string]interface{}, contract strin
 	return contractSource, nil
 }
 
-func getContractDependencies(compilerOutput map[string]interface{}, contractPath, contract string) (map[string]interface{}, error) {
+func getContractDependencies(src string, compilerOutput map[string]interface{}, contractPath, contract string) (map[string]interface{}, error) {
 	source, err := getContractSourceMeta(compilerOutput, contractPath)
 	if err != nil {
 		log.Printf("Failed to retrieve contract sources from compiled contract")
@@ -164,21 +215,27 @@ func getContractDependencies(compilerOutput map[string]interface{}, contractPath
 		dependencyContractABI, _ := getContractABI(dependencyContract)
 		dependencyContractBytecode, _ := getContractBytecode(dependencyContract)
 		dependencyContractAssembly, _ := getContractAssembly(dependencyContract)
+		dependencyContractOpcodes, _ := getContractOpcodes(dependencyContract)
 		dependencyContractRaw, _ := json.Marshal(dependencyContract)
+		dependencyContractSource, _ := getContractSource(src, dependencyContract, dependencyContractPath, dependencyContractName)
+		dependencyContractFingerprint, _ := getContractSwarmHash(dependencyContract)
 
 		var deps map[string]interface{}
 
 		if reentrant {
-			deps, _ = getContractDependencies(compilerOutput, dependencyContractPath, dependencyContractSourceMetaKey)
+			deps, _ = getContractDependencies(src, compilerOutput, dependencyContractPath, dependencyContractSourceMetaKey)
 		}
 
 		dependencies[dependencyContractName] = &CompiledArtifact{
-			Name:     dependencyContractName,
-			ABI:      dependencyContractABI,
-			Assembly: dependencyContractAssembly,
-			Bytecode: string(dependencyContractBytecode),
-			Deps:     deps,
-			Raw:      json.RawMessage(dependencyContractRaw),
+			Name:        dependencyContractName,
+			ABI:         dependencyContractABI,
+			Assembly:    dependencyContractAssembly,
+			Bytecode:    string(dependencyContractBytecode),
+			Deps:        deps,
+			Opcodes:     dependencyContractOpcodes,
+			Raw:         json.RawMessage(dependencyContractRaw),
+			Source:      *dependencyContractSource,
+			Fingerprint: *dependencyContractFingerprint,
 		}
 	}
 
@@ -243,18 +300,26 @@ func baseFilenameNoExt(path string) string {
 }
 
 func buildCompileCommand(sourcePath string, optimizerRuns int) string {
-	return fmt.Sprintf("solc --optimize --optimize-runs %d --pretty-json --combined-json abi,asm,ast,bin,bin-runtime,clone-bin,compact-format,devdoc,hashes,interface,metadata,opcodes,srcmap,srcmap-runtime,userdoc -o %s %s", optimizerRuns, compileWorkdir, sourcePath)
+	return fmt.Sprintf("solc --optimize --optimize-runs %d --pretty-json --metadata-literal --combined-json abi,asm,ast,bin,bin-runtime,clone-bin,compact-format,devdoc,hashes,interface,metadata,opcodes,srcmap,srcmap-runtime,userdoc -o %s %s", optimizerRuns, compileWorkdir, sourcePath)
+	// return fmt.Sprintf("solc --optimize --optimize-runs %d --pretty-json --metadata-literal --asm-json --ast-compact-json --opcodes --bin --bin-runtime --clone-bin --abi --hashes --userdoc --devdoc --metadata -o %s %s", optimizerRuns, compileWorkdir, sourcePath)
+
 	// TODO: run optimizer over certain sources if identified for frequent use via contract-internal CREATE opcodes
 }
 
 func compile(sourcePath string) {
+	flattenedSrc, err := ioutil.ReadFile(sourcePath)
+	if err != nil {
+		log.Printf("Failed to read contract source at path: %s; %s", sourcePath, err.Error())
+		teardownAndExit(1)
+	}
+
 	name := baseFilenameNoExt(sourcePath)
 	log.Printf("Resolved contract base name: %s", name)
 
 	compiledContractPath := fmt.Sprintf("%s/combined.json", compileWorkdir)
 	log.Printf("Attempting to compile contract(s) %s from source: %s; target: %s", name, sourcePath, compiledContractPath)
 
-	err := shellOut(buildCompileCommand(sourcePath, compilerOptimizerRuns))
+	err = shellOut(buildCompileCommand(sourcePath, compilerOptimizerRuns))
 	if err != nil {
 		log.Printf("Failed to compile contract(s): %s; %s", name, err.Error())
 		teardownAndExit(1)
@@ -284,22 +349,28 @@ func compile(sourcePath string) {
 		_abi, _ := parseContractABI([]byte(contract["abi"].(string)))
 		bytecode, _ := getContractBytecode(contract)
 		assembly, _ := getContractAssembly(contract)
+		opcodes, _ := getContractOpcodes(contract)
 		raw, _ := json.Marshal(contract)
+		src, _ := getContractSource(string(flattenedSrc), contract, sourcePath, contractName)
+		fingerprint, _ := getContractSwarmHash(contract)
 
 		contractSourceMetaKey := strings.Replace(sourcePath, name, contractName, -1)
-		contractDependencies, err := getContractDependencies(compilerOutput, sourcePath, contractSourceMetaKey)
+		contractDependencies, err := getContractDependencies(string(flattenedSrc), compilerOutput, sourcePath, contractSourceMetaKey)
 		if err != nil {
 			log.Printf("WARNING: failed to retrieve contract dependencies for contract: %s", contractName)
 			teardownAndExit(1)
 		}
 
 		depGraph[contractName] = &CompiledArtifact{
-			Name:     contractName,
-			ABI:      parsedABI,
-			Assembly: assembly,
-			Bytecode: string(bytecode),
-			Deps:     contractDependencies,
-			Raw:      json.RawMessage(raw),
+			Name:        contractName,
+			ABI:         parsedABI,
+			Assembly:    assembly,
+			Bytecode:    string(bytecode),
+			Deps:        contractDependencies,
+			Opcodes:     opcodes,
+			Raw:         json.RawMessage(raw),
+			Source:      *src,
+			Fingerprint: *fingerprint,
 		}
 
 		if name == contractName {
@@ -417,4 +488,8 @@ func init() {
 	contractsCompileCmd.Flags().StringVar(&compileWorkdir, "workdir", "", "path to temporary working directory for compiled artifacts")
 	contractsCompileCmd.Flags().BoolVar(&skipOpcodesAnalysis, "skip-opcodes-analysis", false, "when true, static analysis of assembly for contract-internal ABI metadata is skipped")
 	contractsCompileCmd.Flags().IntVar(&compilerOptimizerRuns, "optimizer-runs", 200, "set the number of runs to optimize for in terms of initial deployment cost; higher values optimize more for high-frequency usage; may not be supported by all compilers")
+
+	if compilerVersion != "" && compilerVersion != "latest" {
+		compilerSemanticVersion = strings.Split(compilerVersion, "+")[0]
+	}
 }
