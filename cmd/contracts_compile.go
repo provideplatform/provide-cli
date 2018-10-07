@@ -37,19 +37,6 @@ var contractsCompileCmd = &cobra.Command{
 	Run:   compileContract,
 }
 
-// CompiledArtifact
-type CompiledArtifact struct {
-	Name        string                 `json:"name"`
-	ABI         []interface{}          `json:"abi"`
-	Assembly    map[string]interface{} `json:"assembly"`
-	Bytecode    string                 `json:"bytecode"`
-	Deps        map[string]interface{} `json:"deps"`
-	Opcodes     string                 `json:"opcodes"`
-	Raw         json.RawMessage        `json:"raw"`
-	Source      string                 `json:"source"`
-	Fingerprint string                 `json:"fingerprint"` // swarm hash
-}
-
 func shellOut(bash string) error {
 	cmd := exec.Command("bash", "-c", bash)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
@@ -226,7 +213,7 @@ func getContractDependencies(src string, compilerOutput map[string]interface{}, 
 			deps, _ = getContractDependencies(src, compilerOutput, dependencyContractPath, dependencyContractSourceMetaKey)
 		}
 
-		dependencies[dependencyContractName] = &CompiledArtifact{
+		dependencies[dependencyContractName] = &provide.CompiledArtifact{
 			Name:        dependencyContractName,
 			ABI:         dependencyContractABI,
 			Assembly:    dependencyContractAssembly,
@@ -359,7 +346,7 @@ func compile(sourcePath string) {
 			teardownAndExit(1)
 		}
 
-		depGraph[contractName] = &CompiledArtifact{
+		depGraph[contractName] = &provide.CompiledArtifact{
 			Name:        contractName,
 			ABI:         parsedABI,
 			Assembly:    assembly,
@@ -381,14 +368,14 @@ func compile(sourcePath string) {
 		teardownAndExit(1)
 	}
 
-	var artifact *CompiledArtifact // this is the artifact compatible with the provide-cli contract deployment and will be cached on disk temporarily
+	var artifact *provide.CompiledArtifact // this is the artifact compatible with the provide-cli contract deployment and will be cached on disk temporarily
 
 	var invocationSig string
 	for name, meta := range depGraph {
 		if strings.Contains(sourcePath, name) {
-			bytecode := meta.(*CompiledArtifact).Bytecode
+			bytecode := meta.(*provide.CompiledArtifact).Bytecode
 			invocationSig = fmt.Sprintf("0x%s", string(bytecode))
-			artifact = meta.(*CompiledArtifact)
+			artifact = meta.(*provide.CompiledArtifact)
 		}
 	}
 
