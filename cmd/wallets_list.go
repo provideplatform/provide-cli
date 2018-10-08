@@ -33,3 +33,7 @@ func listWallets(cmd *cobra.Command, args []string) {
 		fmt.Print(result)
 	}
 }
+
+func init() {
+	walletsListCmd.Flags().StringVar(&applicationID, "application", "", "application identifier to filter application")
+}
