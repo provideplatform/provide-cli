@@ -117,6 +117,9 @@ func getContractSource(flattenedSrc string, compiledContract map[string]interfac
 	if err != nil {
 		return nil, fmt.Errorf("Unable to read contract sourcemap; %s", err.Error())
 	}
+	if *srcmap == "" {
+		return nil, fmt.Errorf("Contract sourcemap was empty: %s", contract)
+	}
 	mapParts := strings.Split(*srcmap, ":")
 	begin, _ := strconv.Atoi(mapParts[0])
 	end, _ := strconv.Atoi(mapParts[1])
@@ -221,8 +224,8 @@ func getContractDependencies(src string, compilerOutput map[string]interface{}, 
 			Deps:        deps,
 			Opcodes:     dependencyContractOpcodes,
 			Raw:         json.RawMessage(dependencyContractRaw),
-			Source:      *dependencyContractSource,
-			Fingerprint: *dependencyContractFingerprint,
+			Source:      dependencyContractSource,
+			Fingerprint: dependencyContractFingerprint,
 		}
 	}
 
@@ -354,8 +357,8 @@ func compile(sourcePath string) {
 			Deps:        contractDependencies,
 			Opcodes:     opcodes,
 			Raw:         json.RawMessage(raw),
-			Source:      *src,
-			Fingerprint: *fingerprint,
+			Source:      src,
+			Fingerprint: fingerprint,
 		}
 
 		if name == contractName {
