@@ -1,6 +1,6 @@
 # provide-CLI
 
-Command-line interface for building decentralized and semi-centralized apps using [provide](http://provide.services/) APIs
+The command-line interface for building decentralized and semi-centralized apps using [provide](http://provide.services/) APIs
 
 ## Quickstart
 ***Note**: This CLI builds with [go](https://golang.org/doc/install#install)*
@@ -26,6 +26,8 @@ Provide makes a `./provide-cli-dev` executable available to you in your terminal
 | `./provide-cli-dev deploy <MyFlawlessContract.sol> --application <applicationId> --network <networkId>   --wallet <walletAddress` | Deploy a contract to the testnet |
 | `./provide-cli-dev deploy <MyFlattenedContracts.sol> --application <applicationId> --network <networkId>  --wallet <walletAddress>` | Deploy ***multiple*** contracts and dependencies to the testnet |<br>
 
+[Show me the full documentation](https://provideservices.github.io/provide-docs/)
+
 ## Speak Up! <br>
 
-If you see a problem, make us aware and help others by [creating an issue](https://github.com/provideservices/provide-cli/issues)
+If you see a problem, help us help you by [creating an issue](https://github.com/provideservices/provide-cli/issues)
