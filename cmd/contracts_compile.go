@@ -91,7 +91,7 @@ func getContractAssembly(compiledContract map[string]interface{}) (map[string]in
 
 func getContractOpcodes(compiledContract map[string]interface{}) (string, error) {
 	opcodes, ok := compiledContract["opcodes"].(string)
-	if !ok {
+	if !ok || opcodes == "" {
 		return "", fmt.Errorf("Unable to read opcodes from compiled contract: %s", compiledContract)
 	}
 	return opcodes, nil
@@ -130,7 +130,7 @@ func getContractSource(flattenedSrc string, compiledContract map[string]interfac
 
 func getContractSourcemap(compiledContract map[string]interface{}) (*string, error) {
 	srcmap, ok := compiledContract["srcmap"].(string)
-	if !ok {
+	if !ok || srcmap == "" {
 		return nil, fmt.Errorf("Unable to read contract sourcemap from compiled contract: %s", compiledContract)
 	}
 	return &srcmap, nil
