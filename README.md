@@ -1,31 +1,30 @@
 # provide-CLI
 
-The command-line interface for building decentralized and semi-centralized apps using [provide](http://provide.services/) APIs
+The command-line interface for building ÐApps that use [Provide](http://provide.services/) APIs
 
 ## Quickstart
-***Note**: This CLI builds with [go](https://golang.org/doc/install#install)*
 
-1. Create a [provide account](https://dawn.provide.services/sign-in)<br>
+1. Create a [Provide account](https://dawn.provide.services/sign-in)<br>
 
-2. Install the CLI by cloning this repository<br>
+2. Download the binary: [provide-cli.exe](https://github.com/provideservices/provide-cli/tree/dev/binary)<br>
 
-3. Change into the directory and `go build`<br>
+3. Make the file executable in your terminal with `chmod +x provide-cli`<br>
 
 4. Authenticate using `./provide-cli authenticate`<br>
 
-5. Enter the Email/Password used for your [provide account](https://dawn.provide.services/sign-in)<br>
+5. Enter the Email/Password used for your [Provide account](https://dawn.provide.services/sign-in)<br>
 
 ## Basic Usage
 
-Provide makes a `./provide-cli` executable available in your terminal:<br>
+Here's a taste of what your shiny new `./provide-cli` executable does:<br>
 
 | Command | Action |
 | :--- | :--- |
 | `./provide-cli networks list --public` | List available networks |
 | `./provide-cli dapps init --name '<myAwesomedApp>' --network <networkId>` | Create your dApp, API token and wallet |
-| `./provide-cli deploy <MyFlawlessContract.sol> --application <applicationId> --network <networkId>   --wallet <walletId>` | Deploy a contract to the testnet | <br>
+| `./provide-cli deploy <MyFlawlessContract.sol> --application <applicationId> --network <networkId> --wallet <walletId>` | Deploy a contract | <br>
 
-[Show me more documentation](https://provideservices.github.io/docs/)
+[Show me the full documentation](https://provideservices.github.io/docs/)
 
 ## Speak Up! <br>
 
