@@ -17,16 +17,15 @@ The command-line interface for building decentralized and semi-centralized apps 
 
 ## Basic Usage
 
-Provide makes a `./provide-cli` executable available to you in your terminal:<br>
+Provide makes a `./provide-cli` executable available in your terminal:<br>
 
 | Command | Action |
 | :--- | :--- |
 | `./provide-cli networks list --public` | List available networks |
 | `./provide-cli dapps init --name '<myAwesomedApp>' --network <networkId>` | Create your dApp, API token and wallet |
-| `./provide-cli deploy <MyFlawlessContract.sol> --application <applicationId> --network <networkId>   --wallet <walletAddress` | Deploy a contract to the testnet |
-| `./provide-cli deploy <MyFlattenedContracts.sol> --application <applicationId> --network <networkId>  --wallet <walletAddress>` | Deploy ***multiple*** contracts and dependencies to the testnet |<br>
+| `./provide-cli deploy <MyFlawlessContract.sol> --application <applicationId> --network <networkId>   --wallet <walletAddress>` | Deploy a contract to the testnet | <br>
 
-[Show me the full documentation](https://provideservices.github.io/provide-docs/)
+[Show me more documentation](https://provideservices.github.io/docs/)
 
 ## Speak Up! <br>
 
