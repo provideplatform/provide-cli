@@ -23,7 +23,7 @@ Provide makes a `./provide-cli` executable available in your terminal:<br>
 | :--- | :--- |
 | `./provide-cli networks list --public` | List available networks |
 | `./provide-cli dapps init --name '<myAwesomedApp>' --network <networkId>` | Create your dApp, API token and wallet |
-| `./provide-cli deploy <MyFlawlessContract.sol> --application <applicationId> --network <networkId>   --wallet <walletAddress>` | Deploy a contract to the testnet | <br>
+| `./provide-cli deploy <MyFlawlessContract.sol> --application <applicationId> --network <networkId>   --wallet <walletId>` | Deploy a contract to the testnet | <br>
 
 [Show me more documentation](https://provideservices.github.io/docs/)
 
