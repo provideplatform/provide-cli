@@ -1,5 +1,3 @@
-!provide-cli.exe
-
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a
@@ -24,4 +22,5 @@ _cgo_export.*
 *.prof
 
 prvd
-provide-cli
+
+!provide-cli.exe

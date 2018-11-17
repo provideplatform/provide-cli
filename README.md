@@ -6,7 +6,7 @@ The command-line interface for building ÐApps that use [Provide](http://provide
 
 1. Create a [Provide account](https://dawn.provide.services/sign-in)<br>
 
-2. Download the binary: [provide-cli.exe](https://github.com/provideservices/provide-cli/tree/dev/binary)<br>
+2. Download the binary: [provide-cli](https://github.com/provideservices/provide-cli/tree/dev/binary)<br>
 
 3. Make the file executable in your terminal with `chmod +x provide-cli`<br>
 
