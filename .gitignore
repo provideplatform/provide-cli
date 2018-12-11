@@ -23,4 +23,5 @@ _cgo_export.*
 
 prvd
 
-!provide-cli.exe
+# Mac specific
+.DS_Store
