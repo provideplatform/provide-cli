@@ -42,13 +42,13 @@ func init() {
 // Helpers
 
 func createDecentralizedWallet() {
-	publicKey, privateKey, err := provide.GenerateKeyPair()
+	publicKey, privateKey, err := provide.EVMGenerateKeyPair()
 	if err != nil {
 		log.Printf("Failed to genereate decentralized keypair; %s", err.Error())
 		os.Exit(1)
 	}
 	secret := hex.EncodeToString(crypto.FromECDSA(privateKey))
-	keypairJSON, err := provide.MarshalEncryptedKey(common.HexToAddress(*publicKey), privateKey, secret)
+	keypairJSON, err := provide.EVMMarshalEncryptedKey(common.HexToAddress(*publicKey), privateKey, secret)
 	if err != nil {
 		log.Printf("Failed to genereate decentralized keypair; %s", err.Error())
 		os.Exit(1)

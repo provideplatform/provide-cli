@@ -397,7 +397,7 @@ func compile(sourcePath string) {
 		teardownAndExit(1)
 	}
 
-	encodedArgv, err := provide.EncodeABI(topLevelConstructor, constructorParams...)
+	encodedArgv, err := provide.EVMEncodeABI(topLevelConstructor, constructorParams...)
 	if err != nil {
 		log.Printf("WARNING: failed to encode %d parameters prior to compiling contract: %s; %s", len(constructorParams), name, err.Error())
 		teardownAndExit(1)
