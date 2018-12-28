@@ -1,38 +1,28 @@
-# provide-CLI
+# provide-cli
 
-The command-line interface for building ÐApps that use [Provide](http://provide.services/) APIs
+A command-line interface for managing your decentralized applications and infrastructure using [Provide](https://provide.services).
 
-## Environment Setup
+## Developer Quickstart
 
-1. Create a [Provide account](https://dawn.provide.services/sign-in)<br>
+1. Create a [Provide account](https://dawn.provide.services/sign-up)
 
-2. Get the bin: [win](https://github.com/provideservices/provide-cli/tree/dev/bin/windows) | [mac](https://github.com/provideservices/provide-cli/tree/dev/bin/osx) | [linux](https://github.com/provideservices/provide-cli/tree/dev/bin/linux)<br>
+2. Get a precompiled binary for your platform (or `go get github.com/provideservices/provide-cli` and run from source): [win](https://github.com/provideservices/provide-cli/tree/dev/bin/windows) | [mac](https://github.com/provideservices/provide-cli/tree/dev/bin/osx) | [linux](https://github.com/provideservices/provide-cli/tree/dev/bin/linux)
 
-3. Make sure [solC](https://solidity.readthedocs.io/en/latest/installing-solidity.html) (Solidity compiler) is installed. You can check this with `solc --version` <br>
+3. Make sure [solc](https://solidity.readthedocs.io/en/latest/installing-solidity.html) (Solidity compiler) is installed. You can check this with `solc --version`
 
-4. Authenticate using your [Provide](https://dawn.provide.services/sign-in) email/password: `provide-cli authenticate`<br>
+4. Authenticate: `provide-cli authenticate` - this will authorize and cache a Provide API token in your home directory for continued use of the CLI - after you have authenticated you can register an application using the CLI and start building.
 
+## Quickstart
 
-## Basic Usage
-
-Your project is fully operable in just 4 steps: <br>
-
+You can deploy a contract and be ready to use one of our [API clients](https://github.com/provideservices) to build dApps using [a variety of underlying protocols](https://github.com/providenetwork/node) in just 4 steps: 
 
 #### 1: View the networks
 ```provide-cli networks list --public```
 
-
 #### 2: Create your dApp, API token and wallet
-```provide-cli dapps init --name '<myAwesomedApp>' --network <networkId>```
-
-
+```provide-cli dapps init --name '<myApp>' --network <networkId>```
 
 #### 3: Deploy your compiled contract(s)
-```provide-cli contracts deploy <MyFlawlessContract.sol> --application <applicationId> --network <networkId> --wallet <walletId>```  <br>
+```provide-cli contracts deploy <MyContract.sol> --application <applicationId> --network <networkId> --wallet <walletId>```  
 
-
-Ctrl + click to [see the full documentation](https://provideservices.github.io/docs/) in a new tab.
-
-## Speak Up! <br>
-
-If you see a problem, help us help you by [creating an issue](https://github.com/provideservices/provide-cli/issues).
+Looking for the [API docs](https://docs.provide.services)?
