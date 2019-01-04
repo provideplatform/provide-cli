@@ -286,7 +286,7 @@ func parseCompiledContracts(path string) (compiledContracts map[string]interface
 func baseFilenameNoExt(path string) string {
 	filename := filepath.Base(path)
 	extension := filepath.Ext(filename)
-	return strings.TrimRight(filename, extension)
+	return filename[0 : len(filename)-len(extension)]
 }
 
 func buildCompileCommand(sourcePath string, optimizerRuns int) string {
