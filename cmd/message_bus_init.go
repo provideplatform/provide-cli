@@ -64,5 +64,5 @@ func init() {
 
 	// registry contract
 	messageBusInitCmd.Flags().StringVar(&contractName, "contract-name", "Registry", "name of the registry contract")
-	contractsInitCmd.Flags().StringVar(&walletID, "wallet", "", "wallet id with which to sign the tx")
+	messageBusInitCmd.Flags().StringVar(&walletID, "wallet", "", "wallet id with which to sign the tx")
 }
