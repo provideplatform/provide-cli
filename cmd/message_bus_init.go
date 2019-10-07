@@ -29,11 +29,11 @@ func createMessageBus(cmd *cobra.Command, args []string) {
 	if connectorName == "" {
 		connectorName = fmt.Sprintf("%s message bus %s connector", application["name"], connectorType)
 	}
-	// createConnector(cmd, args)
-	// if connector == nil {
-	// 	fmt.Println("Failed to provision connector for message bus application.")
-	// 	os.Exit(1)
-	// }
+	createConnector(cmd, args)
+	if connector == nil {
+		fmt.Println("Failed to provision connector for message bus application.")
+		os.Exit(1)
+	}
 
 	createContract(cmd, args)
 	if contract == nil {
