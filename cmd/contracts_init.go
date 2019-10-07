@@ -47,11 +47,16 @@ func contractParamsFactory() map[string]interface{} {
 }
 
 func createContract(cmd *cobra.Command, args []string) {
+	if walletID == "" {
+		fmt.Println("Cannot create a contract without a specified signer.")
+		os.Exit(1)
+	}
 	token := requireAPIToken()
 	params := map[string]interface{}{
 		"name":           contractName,
 		"network_id":     networkID,
 		"application_id": applicationID,
+		"address":        "0x",
 		"params":         contractParamsFactory(),
 	}
 	status, resp, err := provide.CreateContract(token, params)
@@ -65,12 +70,6 @@ func createContract(cmd *cobra.Command, args []string) {
 		result := fmt.Sprintf("%s\t%s\n", contract["id"], contract["name"])
 		fmt.Print(result)
 	}
-	if !withoutAPIToken {
-		createAPIToken(cmd, args)
-	}
-	if !withoutWallet {
-		createWallet(cmd, args)
-	}
 }
 
 func init() {
@@ -82,4 +81,7 @@ func init() {
 
 	contractsInitCmd.Flags().StringVar(&applicationID, "application", "", "target application id")
 	contractsInitCmd.MarkFlagRequired("application")
+
+	contractsInitCmd.Flags().StringVar(&walletID, "wallet", "", "wallet id with which to sign the tx")
+	contractsInitCmd.MarkFlagRequired("wallet")
 }

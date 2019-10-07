@@ -31,14 +31,6 @@ func createWallet(cmd *cobra.Command, args []string) {
 	createManagedWallet()
 }
 
-func init() {
-	walletsInitCmd.Flags().BoolVarP(&decentralized, "decentralized", "d", false, "if the generated keypair is decentralized")
-	walletsInitCmd.Flags().StringVarP(&walletName, "name", "n", "", "human-readable name to associate withe the generated keypair")
-	walletsInitCmd.MarkFlagRequired("network")
-}
-
-// Helpers
-
 func createDecentralizedWallet() {
 	publicKey, privateKey, err := provide.EVMGenerateKeyPair()
 	if err != nil {
@@ -70,6 +62,7 @@ func createManagedWallet() {
 	}
 	if status == 201 {
 		wallet := resp.(map[string]interface{})
+		walletID = wallet["id"].(string)
 		result := fmt.Sprintf("Wallet %s\t%s\n", wallet["id"], wallet["address"])
 		if name, nameOk := wallet["name"].(string); nameOk {
 			result = fmt.Sprintf("Wallet %s\t%s - %s\n", name, wallet["id"], wallet["address"])
@@ -84,4 +77,10 @@ func createManagedWallet() {
 		fmt.Printf("Failed to generate keypair; %s", resp)
 		os.Exit(1)
 	}
+}
+
+func init() {
+	walletsInitCmd.Flags().BoolVarP(&decentralized, "decentralized", "d", false, "if the generated keypair is decentralized")
+	walletsInitCmd.Flags().StringVarP(&walletName, "name", "n", "", "human-readable name to associate withe the generated keypair")
+	walletsInitCmd.MarkFlagRequired("network")
 }
