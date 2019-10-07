@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -36,9 +35,12 @@ func listConnectors(cmd *cobra.Command, args []string) {
 	for i := range resp.([]interface{}) {
 		connector := resp.([]interface{})[i].(map[string]interface{})
 		config := connector["config"].(map[string]interface{})
-		connectorConfigJSON, _ := json.Marshal(config)
-		result := fmt.Sprintf("%s\t%s\t%s\n", connector["id"], connector["type"], connectorConfigJSON)
-		fmt.Print(result)
+		// connectorConfigJSON, _ := json.Marshal(config)
+		result := fmt.Sprintf("%s\t%s\t%s", connector["id"], connector["name"], connector["type"])
+		if connector["type"] == connectorTypeIPFS {
+			result = fmt.Sprintf("%s\t%s", result, config["api_url"])
+		}
+		fmt.Printf("%s\n", result)
 	}
 }
 
