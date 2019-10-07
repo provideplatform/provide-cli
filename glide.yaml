@@ -1,0 +1,10 @@
+package: github.com/provideservices/provide-cli
+import:
+- package: github.com/mitchellh/go-homedir
+  version: master
+- package: github.com/provideservices/provide-go
+  version: master
+- package: github.com/spf13/cobra
+  version: master
+- package: github.com/spf13/viper
+  version: master
