@@ -6,6 +6,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var contract map[string]interface{}
+var contractID string
+
 var contractsCmd = &cobra.Command{
 	Use:   "contracts",
 	Short: "Manage application smart contracts",

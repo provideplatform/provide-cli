@@ -87,7 +87,7 @@ func createConnector(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 	if status == 201 {
-		connector := resp.(map[string]interface{})
+		connector = resp.(map[string]interface{})
 		result := fmt.Sprintf("%s\t%s\n", connector["id"], connector["name"])
 		fmt.Print(result)
 	}
@@ -108,6 +108,6 @@ func init() {
 
 	requireInfrastructureFlags(connectorsInitCmd)
 
-	connectorsInitCmd.Flags().UintVar(&ipfsAPIPort, "ipfs_api_port", 5001, "tcp listen port for the ipfs api")
-	connectorsInitCmd.Flags().UintVar(&ipfsGatewayPort, "ipfs_gateway_port", 8080, "tcp listen port for the ipfs gateway")
+	connectorsInitCmd.Flags().UintVar(&ipfsAPIPort, "ipfs-api-port", 5001, "tcp listen port for the ipfs api")
+	connectorsInitCmd.Flags().UintVar(&ipfsGatewayPort, "ipfs-gateway-port", 8080, "tcp listen port for the ipfs gateway")
 }

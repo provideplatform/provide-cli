@@ -6,10 +6,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var application map[string]interface{}
+var applicationID string
+
 var applicationsCmd = &cobra.Command{
 	Use:   "applications",
-	Short: "Initialize and manage applications and their associated resources",
-	Long: `Initialized applications are deployed to a targeted network and expose the following APIs:
+	Short: "Manage applications",
+	Long: `Create and manage logical applications which target a specific network and expose the following APIs:
 
 	- API Tokens
 	- Smart Contracts

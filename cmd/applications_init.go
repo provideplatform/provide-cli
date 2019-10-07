@@ -11,6 +11,7 @@ import (
 )
 
 var applicationName string
+var applicationType string
 var withoutAPIToken bool
 var withoutWallet bool
 
@@ -21,6 +22,18 @@ var applicationsInitCmd = &cobra.Command{
 	Run:   createApplication,
 }
 
+func applicationConfigFactory() map[string]interface{} {
+	cfg := map[string]interface{}{
+		"network_id": networkID,
+	}
+
+	if applicationType != "" {
+		cfg["type"] = applicationType
+	}
+
+	return cfg
+}
+
 func createApplication(cmd *cobra.Command, args []string) {
 	if withoutAPIToken && !withoutWallet {
 		fmt.Println("Cannot create an application that has a wallet but no API token.")
@@ -28,10 +41,8 @@ func createApplication(cmd *cobra.Command, args []string) {
 	}
 	token := requireAPIToken()
 	params := map[string]interface{}{
-		"name": applicationName,
-		"config": map[string]interface{}{
-			"network_id": networkID,
-		},
+		"name":   applicationName,
+		"config": applicationConfigFactory(),
 	}
 	status, resp, err := provide.CreateApplication(token, params)
 	if err != nil {
@@ -39,9 +50,9 @@ func createApplication(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 	if status == 201 {
-		application := resp.(map[string]interface{})
+		application = resp.(map[string]interface{})
 		applicationID = application["id"].(string)
-		result := fmt.Sprintf("%s\t%s\n", application["name"], application["id"])
+		result := fmt.Sprintf("%s\t%s\n", application["id"], application["name"])
 		fmt.Print(result)
 	}
 	if !withoutAPIToken {
@@ -55,6 +66,8 @@ func createApplication(cmd *cobra.Command, args []string) {
 func init() {
 	applicationsInitCmd.Flags().StringVar(&applicationName, "name", "", "name of the application")
 	applicationsInitCmd.MarkFlagRequired("name")
+
+	applicationsInitCmd.Flags().StringVar(&applicationType, "type", "", "application type (i.e., message_bus)")
 
 	applicationsInitCmd.Flags().StringVar(&networkID, "network", "", "target network id")
 	applicationsInitCmd.MarkFlagRequired("network")
