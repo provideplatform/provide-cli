@@ -1,5 +1,5 @@
 hash: fb03c0ff3ecc81c2fecfc9609d4c85e170e9042ebce86ca6aee573f548a8633a
-updated: 2019-10-07T11:11:00.724876-04:00
+updated: 2019-10-07T14:50:17.09704-04:00
 imports:
 - name: github.com/allegro/bigcache
   version: baaa21686666424b386f282d68fc1d23594ab38d
@@ -79,7 +79,7 @@ imports:
 - name: github.com/google/logger
   version: 03bdf7bcb2c4d98c8fdbf62f1473fb1303ca1c1d
 - name: github.com/gorilla/websocket
-  version: c3e18be99d19e6b3e8f1559eea2c161a665c4b6b
+  version: 66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d
 - name: github.com/hashicorp/hcl
   version: 5ef25cc8e679070cb61d5d33813645ad59a9d50e
   subpackages:
@@ -121,7 +121,7 @@ imports:
 - name: github.com/pkg/errors
   version: 27936f6d90f9c8e1145f11ed52ffffbfdb9e0af7
 - name: github.com/provideservices/provide-go
-  version: 3585a13a4c09b86fbd542bac5374b7d3f17fabbd
+  version: 13a088aa4f01cb75f52b61aeedf06f8c699afe6d
 - name: github.com/rs/cors
   version: db0fe48135e83b5812a5a31be0eea66984b1b521
 - name: github.com/spf13/afero
@@ -167,7 +167,7 @@ imports:
   - windows/registry
   - windows/svc/eventlog
 - name: golang.org/x/text
-  version: 342b2e1fbaa52c93f31447ad2c6abc048c63e475
+  version: 3d0f7978add91030e5e8976ff65ccdd828286cba
   subpackages:
   - transform
   - unicode/norm
