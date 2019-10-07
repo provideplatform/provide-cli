@@ -41,6 +41,6 @@ func createAPIToken(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	apiTokensInitCmd.Flags().StringVar(&applicationID, "application", "", "application identifier this will belong to")
+	apiTokensInitCmd.Flags().StringVar(&applicationID, "application", "", "application id")
 	apiTokensInitCmd.MarkFlagRequired("application")
 }
