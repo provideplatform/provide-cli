@@ -24,5 +24,5 @@ should securely store any keys generated using this API.`,
 func init() {
 	rootCmd.AddCommand(walletsCmd)
 	walletsCmd.AddCommand(walletsListCmd)
-	// walletsCmd.AddCommand(walletsInitCmd)
+	walletsCmd.AddCommand(walletsInitCmd)
 }
