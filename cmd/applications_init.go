@@ -56,7 +56,7 @@ func init() {
 	applicationsInitCmd.Flags().StringVar(&applicationName, "name", "", "name of the application")
 	applicationsInitCmd.MarkFlagRequired("name")
 
-	applicationsInitCmd.Flags().StringVar(&networkID, "network", "", "network id (i.e., the application mainnet)")
+	applicationsInitCmd.Flags().StringVar(&networkID, "network", "", "target network id")
 	applicationsInitCmd.MarkFlagRequired("network")
 
 	applicationsInitCmd.Flags().BoolVar(&withoutAPIToken, "without-api-token", false, "do not create a new API token for this application")
