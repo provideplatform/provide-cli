@@ -27,10 +27,8 @@ const (
 
 var rootCmd = &cobra.Command{
 	Use:   "prvd",
-	Short: "Provide command-line interface",
-	Long: `The Provide CLI exposes network and dapp developer tools for
-seamless interaction with the microservices which power the 
-provide.services PaaS.
+	Short: "Provide CLI",
+	Long: `Provide CLI exposes convenient tools to manage network and application resources.
 
 Run with the --help flag to see available options`,
 }
@@ -95,7 +93,7 @@ func requireUserAuthToken() string {
 	}
 
 	if token == "" {
-		log.Printf("Authorized API token required in prvd configuration; have you authenticated or otherwise configured an API token?")
+		log.Printf("Authorized API token required in prvd configuration; run 'authenticate'")
 		os.Exit(1)
 	}
 	return token
@@ -114,7 +112,7 @@ func requireAPIToken() string {
 	}
 
 	if token == "" {
-		log.Printf("Authorized API token required in prvd configuration; have you authenticated or otherwise configured an API token?")
+		log.Printf("Authorized API token required in prvd configuration; run 'authenticate'")
 		os.Exit(1)
 	}
 	return token

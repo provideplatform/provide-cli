@@ -12,22 +12,33 @@ import (
 
 var contractsListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Retrieve a list of API tokens",
-	Long:  `Retrieve a list of API tokens scoped to the authorized API token`,
-	Run:   listAPITokens,
+	Short: "Retrieve a list of contracts",
+	Long:  `Retrieve a list of contracts scoped to the authorized API token`,
+	Run:   listContracts,
 }
 
 func listContracts(cmd *cobra.Command, args []string) {
 	token := requireAPIToken()
 	params := map[string]interface{}{}
-	_, resp, err := provide.ListTokens(token, params)
+	if applicationID != "" {
+		params["application_id"] = applicationID
+	}
+	status, resp, err := provide.ListContracts(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve contracts list; %s", err.Error())
 		os.Exit(1)
 	}
+	if status != 200 {
+		log.Printf("Failed to retrieve contracts list; received status: %d", status)
+		os.Exit(1)
+	}
 	for i := range resp.([]interface{}) {
 		contract := resp.([]interface{})[i].(map[string]interface{})
-		result := fmt.Sprintf("%s\t%s\n", contract["id"], contract["name"])
+		result := fmt.Sprintf("%s\t%s\t%s\n", contract["id"], contract["address"], contract["name"])
 		fmt.Print(result)
 	}
+}
+
+func init() {
+	contractsListCmd.Flags().StringVar(&applicationID, "application", "", "application identifier to filter contracts")
 }

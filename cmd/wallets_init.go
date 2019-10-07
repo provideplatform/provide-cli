@@ -6,8 +6,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/provideservices/provide-go"
 
 	"github.com/spf13/cobra"
@@ -20,7 +18,7 @@ var walletName string
 var walletsInitCmd = &cobra.Command{
 	Use:   "init [--decentralized|-d] [--network 024ff1ef-7369-4dee-969c-1918c6edb5d4]",
 	Short: "Generate a new keypair for signing transactions and storing value",
-	Long:  `Initialize a new wallet, which may be managed or decentralized.`,
+	Long:  `Initialize a new wallet, which may be managed by Provide or you`,
 	Run:   createWallet,
 }
 
@@ -47,8 +45,8 @@ func createDecentralizedWallet() {
 		log.Printf("Failed to genereate decentralized keypair; %s", err.Error())
 		os.Exit(1)
 	}
-	secret := hex.EncodeToString(crypto.FromECDSA(privateKey))
-	keypairJSON, err := provide.EVMMarshalEncryptedKey(common.HexToAddress(*publicKey), privateKey, secret)
+	secret := hex.EncodeToString(provide.FromECDSA(privateKey))
+	keypairJSON, err := provide.EVMMarshalEncryptedKey(provide.HexToAddress(*publicKey), privateKey, secret)
 	if err != nil {
 		log.Printf("Failed to genereate decentralized keypair; %s", err.Error())
 		os.Exit(1)

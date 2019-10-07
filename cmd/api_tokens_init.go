@@ -13,7 +13,7 @@ import (
 var apiTokensInitCmd = &cobra.Command{
 	Use:   "init --application 8fec625c-a8ad-4197-bb77-8b46d7aecd8f",
 	Short: "Creates a new API token",
-	Long:  `Initialize a new Application API Token`,
+	Long:  `Initialize a new application API Token`,
 	Run:   createAPIToken,
 }
 

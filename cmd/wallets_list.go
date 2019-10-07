@@ -11,17 +11,24 @@ import (
 
 var walletsListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Retrieve a list of managed signing identities",
-	Long:  `Retrieve a list of managed signing identities scoped to the authorized API token`,
+	Short: "Retrieve a list of signing identities",
+	Long:  `Retrieve a list of signing identities (wallets) scoped to the authorized API token`,
 	Run:   listWallets,
 }
 
 func listWallets(cmd *cobra.Command, args []string) {
 	token := requireAPIToken()
 	params := map[string]interface{}{}
-	_, resp, err := provide.ListWallets(token, params)
+	if applicationID != "" {
+		params["application_id"] = applicationID
+	}
+	status, resp, err := provide.ListWallets(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve wallets list; %s", err.Error())
+		os.Exit(1)
+	}
+	if status != 200 {
+		log.Printf("Failed to retrieve wallets list; received status: %d", status)
 		os.Exit(1)
 	}
 	for i := range resp.([]interface{}) {
@@ -35,5 +42,5 @@ func listWallets(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	walletsListCmd.Flags().StringVar(&applicationID, "application", "", "application identifier to filter application")
+	walletsListCmd.Flags().StringVar(&applicationID, "application", "", "application identifier to filter wallets")
 }
