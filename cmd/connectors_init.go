@@ -9,12 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// {"name": "IPFS us-east-1", "network_id": "aa51a87f-f142-4341-8e94-b4b0214a009f", "type": "ipfs", "config": {
-// "region":"us-east-1",
-// "target_id": "aws", "provider_id": "docker", "engine_id": "ipfs", "role": "ipfs", "container": "providenetwork-node", "api_port": 5001, "gateway_port": 8080,
-// "env": {"CLIENT": "ipfs"}, "credentials": {"aws_access_key_id": "AKIASZW45XWQQDZIVFS4", "aws_secret_access_key": "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"},
-// }}'
-
 const connectorTypeIPFS = "ipfs"
 
 var connectorName string
