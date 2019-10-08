@@ -1,5 +1,5 @@
 hash: fb03c0ff3ecc81c2fecfc9609d4c85e170e9042ebce86ca6aee573f548a8633a
-updated: 2019-10-07T14:50:17.09704-04:00
+updated: 2019-10-07T22:56:29.01296-04:00
 imports:
 - name: github.com/allegro/bigcache
   version: baaa21686666424b386f282d68fc1d23594ab38d
@@ -121,7 +121,7 @@ imports:
 - name: github.com/pkg/errors
   version: 27936f6d90f9c8e1145f11ed52ffffbfdb9e0af7
 - name: github.com/provideservices/provide-go
-  version: 13a088aa4f01cb75f52b61aeedf06f8c699afe6d
+  version: 28fed84c32d449e5a1e5c03db3376f1f7016fc94
 - name: github.com/rs/cors
   version: db0fe48135e83b5812a5a31be0eea66984b1b521
 - name: github.com/spf13/afero
@@ -131,7 +131,7 @@ imports:
 - name: github.com/spf13/cast
   version: c01685bb8421cecb276fa517e91f757215f980b3
 - name: github.com/spf13/cobra
-  version: 3745fcd26232890015d35e0398b59e26f0a85130
+  version: c022f6fabd6ec400cb7227be78bc651d9423be35
 - name: github.com/spf13/jwalterweatherman
   version: 94f6ae3ed3bceceafa716478c5fbf8d29ca601a1
 - name: github.com/spf13/pflag
