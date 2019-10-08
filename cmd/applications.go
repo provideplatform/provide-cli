@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const applicationTypeMessageBus = "message_bus"
+
 var application map[string]interface{}
 var applicationID string
 
@@ -32,4 +34,5 @@ func init() {
 	rootCmd.AddCommand(applicationsCmd)
 	applicationsCmd.AddCommand(applicationsListCmd)
 	applicationsCmd.AddCommand(applicationsInitCmd)
+	applicationsCmd.AddCommand(applicationsDetailsCmd)
 }

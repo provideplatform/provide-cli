@@ -9,8 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const connectorTypeIPFS = "ipfs"
-
 var connectorName string
 var connectorType string
 

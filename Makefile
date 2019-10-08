@@ -2,13 +2,13 @@
 
 clean:
 	rm -rf ./.bin 2>/dev/null || true
-	rm ./provide-cli 2>/dev/null || true
+	rm ./prvd 2>/dev/null || true
 	go fix ./...
 	go clean -i
 
 build: clean
 	go fmt ./...
-	go build -v -o ./.bin/provide-cli .
+	go build -v -o ./.bin/prvd .
 
 install: clean
 	go install ./...

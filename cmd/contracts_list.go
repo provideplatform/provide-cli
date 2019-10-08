@@ -32,7 +32,8 @@ func listContracts(cmd *cobra.Command, args []string) {
 		log.Printf("Failed to retrieve contracts list; received status: %d", status)
 		os.Exit(1)
 	}
-	for i := range resp.([]interface{}) {
+	contracts = resp.([]interface{})
+	for i := range contracts {
 		contract := resp.([]interface{})[i].(map[string]interface{})
 		result := fmt.Sprintf("%s\t%s\t%s\n", contract["id"], contract["address"], contract["name"])
 		fmt.Print(result)

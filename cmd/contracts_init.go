@@ -40,10 +40,14 @@ func compiledArtifactFactory() map[string]interface{} {
 }
 
 func contractParamsFactory() map[string]interface{} {
-	return map[string]interface{}{
+	params := map[string]interface{}{
 		"wallet_id":         walletID,
 		"compiled_artifact": compiledArtifactFactory(),
 	}
+	if contractType != "" {
+		params["type"] = contractType
+	}
+	return params
 }
 
 func createContract(cmd *cobra.Command, args []string) {

@@ -18,4 +18,5 @@ var messageBusCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(messageBusCmd)
 	messageBusCmd.AddCommand(messageBusInitCmd)
+	messageBusCmd.AddCommand(messageBusPublishCmd)
 }

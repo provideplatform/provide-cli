@@ -32,10 +32,10 @@ func listConnectors(cmd *cobra.Command, args []string) {
 		log.Printf("Failed to retrieve connectors list; received status: %d", status)
 		os.Exit(1)
 	}
-	for i := range resp.([]interface{}) {
-		connector := resp.([]interface{})[i].(map[string]interface{})
+	connectors = resp.([]interface{})
+	for i := range connectors {
+		connector := connectors[i].(map[string]interface{})
 		config := connector["config"].(map[string]interface{})
-		// connectorConfigJSON, _ := json.Marshal(config)
 		result := fmt.Sprintf("%s\t%s\t%s", connector["id"], connector["name"], connector["type"])
 		if connector["type"] == connectorTypeIPFS {
 			result = fmt.Sprintf("%s\t%s", result, config["api_url"])

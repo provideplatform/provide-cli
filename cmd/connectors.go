@@ -6,7 +6,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const connectorTypeIPFS = "ipfs"
+
 var connector map[string]interface{}
+var connectors []interface{}
 var connectorID string
 
 var connectorsCmd = &cobra.Command{
