@@ -1,5 +1,5 @@
-hash: fb03c0ff3ecc81c2fecfc9609d4c85e170e9042ebce86ca6aee573f548a8633a
-updated: 2019-10-07T22:56:29.01296-04:00
+hash: e844ab034c1426c22f1165df3bb571cfe56f99215f5d0f8b6f6ec33e348d3536
+updated: 2019-10-08T00:26:23.201191-04:00
 imports:
 - name: github.com/allegro/bigcache
   version: baaa21686666424b386f282d68fc1d23594ab38d
@@ -72,6 +72,10 @@ imports:
   - render
 - name: github.com/go-stack/stack
   version: 2fee6af1a9795aafbe0253a0cfbdf668e1fb8a9a
+- name: github.com/gogo/protobuf
+  version: 69adf3ecd52d1754cc42d7464c449e50d4b79521
+  subpackages:
+  - proto
 - name: github.com/golang/protobuf
   version: 4c88cc3f1a34ffade77b79abc53335d1e511f25b
   subpackages:
@@ -94,6 +98,12 @@ imports:
   - json/token
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/ipfs/go-ipfs-api
+  version: 436b4c0bac0fd4f04707a7278326785048331c29
+  subpackages:
+  - options
+- name: github.com/ipfs/go-ipfs-files
+  version: 96cf7c9133bdbb405d41143ced9a6161df08cc90
 - name: github.com/jinzhu/gorm
   version: 81c17a7e2529c59efc4e74c5b32c1fb71fb12fa2
 - name: github.com/jinzhu/inflection
@@ -104,10 +114,34 @@ imports:
   version: 01c36065851341304751234b081327cf58728dba
 - name: github.com/kthomas/go.uuid
   version: 28d1fa77e9a4efcba826a2a6c8f5a9ff6cea44a6
+- name: github.com/libp2p/go-flow-metrics
+  version: b1aae8c25b4822de58289e6af21362f93753fa23
+- name: github.com/libp2p/go-libp2p-core
+  version: 2f75277a8d7b0ee88bd7e9458d054c448f29ec34
+  subpackages:
+  - crypto
+  - crypto/pb
+  - metrics
+  - peer
+  - protocol
+- name: github.com/libp2p/go-libp2p-crypto
+  version: ddb6d72b5ad0ae81bf1ee77b628eac1d7237536a
+- name: github.com/libp2p/go-libp2p-metrics
+  version: 2551ab4747111d6c216a06d963c575cebdfd5c9f
+- name: github.com/libp2p/go-libp2p-peer
+  version: 62676d8fb785a8fc279878cbe8e03b878f005910
+- name: github.com/libp2p/go-openssl
+  version: 1934e456a08650fa43aefb673eb660b7cac8c0b4
+  subpackages:
+  - utils
 - name: github.com/magiconair/properties
   version: de8848e004dd33dc07a2947b3d76f618a7fc7ef1
 - name: github.com/mattn/go-isatty
   version: da60ac76bf7019a8b005f8dd1ad9d1a0e6434155
+- name: github.com/minio/blake2b-simd
+  version: 3f5f724cb5b182a5c278d6d3d55b40e7f8c2efb4
+- name: github.com/minio/sha256-simd
+  version: f675151bb5e19dc10d7430bd9d4ef5e7d1b5521f
 - name: github.com/mitchellh/go-homedir
   version: af06845cf3004701891bf4fdb884bfe4920b3727
 - name: github.com/mitchellh/mapstructure
@@ -116,6 +150,16 @@ imports:
   version: bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94
 - name: github.com/modern-go/reflect2
   version: 94122c33edd36123c84d5368cfb2b69df93a0ec8
+- name: github.com/mr-tron/base58
+  version: d504ab2e22d97cb9f10b1d146a1e6a063f4a5f43
+  subpackages:
+  - base58
+- name: github.com/multiformats/go-multiaddr
+  version: f96df18bf0c217c77f6cc0f9e810a178cea12f38
+- name: github.com/multiformats/go-multiaddr-net
+  version: c9acf9f27c5020e78925937dc3de142d2d393cd1
+- name: github.com/multiformats/go-multihash
+  version: 249ead2008065c476a2ee45e8e75e8b85d846a72
 - name: github.com/pelletier/go-toml
   version: 8fe62057ea2d46ce44254c98e84e810044dbe197
 - name: github.com/pkg/errors
@@ -124,6 +168,10 @@ imports:
   version: 28fed84c32d449e5a1e5c03db3376f1f7016fc94
 - name: github.com/rs/cors
   version: db0fe48135e83b5812a5a31be0eea66984b1b521
+- name: github.com/spacemonkeygo/spacelog
+  version: 2296661a0572a51438413369004fa931c2641923
+- name: github.com/spaolacci/murmur3
+  version: 539464a789e9b9f01bc857458ffe2c5c1a2ed382
 - name: github.com/spf13/afero
   version: 588a75ec4f32903aa5e39a2619ba6a4631e28424
   subpackages:
@@ -150,9 +198,25 @@ imports:
   - codec
 - name: github.com/vincent-petithory/dataurl
   version: 9a301d65acbb728fcc3ace14f45f511a4cfeea9c
+- name: github.com/whyrusleeping/tar-utils
+  version: 8c6c8ba81d5c71fd69c0f48dbde4b2fb422b6dfc
+- name: go.opencensus.io
+  version: fa651b05963cfb6060755dc887e7d156ba66e792
+  subpackages:
+  - internal/tagencoding
+  - metric/metricdata
+  - metric/metricproducer
+  - resource
+  - stats
+  - stats/internal
+  - stats/view
+  - tag
 - name: golang.org/x/crypto
   version: 4def268fd1a49955bfb3dda92fe3db4f924f2285
   subpackages:
+  - blake2s
+  - ed25519
+  - ed25519/internal/edwards25519
   - pbkdf2
   - ripemd160
   - scrypt
