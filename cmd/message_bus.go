@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var subject string
+
 var messageBusCmd = &cobra.Command{
 	Use:   "message_bus",
 	Short: "Manage message bus applications",

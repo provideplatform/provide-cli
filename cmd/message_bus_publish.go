@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const publishContractMethod = "publish"
+
 var messageBusPublishCmd = &cobra.Command{
 	Use:   "publish --application 57f8c0af-089a-4ab3-b3c2-ca8a9ed547e0 --wallet 0xEA490AA70a95D5dAcD9Cf6a141692847455Ba928 /path/to/file.json",
 	Short: "Publish a message to a message bus application",
@@ -71,8 +73,9 @@ func publishMessage(cmd *cobra.Command, args []string) {
 	}
 	log.Printf("Published %d byte(s) to IPFS; hash: %s", len(data), hash)
 
-	// TODO: resolve contract id
-	contractExecParams = []interface{}{hash}
+	// TODO: resolve contract id for address
+	contractExecMethod = publishContractMethod
+	contractExecParams = []interface{}{subject, hash}
 	executeContract(cmd, args)
 	if err != nil {
 		log.Printf("Failed to execute publish method on message bus application registry contract with id: %s; %s", contractID, err.Error())
@@ -133,4 +136,7 @@ func init() {
 
 	messageBusPublishCmd.Flags().StringVar(&walletID, "wallet", "", "id or address of the signer for the registry transaction")
 	messageBusPublishCmd.MarkFlagRequired("wallet")
+
+	messageBusPublishCmd.Flags().StringVar(&subject, "subject", "", "subject on which to publish the message (i.e., for pub/sub)")
+	messageBusPublishCmd.MarkFlagRequired("subject")
 }
