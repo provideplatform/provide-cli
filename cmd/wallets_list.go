@@ -11,8 +11,8 @@ import (
 
 var walletsListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Retrieve a list of signing identities",
-	Long:  `Retrieve a list of signing identities (wallets) scoped to the authorized API token`,
+	Short: "Retrieve a list of custodial HD wallets",
+	Long:  `Retrieve a list of HD wallets scoped to the authorized API token`,
 	Run:   listWallets,
 }
 
@@ -42,5 +42,5 @@ func listWallets(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	walletsListCmd.Flags().StringVar(&applicationID, "application", "", "application identifier to filter wallets")
+	walletsListCmd.Flags().StringVar(&applicationID, "application", "", "application identifier to filter HD wallets")
 }

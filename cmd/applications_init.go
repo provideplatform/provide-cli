@@ -8,11 +8,13 @@ import (
 	"github.com/provideservices/provide-go"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var applicationName string
 var applicationType string
 var withoutAPIToken bool
+var withoutAccount bool
 var withoutWallet bool
 
 var applicationsInitCmd = &cobra.Command{
@@ -42,6 +44,7 @@ func createApplication(cmd *cobra.Command, args []string) {
 	token := requireAPIToken()
 	params := map[string]interface{}{
 		"name":   applicationName,
+		"type":   applicationType,
 		"config": applicationConfigFactory(),
 	}
 	status, resp, err := provide.CreateApplication(token, params)
@@ -50,13 +53,24 @@ func createApplication(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 	if status == 201 {
-		application = resp.(map[string]interface{})
+		response := resp.(map[string]interface{})
+		application = response["application"].(map[string]interface{})
+		token := response["token"].(map[string]interface{})
 		applicationID = application["id"].(string)
+		applicationToken := token["token"].(string)
+
+		appAPITokenKey := buildConfigKeyWithApp(apiTokenConfigKeyPartial, applicationID)
+		if !viper.IsSet(appAPITokenKey) {
+			viper.Set(appAPITokenKey, applicationToken)
+			viper.WriteConfig()
+		}
+		fmt.Printf("Application API Token\t%s\n", applicationToken)
+
 		result := fmt.Sprintf("%s\t%s\n", application["id"], application["name"])
 		fmt.Print(result)
 	}
-	if !withoutAPIToken {
-		createAPIToken(cmd, args)
+	if !withoutAccount {
+		createAccount(cmd, args)
 	}
 	if !withoutWallet {
 		createWallet(cmd, args)
@@ -72,6 +86,6 @@ func init() {
 	applicationsInitCmd.Flags().StringVar(&networkID, "network", "", "target network id")
 	applicationsInitCmd.MarkFlagRequired("network")
 
-	applicationsInitCmd.Flags().BoolVar(&withoutAPIToken, "without-api-token", false, "do not create a new API token for this application")
-	applicationsInitCmd.Flags().BoolVar(&withoutWallet, "without-wallet", false, "do not create a new wallet (signing identity) for this application")
+	applicationsInitCmd.Flags().BoolVar(&withoutWallet, "without-account", false, "do not create a new account (signing identity) for this application")
+	applicationsInitCmd.Flags().BoolVar(&withoutWallet, "without-wallet", false, "do not create a new HD wallet for this application")
 }

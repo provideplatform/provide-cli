@@ -12,18 +12,18 @@ import (
 	"github.com/spf13/viper"
 )
 
-var decentralized bool
+var nonCustodial bool
 var walletName string
 
 var walletsInitCmd = &cobra.Command{
-	Use:   "init [--decentralized|-d] [--network 024ff1ef-7369-4dee-969c-1918c6edb5d4]",
-	Short: "Generate a new keypair for signing transactions and storing value",
-	Long:  `Initialize a new wallet, which may be managed by Provide or you`,
+	Use:   "init [--non-custodial|-nc]",
+	Short: "Generate a new HD wallet for deterministically managing accounts, signing transactions and storing value",
+	Long:  `Initialize a new HD wallet, which may be managed by Provide or you`,
 	Run:   createWallet,
 }
 
 func createWallet(cmd *cobra.Command, args []string) {
-	if decentralized {
+	if nonCustodial {
 		createDecentralizedWallet()
 		return
 	}
@@ -34,16 +34,16 @@ func createWallet(cmd *cobra.Command, args []string) {
 func createDecentralizedWallet() {
 	publicKey, privateKey, err := provide.EVMGenerateKeyPair()
 	if err != nil {
-		log.Printf("Failed to genereate decentralized keypair; %s", err.Error())
+		log.Printf("Failed to genereate decentralized HD wallet; %s", err.Error())
 		os.Exit(1)
 	}
 	secret := hex.EncodeToString(provide.FromECDSA(privateKey))
-	keypairJSON, err := provide.EVMMarshalEncryptedKey(provide.HexToAddress(*publicKey), privateKey, secret)
+	walletJSON, err := provide.EVMMarshalEncryptedKey(provide.HexToAddress(*publicKey), privateKey, secret)
 	if err != nil {
-		log.Printf("Failed to genereate decentralized keypair; %s", err.Error())
+		log.Printf("Failed to genereate decentralized HD wallet; %s", err.Error())
 		os.Exit(1)
 	}
-	result := fmt.Sprintf("%s\t%s\n", *publicKey, string(keypairJSON))
+	result := fmt.Sprintf("%s\t%s\n", *publicKey, string(walletJSON))
 	fmt.Print(result)
 }
 
@@ -57,7 +57,7 @@ func createManagedWallet() {
 	}
 	status, resp, err := provide.CreateWallet(token, params)
 	if err != nil {
-		log.Printf("Failed to genereate keypair; %s", err.Error())
+		log.Printf("Failed to genereate HD wallet; %s", err.Error())
 		os.Exit(1)
 	}
 	if status == 201 {
@@ -74,13 +74,12 @@ func createManagedWallet() {
 		}
 		fmt.Print(result)
 	} else {
-		fmt.Printf("Failed to generate keypair; %s", resp)
+		fmt.Printf("Failed to generate HD wallet; %s", resp)
 		os.Exit(1)
 	}
 }
 
 func init() {
-	walletsInitCmd.Flags().BoolVarP(&decentralized, "decentralized", "d", false, "if the generated keypair is decentralized")
-	walletsInitCmd.Flags().StringVarP(&walletName, "name", "n", "", "human-readable name to associate withe the generated keypair")
-	walletsInitCmd.MarkFlagRequired("network")
+	walletsInitCmd.Flags().BoolVarP(&nonCustodial, "non-custodial", "", false, "if the generated HD wallet is custodial")
+	walletsInitCmd.Flags().StringVarP(&walletName, "name", "n", "", "human-readable name to associate with the generated HD wallet")
 }

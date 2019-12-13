@@ -10,12 +10,10 @@ var walletID string
 
 var walletsCmd = &cobra.Command{
 	Use:   "wallets",
-	Short: "Manage signing identities & cryptocurrency wallets",
-	Long: `Various APIs are exposed to provide convenient access to elliptic-curve cryptography
-(ECC) helper methods such as generating managed keypairs.
+	Short: "Manage HD wallets and accounts",
+	Long: `Generate hierarchical deterministic (HD) wallets and sign transactions.
 
-For convenience, it is also possible to generate decentralized keypairs with this utility. You
-should securely store any keys generated using this API.`,
+More documentation forthcoming.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("wallets unimplemented")
 	},

@@ -16,7 +16,9 @@ const (
 	// and NOT used by themselves.
 	authTokenConfigKey       = "auth-token" // user-scoped API token key
 	apiTokenConfigKeyPartial = "api-token"  // app-scoped API token key
-	walletConfigKeyPartial   = "wallet"     // app-scoped wallet ID key
+	accountConfigKeyPartial  = "account"    // app-scoped account ID key
+	walletConfigKeyPartial   = "wallet"     // app-scoped HD wallet ID key
+
 )
 
 var cfgFile string
