@@ -93,6 +93,12 @@ func resolveMessageBusContract(cmd *cobra.Command, args []string) {
 		contractID = c.(map[string]interface{})["id"].(string)
 		fetchContractDetails(cmd, args)
 		if contract != nil {
+			if typ, typeOk := contract["type"].(string); typeOk {
+				if typ == contractTypeRegistry {
+					contractID = contract["id"].(string)
+					break
+				}
+			}
 			if params, paramsOk := contract["params"].(map[string]interface{}); paramsOk {
 				if params["type"] == contractTypeRegistry {
 					contractID = contract["id"].(string)
@@ -134,8 +140,8 @@ func init() {
 	messageBusPublishCmd.Flags().StringVar(&applicationID, "application", "", "target message bus application id")
 	messageBusPublishCmd.MarkFlagRequired("application")
 
-	messageBusPublishCmd.Flags().StringVar(&walletID, "wallet", "", "id or address of the signer for the registry transaction")
-	messageBusPublishCmd.MarkFlagRequired("wallet")
+	messageBusPublishCmd.Flags().StringVar(&accountID, "account", "", "signing account id or address of the signer for the registry transaction")
+	messageBusPublishCmd.Flags().StringVar(&walletID, "wallet", "", "HD wallet id to use to signer the registry transaction")
 
 	messageBusPublishCmd.Flags().StringVar(&subject, "subject", "", "subject on which to publish the message (i.e., for pub/sub)")
 	messageBusPublishCmd.MarkFlagRequired("subject")

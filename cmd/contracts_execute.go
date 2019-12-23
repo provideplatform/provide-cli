@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/provideservices/provide-go"
 
@@ -23,16 +24,25 @@ var contractsExecuteCmd = &cobra.Command{
 }
 
 func executeContract(cmd *cobra.Command, args []string) {
-	if walletID == "" {
+	if accountID == "" && walletID == "" {
 		fmt.Println("Cannot execute a contract without a specified signer.")
 		os.Exit(1)
 	}
 	token := requireAPIToken()
 	params := map[string]interface{}{
-		"method":    contractExecMethod,
-		"params":    contractExecParams,
-		"value":     contractExecValue,
-		"wallet_id": walletID,
+		"method": contractExecMethod,
+		"params": contractExecParams,
+		"value":  contractExecValue,
+	}
+	if accountID != "" {
+		if strings.HasPrefix(accountID, "0x") {
+			params["account_address"] = accountID
+		} else {
+			params["account_id"] = accountID
+		}
+	}
+	if walletID != "" {
+		params["wallet_id"] = walletID
 	}
 	status, resp, err := provide.ExecuteContract(token, contractID, params)
 	if err != nil {
@@ -61,6 +71,6 @@ func init() {
 
 	contractsExecuteCmd.Flags().UintVar(&contractExecValue, "value", 0, "value to send with transaction, specific in the smallest denonination of currency for the network (i.e., wei)")
 
-	contractsExecuteCmd.Flags().StringVar(&walletID, "wallet", "", "wallet id with which to sign the tx")
-	contractsExecuteCmd.MarkFlagRequired("wallet")
+	contractsExecuteCmd.Flags().StringVar(&accountID, "account", "", "signing account id with which to sign the tx")
+	contractsExecuteCmd.Flags().StringVar(&walletID, "wallet", "", "HD wallet id with which to sign the tx")
 }
