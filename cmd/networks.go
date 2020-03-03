@@ -6,7 +6,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var network map[string]interface{}
+var networks []interface{}
 var networkID string
+var networkType string
 
 var networksCmd = &cobra.Command{
 	Use:   "networks",
