@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/provideservices/provide-go"
 	"github.com/spf13/cobra"
@@ -13,6 +15,9 @@ var nodeName string
 var imageID string
 var roleID string
 var taskRole string
+var tcpIngressPorts string
+var udpIngressPorts string
+
 var nodesInitCmd = &cobra.Command{
 	Use:   "init --network 024ff1ef-7369-4dee-969c-1918c6edb5d4 --image redis --provider docker --region us-east-1 --role redis --target aws",
 	Short: "Initialize a new node",
@@ -21,6 +26,27 @@ var nodesInitCmd = &cobra.Command{
 }
 
 func nodeSecurityConfigFactory() map[string]interface{} {
+	tcpIngress := make([]uint, 0)
+	udpIngress := make([]uint, 0)
+
+	for _, port := range strings.Split(tcpIngressPorts, ",") {
+		portInt, err := strconv.Atoi(port)
+		if err != nil {
+			log.Printf("Invalid tcp ingress port: %s", port)
+			os.Exit(1)
+		}
+		tcpIngress = append(tcpIngress, uint(portInt))
+	}
+
+	for _, port := range strings.Split(udpIngressPorts, ",") {
+		portInt, err := strconv.Atoi(port)
+		if err != nil {
+			log.Printf("Invalid udp ingress port: %s", port)
+			os.Exit(1)
+		}
+		udpIngress = append(udpIngress, uint(portInt))
+	}
+
 	return map[string]interface{}{
 		"health_check": map[string]interface{}{
 			"path": "/api/v0/version",
@@ -28,8 +54,8 @@ func nodeSecurityConfigFactory() map[string]interface{} {
 		"egress": "*",
 		"ingress": map[string]interface{}{
 			"0.0.0.0/0": map[string]interface{}{
-				"tcp": []uint{ipfsAPIPort, ipfsGatewayPort},
-				"udp": []uint{},
+				"tcp": tcpIngress,
+				"udp": udpIngress,
 			},
 		},
 	}
@@ -66,6 +92,7 @@ func nodeConfigFactory() map[string]interface{} {
 
 	return cfg
 }
+
 func createNode(cmd *cobra.Command, args []string) {
 	token := requireAPIToken()
 	params := map[string]interface{}{
@@ -86,20 +113,17 @@ func createNode(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	// nodesInitCmd.Flags().StringVar(&nodeName, "name", "", "name of the node")
-	// nodesInitCmd.MarkFlagRequired("name")
-
 	nodesInitCmd.Flags().StringVar(&networkID, "network", "", "target network id")
 	nodesInitCmd.MarkFlagRequired("network")
 
-	nodesInitCmd.Flags().StringVar(&imageID, "image", "", "image id")
+	nodesInitCmd.Flags().StringVar(&imageID, "image", "", "docker image name")
 	nodesInitCmd.MarkFlagRequired("image")
 
-	nodesInitCmd.Flags().StringVar(&roleID, "role", "", "role id")
+	nodesInitCmd.Flags().StringVar(&roleID, "role", "", "role for the node, i.e., peer, validator, nats")
 	nodesInitCmd.MarkFlagRequired("role")
 
-	requireInfrastructureFlags(connectorsInitCmd, false)
+	requireInfrastructureFlags(nodesInitCmd, false)
 
-	connectorsInitCmd.Flags().UintVar(&ipfsAPIPort, "ipfs-api-port", 5001, "tcp listen port for the ipfs api")
-	connectorsInitCmd.Flags().UintVar(&ipfsGatewayPort, "ipfs-gateway-port", 8080, "tcp listen port for the ipfs gateway")
+	nodesInitCmd.Flags().StringVar(&tcpIngressPorts, "tcp-ingress", "", "tcp ingress ports to open on the node")
+	nodesInitCmd.Flags().StringVar(&udpIngressPorts, "udp-ingress", "", "udp ingress ports to open on the node")
 }
