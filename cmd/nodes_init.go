@@ -11,18 +11,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var nodeName string
-var imageID string
-var roleID string
-var taskRole string
-var tcpIngressPorts string
-var udpIngressPorts string
+var isP2P bool
+var role string
 
 var nodesInitCmd = &cobra.Command{
 	Use:   "init --network 024ff1ef-7369-4dee-969c-1918c6edb5d4 --image redis --provider docker --region us-east-1 --role redis --target aws",
 	Short: "Initialize a new node",
 	Long:  `Initialize a new node with options`,
 	Run:   createNode,
+}
+
+func nodeEnvConfigFactory() map[string]interface{} {
+	return map[string]interface{}{}
 }
 
 func nodeSecurityConfigFactory() map[string]interface{} {
@@ -47,10 +47,7 @@ func nodeSecurityConfigFactory() map[string]interface{} {
 		udpIngress = append(udpIngress, uint(portInt))
 	}
 
-	return map[string]interface{}{
-		"health_check": map[string]interface{}{
-			"path": "/api/v0/version",
-		},
+	cfg := map[string]interface{}{
 		"egress": "*",
 		"ingress": map[string]interface{}{
 			"0.0.0.0/0": map[string]interface{}{
@@ -59,35 +56,45 @@ func nodeSecurityConfigFactory() map[string]interface{} {
 			},
 		},
 	}
+
+	var healthCheck map[string]interface{}
+	if healthCheckPath != "" {
+		healthCheck = map[string]interface{}{
+			"path": healthCheckPath,
+		}
+	}
+	if healthCheck != nil && len(healthCheck) > 0 {
+		cfg["health_check"] = healthCheck
+	}
+
+	return cfg
 }
 
 func nodeConfigFactory() map[string]interface{} {
 	cfg := map[string]interface{}{
-		"image":       imageID,
 		"credentials": infrastructureCredentialsConfigFactory(),
-		"p2p":         false,
-		"region":      region,
-		"target_id":   targetID,
-		"task_role":   taskRole,
+		"engine_id":   engineID,
+		"env":         nodeEnvConfigFactory(),
+		"p2p":         isP2P,
 		"provider_id": providerID,
-		"engine_id":   connectorType,
-		"role":        roleID,
-		"container":   container,
-		"env":         map[string]interface{}{},
+		"region":      region,
+		"role":        role,
+		"target_id":   targetID,
+	}
+
+	if container != "" {
+		cfg["container"] = container
+	}
+	if image != "" {
+		cfg["image"] = image
+	}
+	if taskRole != "" {
+		cfg["task_role"] = taskRole
 	}
 
 	securityCfg := nodeSecurityConfigFactory()
 	if securityCfg != nil {
 		cfg["security"] = securityCfg
-	}
-
-	if connectorType == connectorTypeIPFS {
-		if ipfsAPIPort != 0 {
-			cfg["api_port"] = ipfsAPIPort
-		}
-		if ipfsGatewayPort != 0 {
-			cfg["gateway_port"] = ipfsGatewayPort
-		}
 	}
 
 	return cfg
@@ -116,14 +123,17 @@ func init() {
 	nodesInitCmd.Flags().StringVar(&networkID, "network", "", "target network id")
 	nodesInitCmd.MarkFlagRequired("network")
 
-	nodesInitCmd.Flags().StringVar(&imageID, "image", "", "docker image name")
+	nodesInitCmd.Flags().BoolVar(&isP2P, "p2p", true, "when true, genesis state and peer resolution are enforced during initialization")
+
+	nodesInitCmd.Flags().StringVar(&image, "image", "", "docker image; can be an official image name or fully-qualified repo")
 	nodesInitCmd.MarkFlagRequired("image")
 
-	nodesInitCmd.Flags().StringVar(&roleID, "role", "", "role for the node, i.e., peer, validator, nats")
+	nodesInitCmd.Flags().StringVar(&role, "role", "", "role for the node, i.e., peer, validator, nats")
 	nodesInitCmd.MarkFlagRequired("role")
 
 	requireInfrastructureFlags(nodesInitCmd, false)
 
+	nodesInitCmd.Flags().StringVar(&healthCheckPath, "health-check-path", "", "path for the http health check on the node")
 	nodesInitCmd.Flags().StringVar(&tcpIngressPorts, "tcp-ingress", "", "tcp ingress ports to open on the node")
 	nodesInitCmd.Flags().StringVar(&udpIngressPorts, "udp-ingress", "", "udp ingress ports to open on the node")
 }

@@ -43,12 +43,13 @@ func securityConfigFactory() map[string]interface{} {
 func connectorConfigFactory() map[string]interface{} {
 	cfg := map[string]interface{}{
 		"credentials": infrastructureCredentialsConfigFactory(),
+		"container":   container,
+		"image":       image,
 		"region":      region,
 		"target_id":   targetID,
 		"provider_id": providerID,
 		"engine_id":   connectorType,
 		"role":        connectorType,
-		"container":   container,
 		"env": map[string]interface{}{
 			"CLIENT": connectorType,
 		},

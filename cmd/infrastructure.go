@@ -13,13 +13,24 @@ import (
 const infrastructureTargetAWS = "aws"
 const infrastructureTargetAzure = "azure"
 
+var engineID string
+var providerID string
 var region string
 var targetID string
-var providerID string
+
 var container string
+var image string
+var healthCheckPath string
+var taskRole string
+var tcpIngressPorts string
+var udpIngressPorts string
 
 var awsAccessKeyID string
 var awsSecretAccessKey string
+
+var azureTenantID string
+var azureClientID string
+var azureClientSecret string
 
 func infrastructureCredentialsConfigFactory() map[string]interface{} {
 	var creds map[string]interface{}
@@ -42,12 +53,13 @@ func infrastructureCredentialsConfigFactory() map[string]interface{} {
 	return creds
 }
 
-func requireInfrastructureFlags(cmd *cobra.Command, withContainer bool) {
+func requireInfrastructureFlags(cmd *cobra.Command, withImage bool) {
 	cmd.Flags().StringVar(&targetID, "target", "aws", "target infrastructure platform (i.e., aws or azure)")
 	cmd.Flags().StringVar(&region, "region", "us-east-1", "target infrastructure region")
 	cmd.Flags().StringVar(&providerID, "provider", "docker", "infrastructure virtualization provider (i.e., docker)")
-	if withContainer {
-		cmd.Flags().StringVar(&container, "container", "providenetwork-node", "infrastructure container (i.e., the name of the container image if using the docker provider)")
+	if withImage {
+		cmd.Flags().StringVar(&container, "container", "", "target-specific container/task name -- DEPRECATED -- use image instead")
+		cmd.Flags().StringVar(&image, "image", "", "container image name")
 	}
 }
 
