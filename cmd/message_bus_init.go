@@ -52,7 +52,7 @@ func init() {
 	messageBusInitCmd.Flags().StringVar(&connectorName, "connector-name", "", "name of the connector")
 	messageBusInitCmd.Flags().StringVar(&connectorType, "connector-type", "ipfs", "type of the connector")
 
-	requireInfrastructureFlags(messageBusInitCmd)
+	requireInfrastructureFlags(messageBusInitCmd, true)
 
 	messageBusInitCmd.Flags().UintVar(&ipfsAPIPort, "connector-ipfs-api-port", 5001, "tcp listen port for the ipfs api")
 	messageBusInitCmd.Flags().UintVar(&ipfsGatewayPort, "connector-ipfs-gateway-port", 8080, "tcp listen port for the ipfs gateway")

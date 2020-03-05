@@ -104,7 +104,7 @@ func init() {
 	connectorsInitCmd.Flags().StringVar(&networkID, "network", "", "target network id")
 	connectorsInitCmd.MarkFlagRequired("network")
 
-	requireInfrastructureFlags(connectorsInitCmd)
+	requireInfrastructureFlags(connectorsInitCmd, true)
 
 	connectorsInitCmd.Flags().UintVar(&ipfsAPIPort, "ipfs-api-port", 5001, "tcp listen port for the ipfs api")
 	connectorsInitCmd.Flags().UintVar(&ipfsGatewayPort, "ipfs-gateway-port", 8080, "tcp listen port for the ipfs gateway")

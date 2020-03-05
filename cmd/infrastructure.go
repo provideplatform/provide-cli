@@ -34,11 +34,13 @@ func infrastructureCredentialsConfigFactory() map[string]interface{} {
 	return creds
 }
 
-func requireInfrastructureFlags(cmd *cobra.Command) {
+func requireInfrastructureFlags(cmd *cobra.Command, withContainer bool) {
 	cmd.Flags().StringVar(&targetID, "target", "aws", "target infrastructure platform (i.e., aws or azure)")
 	cmd.Flags().StringVar(&region, "region", "us-east-1", "infrastructure region")
 	cmd.Flags().StringVar(&providerID, "provider", "docker", "infrastructure virtualization provider (i.e., docker)")
-	cmd.Flags().StringVar(&container, "container", "providenetwork-node", "infrastructure container (i.e., the name of the container image if using the docker provider)")
+	if withContainer {
+		cmd.Flags().StringVar(&container, "container", "providenetwork-node", "infrastructure container (i.e., the name of the container image if using the docker provider)")
+	}
 }
 
 func requireAWSCredentials() (string, string) {

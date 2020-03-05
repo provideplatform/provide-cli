@@ -22,5 +22,6 @@ var networksCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(networksCmd)
+	networksCmd.AddCommand(networksInitCmd)
 	networksCmd.AddCommand(networksListCmd)
 }
