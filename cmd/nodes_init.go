@@ -18,7 +18,7 @@ var nodesInitCmd = &cobra.Command{
 	Use:   "init --network 024ff1ef-7369-4dee-969c-1918c6edb5d4 --image redis --provider docker --region us-east-1 --role redis --target aws",
 	Short: "Initialize a new node",
 	Long:  `Initialize a new node with options`,
-	Run:   createNode,
+	Run:   CreateNode,
 }
 
 func nodeEnvConfigFactory() map[string]interface{} {
@@ -100,11 +100,12 @@ func nodeConfigFactory() map[string]interface{} {
 	return cfg
 }
 
-func createNode(cmd *cobra.Command, args []string) {
+// CreateNode deploys a node to an existing peer-to-peer network;
+// see https://docs.provide.services/microservices/goldmine/#deploy-network-node
+func CreateNode(cmd *cobra.Command, args []string) {
 	token := requireAPIToken()
 	params := map[string]interface{}{
-		"network_id": networkID,
-		"config":     nodeConfigFactory(),
+		"config": nodeConfigFactory(),
 	}
 	status, resp, err := provide.CreateNetworkNode(token, networkID, params)
 	if err != nil {

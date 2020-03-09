@@ -14,16 +14,16 @@ var networksInitCmd = &cobra.Command{
 	Use:   "init --name Network1 --application 024ff1ef-7369-4dee-969c-1918c6edb5d4",
 	Short: "Initialize a new network",
 	Long:  `Initialize a new network with options`,
-	Run:   createNetwork,
+	Run:   CreateNetwork,
 }
 
-func createNetwork(cmd *cobra.Command, args []string) {
+// CreateNetwork configures a new peer-to-peer network;
+// see https://docs.provide.services/microservices/goldmine/#create-a-network
+func CreateNetwork(cmd *cobra.Command, args []string) {
 	token := requireAPIToken()
 	params := map[string]interface{}{
 		"name":           networkName,
 		"application_id": applicationID,
-		// "address":        "0x",
-		// "params":         contractParamsFactory(),
 	}
 	status, resp, err := provide.CreateNetwork(token, params)
 	if err != nil {
