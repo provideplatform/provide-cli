@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 const infrastructureTargetAWS = "aws"
@@ -78,13 +79,12 @@ func requireAWSCredentials() (string, string) {
 	}
 
 	fmt.Print("AWS Secret Access Key: ")
-	reader = bufio.NewReader(os.Stdin)
-	secretAccessKey, err := reader.ReadString('\n')
+	secretAccessKeyBytes, err := terminal.ReadPassword(0)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
-	secretAccessKey = strings.Trim(secretAccessKey, "\n")
+	secretAccessKey := strings.Trim(string(secretAccessKeyBytes[:]), "\n")
 	if secretAccessKey == "" {
 		log.Println("Failed to read AWS secret access key from stdin")
 		os.Exit(1)
@@ -121,13 +121,12 @@ func requireAzureCredentials() (string, string, string) {
 	}
 
 	fmt.Print("Azure Client Secret: ")
-	reader = bufio.NewReader(os.Stdin)
-	clientSecret, err := reader.ReadString('\n')
+	clientSecretBytes, err := terminal.ReadPassword(0)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
-	clientSecret = strings.Trim(clientSecret, "\n")
+	clientSecret := strings.Trim(string(clientSecretBytes[:]), "\n")
 	if clientSecret == "" {
 		log.Println("Failed to read Azure client secret from stdin")
 		os.Exit(1)

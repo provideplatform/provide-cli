@@ -30,21 +30,25 @@ func nodeSecurityConfigFactory() map[string]interface{} {
 	udpIngress := make([]uint, 0)
 
 	for _, port := range strings.Split(tcpIngressPorts, ",") {
-		portInt, err := strconv.Atoi(port)
-		if err != nil {
-			log.Printf("Invalid tcp ingress port: %s", port)
-			os.Exit(1)
+		if port != "" {
+			portInt, err := strconv.Atoi(port)
+			if err != nil {
+				log.Printf("Invalid tcp ingress port: %s", port)
+				os.Exit(1)
+			}
+			tcpIngress = append(tcpIngress, uint(portInt))
 		}
-		tcpIngress = append(tcpIngress, uint(portInt))
 	}
 
 	for _, port := range strings.Split(udpIngressPorts, ",") {
-		portInt, err := strconv.Atoi(port)
-		if err != nil {
-			log.Printf("Invalid udp ingress port: %s", port)
-			os.Exit(1)
+		if port != "" {
+			portInt, err := strconv.Atoi(port)
+			if err != nil {
+				log.Printf("Invalid udp ingress port: %s", port)
+				os.Exit(1)
+			}
+			udpIngress = append(udpIngress, uint(portInt))
 		}
-		udpIngress = append(udpIngress, uint(portInt))
 	}
 
 	cfg := map[string]interface{}{
@@ -137,4 +141,5 @@ func init() {
 	nodesInitCmd.Flags().StringVar(&healthCheckPath, "health-check-path", "", "path for the http health check on the node")
 	nodesInitCmd.Flags().StringVar(&tcpIngressPorts, "tcp-ingress", "", "tcp ingress ports to open on the node")
 	nodesInitCmd.Flags().StringVar(&udpIngressPorts, "udp-ingress", "", "udp ingress ports to open on the node")
+	nodesInitCmd.Flags().StringVar(&taskRole, "task-role", "", "the optional vendor-specific task role (i.e., the ECS task execution role in the case of AWS)")
 }
