@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -9,9 +10,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var chain string
+var nativeCurrency string
+var platform string
+var protocolID string
+
 var networkName string
 var networksInitCmd = &cobra.Command{
-	Use:   "init --name Network1 --application 024ff1ef-7369-4dee-969c-1918c6edb5d4",
+	Use:   "init --name 'whiteblock testnet",
 	Short: "Initialize a new network",
 	Long:  `Initialize a new network with options`,
 	Run:   CreateNetwork,
@@ -22,8 +28,8 @@ var networksInitCmd = &cobra.Command{
 func CreateNetwork(cmd *cobra.Command, args []string) {
 	token := requireAPIToken()
 	params := map[string]interface{}{
-		"name":           networkName,
-		"application_id": applicationID,
+		"name":   networkName,
+		"config": configFactory(),
 	}
 	status, resp, err := provide.CreateNetwork(token, params)
 	if err != nil {
@@ -32,8 +38,8 @@ func CreateNetwork(cmd *cobra.Command, args []string) {
 	}
 	if status == 201 {
 		network = resp.(map[string]interface{})
-		networkID = contract["id"].(string)
-		result := fmt.Sprintf("%s\t%s\n", contract["id"], contract["name"])
+		networkID = network["id"].(string)
+		result := fmt.Sprintf("%s\t%s\n", network["id"], network["name"])
 		fmt.Print(result)
 	}
 }
@@ -42,6 +48,64 @@ func init() {
 	networksInitCmd.Flags().StringVar(&networkName, "name", "", "name of the network")
 	networksInitCmd.MarkFlagRequired("name")
 
-	networksInitCmd.Flags().StringVar(&applicationID, "application", "", "ID of the application")
-	networksInitCmd.MarkFlagRequired("application")
+	networksInitCmd.Flags().StringVar(&chain, "chain", "", "name of the chain")
+	networksInitCmd.MarkFlagRequired("chain")
+
+	networksInitCmd.Flags().StringVar(&engineID, "engine", "", "consensus engine to be used for the chain (i.e., ethash, poa, ibft)")
+	networksInitCmd.MarkFlagRequired("engine")
+
+	networksInitCmd.Flags().StringVar(&nativeCurrency, "native-currency", "", "symbol representing the native currency on the network (i.e., ETH)")
+	networksInitCmd.MarkFlagRequired("native-currency")
+
+	networksInitCmd.Flags().StringVar(&platform, "platform", "", "platform type (i.e., evm, bcoin)")
+	networksInitCmd.MarkFlagRequired("platform")
+
+	networksInitCmd.Flags().StringVar(&protocolID, "protocol", "", "type of consensus mechanism (i.e., pow, poa)")
+	networksInitCmd.MarkFlagRequired("protocol")
+
+}
+
+func configFactory() map[string]interface{} {
+	var chainspec map[string]interface{}
+	if engineID == "clique" {
+		chainspec = cliqueChainspecFactory()
+	} else {
+		log.Printf("Failed to initialize network; additional chainspec factories should be implemented")
+		os.Exit(1)
+	}
+
+	return map[string]interface{}{
+		"chain":           chain,
+		"chainspec":       chainspec,
+		"engine_id":       engineID,
+		"native_currency": nativeCurrency,
+		"platform":        platform,
+		"protocol_id":     protocolID,
+	}
+}
+
+func cliqueChainspecFactory() map[string]interface{} {
+	genesis := map[string]interface{}{}
+	json.Unmarshal([]byte(`{
+		"config": {
+		  "chainId": <arbitrary positive integer>,
+		  "homesteadBlock": 0,
+		  "eip150Block": 0,
+		  "eip155Block": 0,
+		  "eip158Block": 0,
+		  "byzantiumBlock": 0,
+		  "constantinopleBlock": 0,
+		  "petersburgBlock": 0
+		},
+		"alloc": {},
+		"coinbase": "0x0000000000000000000000000000000000000000",
+		"difficulty": "0x20000",
+		"extraData": "",
+		"gasLimit": "0x2fefd8",
+		"nonce": "0x0000000000000042",
+		"mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+		"parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+		"timestamp": "0x00"
+	}`), &genesis)
+	return genesis
 }
