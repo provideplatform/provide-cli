@@ -23,4 +23,5 @@ var nodesCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(nodesCmd)
 	nodesCmd.AddCommand(nodesInitCmd)
+	nodesCmd.AddCommand(nodesDeleteCmd)
 }
