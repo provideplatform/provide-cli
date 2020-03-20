@@ -24,4 +24,5 @@ func init() {
 	rootCmd.AddCommand(networksCmd)
 	networksCmd.AddCommand(networksInitCmd)
 	networksCmd.AddCommand(networksListCmd)
+	networksCmd.AddCommand(networksDisableCmd)
 }
