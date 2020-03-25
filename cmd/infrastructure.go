@@ -19,7 +19,6 @@ var providerID string
 var region string
 var targetID string
 
-var container string
 var image string
 var healthCheckPath string
 var taskRole string
@@ -59,7 +58,6 @@ func requireInfrastructureFlags(cmd *cobra.Command, withImage bool) {
 	cmd.Flags().StringVar(&region, "region", "us-east-1", "target infrastructure region")
 	cmd.Flags().StringVar(&providerID, "provider", "docker", "infrastructure virtualization provider (i.e., docker)")
 	if withImage {
-		cmd.Flags().StringVar(&container, "container", "", "target-specific container/task name -- DEPRECATED -- use image instead")
 		cmd.Flags().StringVar(&image, "image", "", "container image name")
 	}
 }

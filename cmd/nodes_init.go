@@ -77,24 +77,22 @@ func nodeSecurityConfigFactory() map[string]interface{} {
 func nodeConfigFactory() map[string]interface{} {
 	cfg := map[string]interface{}{
 		"credentials": infrastructureCredentialsConfigFactory(),
-		"engine_id":   engineID,
+		"entrypoint":  nil,
 		"env":         nodeEnvConfigFactory(),
+		"image":       image,
 		"p2p":         isP2P,
-		"provider_id": providerID,
 		"region":      region,
 		"role":        role,
 		"target_id":   targetID,
 	}
 
-	if container != "" {
-		cfg["container"] = container
-	}
-	if image != "" {
-		cfg["image"] = image
-	}
 	if taskRole != "" {
 		cfg["task_role"] = taskRole
 	}
+
+	// if resources != nil {
+	// 	cfg["resources"] = resources
+	// }
 
 	securityCfg := nodeSecurityConfigFactory()
 	if securityCfg != nil {
