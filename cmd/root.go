@@ -7,14 +7,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const asciiBanner = `
+██████╗ ██████╗  ██████╗ ██╗   ██╗██╗██████╗ ███████╗
+██╔══██╗██╔══██╗██╔═══██╗██║   ██║██║██╔══██╗██╔════╝
+██████╔╝██████╔╝██║   ██║██║   ██║██║██║  ██║█████╗  
+██╔═══╝ ██╔══██╗██║   ██║╚██╗ ██╔╝██║██║  ██║██╔══╝  
+██║     ██║  ██║╚██████╔╝ ╚████╔╝ ██║██████╔╝███████╗
+╚═╝     ╚═╝  ╚═╝ ╚═════╝   ╚═══╝  ╚═╝╚═════╝ ╚══════╝`
+
 var verbose bool
 
 var rootCmd = &cobra.Command{
 	Use:   "prvd",
 	Short: "Provide CLI",
-	Long: `Provide CLI exposes convenient tools to manage network and application resources.
+	Long: fmt.Sprintf(`%s
 
-Run with the --help flag to see available options`,
+The Provide CLI exposes convenient tools to manage network and application resources.
+
+Run with the --help flag to see available options`, asciiBanner),
 }
 
 // Execute the default command path
