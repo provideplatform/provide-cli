@@ -42,11 +42,12 @@ func infrastructureCredentialsConfigFactory() map[string]interface{} {
 			"aws_secret_access_key": secretAccessKey,
 		}
 	} else if targetID == infrastructureTargetAzure {
-		tenantID, clientID, clientSecret := requireAzureCredentials()
+		tenantID, clientID, clientSecret, subscriptionID := requireAzureCredentials()
 		creds = map[string]interface{}{
-			"azure_tenant_id":     tenantID,
-			"azure_client_id":     clientID,
-			"azure_client_secret": clientSecret,
+			"azure_tenant_id":       tenantID,
+			"azure_client_id":       clientID,
+			"azure_client_secret":   clientSecret,
+			"azure_subscription_id": subscriptionID,
 		}
 	}
 
@@ -91,9 +92,23 @@ func requireAWSCredentials() (string, string) {
 	return accessKeyID, secretAccessKey
 }
 
-func requireAzureCredentials() (string, string, string) {
+func requireAzureCredentials() (string, string, string, string) {
 	fmt.Print("Azure Tenant ID: ")
 	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print("Azure Subscription ID: ")
+	reader = bufio.NewReader(os.Stdin)
+	subscriptionID, err := reader.ReadString('\n')
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+	subscriptionID = strings.Trim(subscriptionID, "\n")
+	if subscriptionID == "" {
+		log.Println("Failed to read Azure subscription ID from stdin")
+		os.Exit(1)
+	}
+
 	tenantID, err := reader.ReadString('\n')
 	if err != nil {
 		log.Println(err)
@@ -130,5 +145,5 @@ func requireAzureCredentials() (string, string, string) {
 		os.Exit(1)
 	}
 
-	return tenantID, clientID, clientSecret
+	return tenantID, clientID, clientSecret, subscriptionID
 }
