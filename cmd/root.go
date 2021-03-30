@@ -16,6 +16,7 @@ import (
 	"github.com/provideservices/provide-cli/cmd/nodes"
 	"github.com/provideservices/provide-cli/cmd/organizations"
 	"github.com/provideservices/provide-cli/cmd/users"
+	"github.com/provideservices/provide-cli/cmd/vaults"
 	"github.com/provideservices/provide-cli/cmd/wallets"
 )
 
@@ -53,5 +54,6 @@ func init() {
 	rootCmd.AddCommand(nodes.NodesCmd)
 	rootCmd.AddCommand(organizations.OrganizationsCmd)
 	rootCmd.AddCommand(users.UsersCmd)
+	rootCmd.AddCommand(vaults.VaultsCmd)
 	rootCmd.AddCommand(wallets.WalletsCmd)
 }
