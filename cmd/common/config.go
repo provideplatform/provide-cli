@@ -22,7 +22,7 @@ const (
 	// 'Partial' keys are to be combined with the application ID they are associated with.
 	// and NOT used by themselves.
 	AuthTokenConfigKey           = "auth-token"   // user-scoped API token key
-	APITokenConfigKeyPartial     = "api-token"    // app-scoped API token key
+	APITokenConfigKeyPartial     = "api-token"    // app- or org-scoped API token key
 	AccountConfigKeyPartial      = "account"      // app-scoped account ID key
 	OrganizationConfigKeyPartial = "organization" // app-scoped organization ID key
 	WalletConfigKeyPartial       = "wallet"       // app-scoped HD wallet ID key
