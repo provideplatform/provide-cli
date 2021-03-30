@@ -21,12 +21,12 @@ const (
 	// Viper downcases key names, so hyphenating for better readability.
 	// 'Partial' keys are to be combined with the application ID they are associated with.
 	// and NOT used by themselves.
-	AuthTokenConfigKey           = "auth-token"   // user-scoped API token key
-	APITokenConfigKeyPartial     = "api-token"    // app- or org-scoped API token key
-	AccountConfigKeyPartial      = "account"      // app-scoped account ID key
-	OrganizationConfigKeyPartial = "organization" // app-scoped organization ID key
-	WalletConfigKeyPartial       = "wallet"       // app-scoped HD wallet ID key
-
+	AuthTokenConfigKey              = "auth-token"        // user-scoped API token key
+	APIAccessTokenConfigKeyPartial  = "api-token"         // app- or org-scoped API token key
+	APIRefreshTokenConfigKeyPartial = "api-refresh-token" // app- or org-scoped API token key
+	AccountConfigKeyPartial         = "account"           // app-scoped account ID key
+	OrganizationConfigKeyPartial    = "organization"      // app-scoped organization ID key
+	WalletConfigKeyPartial          = "wallet"            // app-scoped HD wallet ID key
 )
 
 var CfgFile string
@@ -86,9 +86,9 @@ func RequireAPIToken() string {
 	var appAPITokenKey string
 	var orgAPITokenKey string
 	if ApplicationID != "" {
-		appAPITokenKey = BuildConfigKeyWithApp(APITokenConfigKeyPartial, ApplicationID)
+		appAPITokenKey = BuildConfigKeyWithApp(APIAccessTokenConfigKeyPartial, ApplicationID)
 	} else if OrganizationID != "" {
-		orgAPITokenKey = BuildConfigKeyWithOrg(APITokenConfigKeyPartial, OrganizationID)
+		orgAPITokenKey = BuildConfigKeyWithOrg(APIAccessTokenConfigKeyPartial, OrganizationID)
 	}
 	if viper.IsSet(appAPITokenKey) {
 		token = viper.GetString(appAPITokenKey)

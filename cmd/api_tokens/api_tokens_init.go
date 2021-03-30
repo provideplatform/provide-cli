@@ -48,7 +48,8 @@ func createAPIToken(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 
-		appAPITokenKey := common.BuildConfigKeyWithApp(common.APITokenConfigKeyPartial, common.ApplicationID)
+		appAPITokenKey := common.BuildConfigKeyWithApp(common.APIAccessTokenConfigKeyPartial, common.ApplicationID)
+		appAPIRefreshTokenKey := common.BuildConfigKeyWithApp(common.APIRefreshTokenConfigKeyPartial, common.ApplicationID)
 		var tkn string
 
 		if token.Token != nil {
@@ -57,35 +58,48 @@ func createAPIToken(cmd *cobra.Command, args []string) {
 		} else if token.AccessToken != nil {
 			fmt.Printf("Access token authorized for application: %s\t%s\n", common.ApplicationID, *token.AccessToken)
 			tkn = *token.AccessToken
-			if token.RefreshToken != nil {
-				fmt.Printf("Refresh token authorized for application: %s\t%s\n", common.ApplicationID, *token.RefreshToken)
-			}
 		}
 
-		if !viper.IsSet(appAPITokenKey) {
-			viper.Set(appAPITokenKey, tkn)
-			viper.WriteConfig()
+		if tkn != "" {
+			if !viper.IsSet(appAPITokenKey) {
+				viper.Set(appAPITokenKey, tkn)
+				viper.WriteConfig()
+			}
+
+			if token.RefreshToken != nil {
+				fmt.Printf("Refresh token authorized for application: %s\t%s\n", common.ApplicationID, *token.RefreshToken)
+				if !viper.IsSet(appAPIRefreshTokenKey) {
+					viper.Set(appAPIRefreshTokenKey, *token.RefreshToken)
+					viper.WriteConfig()
+				}
+			}
 		}
 	} else if common.OrganizationID != "" {
-		token, err := provide.CreateApplicationToken(userToken, common.OrganizationID, params)
+		params["organization_id"] = common.OrganizationID
+		token, err := provide.CreateToken(userToken, params)
 		if err != nil {
 			log.Printf("Failed to authorize API token on behalf of organization %s; %s", common.ApplicationID, err.Error())
 			os.Exit(1)
 		}
 
-		orgAPITokenKey := common.BuildConfigKeyWithOrg(common.APITokenConfigKeyPartial, common.OrganizationID)
+		orgAPIAccessTokenKey := common.BuildConfigKeyWithOrg(common.APIAccessTokenConfigKeyPartial, common.OrganizationID)
+		orgAPIRefreshTokenKey := common.BuildConfigKeyWithOrg(common.APIRefreshTokenConfigKeyPartial, common.OrganizationID)
 
 		if token.AccessToken != nil {
 			fmt.Printf("Access token authorized for organization: %s\t%s\n", common.OrganizationID, *token.AccessToken)
-			if !viper.IsSet(orgAPITokenKey) {
-				viper.Set(orgAPITokenKey, *token.AccessToken)
+			if !viper.IsSet(orgAPIAccessTokenKey) {
+				viper.Set(orgAPIAccessTokenKey, *token.AccessToken)
 				viper.WriteConfig()
 			}
 			if token.RefreshToken != nil {
 				fmt.Printf("Refresh token authorized for organization: %s\t%s\n", common.OrganizationID, *token.RefreshToken)
+				if !viper.IsSet(orgAPIRefreshTokenKey) {
+					viper.Set(orgAPIRefreshTokenKey, *token.RefreshToken)
+					viper.WriteConfig()
+				}
 			}
 		} else {
-			log.Printf("Failed to authorize API token on behalf of organization %s; no access/refresh pair returned", common.ApplicationID)
+			log.Printf("Failed to authorize API token on behalf of organization %s; no access/refresh pair returned", common.OrganizationID)
 			os.Exit(1)
 		}
 	}
