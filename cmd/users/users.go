@@ -11,10 +11,10 @@ var UsersCmd = &cobra.Command{
 	Short: "Manage users",
 	Long:  `Create and manage users and authenticate`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("organizations unimplemented")
+		fmt.Println("users unimplemented")
 	},
 }
 
 func init() {
-	UsersCmd.AddCommand(authenticateCmd)
+	// no-op
 }

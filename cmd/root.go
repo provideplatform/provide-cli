@@ -46,6 +46,7 @@ func init() {
 	rootCmd.AddCommand(accounts.AccountsCmd)
 	rootCmd.AddCommand(api_tokens.APITokensCmd)
 	rootCmd.AddCommand(applications.ApplicationsCmd)
+	rootCmd.AddCommand(users.AuthenticateCmd)
 	rootCmd.AddCommand(connectors.ConnectorsCmd)
 	rootCmd.AddCommand(contracts.ContractsCmd)
 	rootCmd.AddCommand(networks.NetworksCmd)
