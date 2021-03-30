@@ -24,10 +24,6 @@ valid API token which can be used to access the networks and application APIs.`,
 	Run: authenticate,
 }
 
-func init() {
-	UsersCmd.AddCommand(authenticateCmd)
-}
-
 func authenticate(cmd *cobra.Command, args []string) {
 	email := doEmailPrompt()
 	passwd := doPasswordPrompt()

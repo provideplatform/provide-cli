@@ -7,14 +7,9 @@ import (
 )
 
 var UsersCmd = &cobra.Command{
-	Use:   "organizations",
-	Short: "Manage organizations",
-	Long: `Create and manage organizations in the context of the following APIs:
-
-	- Applications
-	- Baseline Protocol
-	- Tokens
-	- Vaults`,
+	Use:   "users",
+	Short: "Manage users",
+	Long:  `Create and manage users and authenticate`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("organizations unimplemented")
 	},
