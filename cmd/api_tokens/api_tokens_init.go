@@ -49,20 +49,23 @@ func createAPIToken(cmd *cobra.Command, args []string) {
 		}
 
 		appAPITokenKey := common.BuildConfigKeyWithApp(common.APITokenConfigKeyPartial, common.ApplicationID)
-		if !viper.IsSet(appAPITokenKey) {
-			viper.Set(appAPITokenKey, token.Token)
-			viper.WriteConfig()
-		}
+		var tkn string
 
 		if token.Token != nil {
-			fmt.Printf("API token authorized for application: %s\t%s\n", common.ApplicationID, *token.AccessToken)
+			fmt.Printf("API token authorized for application: %s\t%s\n", common.ApplicationID, *token.Token)
+			tkn = *token.Token
 		} else if token.AccessToken != nil {
 			fmt.Printf("Access token authorized for application: %s\t%s\n", common.ApplicationID, *token.AccessToken)
+			tkn = *token.AccessToken
 			if token.RefreshToken != nil {
 				fmt.Printf("Refresh token authorized for application: %s\t%s\n", common.ApplicationID, *token.RefreshToken)
 			}
 		}
 
+		if !viper.IsSet(appAPITokenKey) {
+			viper.Set(appAPITokenKey, tkn)
+			viper.WriteConfig()
+		}
 	} else if common.OrganizationID != "" {
 		token, err := provide.CreateApplicationToken(userToken, common.OrganizationID, params)
 		if err != nil {
@@ -71,18 +74,19 @@ func createAPIToken(cmd *cobra.Command, args []string) {
 		}
 
 		orgAPITokenKey := common.BuildConfigKeyWithOrg(common.APITokenConfigKeyPartial, common.OrganizationID)
-		if !viper.IsSet(orgAPITokenKey) {
-			viper.Set(orgAPITokenKey, token.Token)
-			viper.WriteConfig()
-		}
 
-		if token.Token != nil {
-			fmt.Printf("API token authorized for organization: %s\t%s\n", common.OrganizationID, *token.Token)
-		} else if token.AccessToken != nil {
+		if token.AccessToken != nil {
 			fmt.Printf("Access token authorized for organization: %s\t%s\n", common.OrganizationID, *token.AccessToken)
+			if !viper.IsSet(orgAPITokenKey) {
+				viper.Set(orgAPITokenKey, *token.AccessToken)
+				viper.WriteConfig()
+			}
 			if token.RefreshToken != nil {
 				fmt.Printf("Refresh token authorized for organization: %s\t%s\n", common.OrganizationID, *token.RefreshToken)
 			}
+		} else {
+			log.Printf("Failed to authorize API token on behalf of organization %s; no access/refresh pair returned", common.ApplicationID)
+			os.Exit(1)
 		}
 	}
 }
