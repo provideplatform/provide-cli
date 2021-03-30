@@ -18,7 +18,7 @@ var accountName string
 var nonCustodial bool
 
 var accountsInitCmd = &cobra.Command{
-	Use:   "init [--non-custodial|-nc] [--network 024ff1ef-7369-4dee-969c-1918c6edb5d4]",
+	Use:   "init [--non-custodial|-nc] [--network 024ff1ef-7369-4dee-969c-1918c6edb5d4] [--application 024ff1ef-7369-4dee-969c-1918c6edb5d4] [--organization 024ff1ef-7369-4dee-969c-1918c6edb5d4]",
 	Short: "Generate a new keypair for signing transactions and storing value",
 	Long:  `Initialize a new account, which may be managed by Provide or you`,
 	Run:   CreateAccount,
@@ -57,6 +57,12 @@ func createManagedAccount() {
 	if accountName != "" {
 		params["name"] = accountName
 	}
+	if common.ApplicationID != "" {
+		params["application_id"] = common.ApplicationID
+	}
+	if common.OrganizationID != "" {
+		params["organization_id"] = common.OrganizationID
+	}
 	account, err := provide.CreateAccount(token, params)
 	if err != nil {
 		log.Printf("Failed to genereate keypair; %s", err.Error())
@@ -77,5 +83,10 @@ func createManagedAccount() {
 func init() {
 	accountsInitCmd.Flags().BoolVarP(&nonCustodial, "non-custodial", "", false, "if the generated keypair is non-custodial")
 	accountsInitCmd.Flags().StringVarP(&accountName, "name", "n", "", "human-readable name to associate with the generated keypair")
+
+	accountsInitCmd.Flags().StringVar(&common.ApplicationID, "network", "", "network id")
 	accountsInitCmd.MarkFlagRequired("network")
+
+	accountsInitCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application id")
+	accountsInitCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization id")
 }
