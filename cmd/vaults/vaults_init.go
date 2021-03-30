@@ -15,7 +15,7 @@ var name string
 var description string
 
 var vaultsInitCmd = &cobra.Command{
-	Use:   "init [--non-custodial|-nc]",
+	Use:   "init --name 'My Vault' --description 'not your keys, not your crypto'",
 	Short: "Create a new vault",
 	Long:  `Initialize a new vault`,
 	Run:   createVault,
