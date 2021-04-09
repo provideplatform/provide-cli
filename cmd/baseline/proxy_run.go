@@ -18,6 +18,7 @@ import (
 	"github.com/provideservices/provide-cli/cmd/common"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 const baselineProxyContainerImage = "provide/baseline"
@@ -98,6 +99,7 @@ func runProxy(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	authorizeContext()
 	purgeContainers(docker)
 
 	// run local deps
@@ -111,12 +113,28 @@ func runProxy(cmd *cobra.Command, args []string) {
 	log.Printf("%s proxy instance started", name)
 }
 
+func authorizeContext() {
+	if organizationRefreshToken == "" {
+		refreshTokenKey := common.BuildConfigKeyWithOrg(common.APIRefreshTokenConfigKeyPartial, common.OrganizationID)
+		if viper.IsSet(refreshTokenKey) {
+			// log.Printf("using cached API refresh token for organization: %s\n", common.OrganizationID)
+			organizationRefreshToken = viper.GetString(refreshTokenKey)
+			if vaultRefreshToken == "" {
+				vaultRefreshToken = organizationRefreshToken
+			}
+		} else {
+			log.Printf("failed to resolve refresh token for organization: %s\n", common.OrganizationID)
+			os.Exit(1)
+		}
+	}
+}
+
 func containerEnvironmentFactory() []string {
 	return []string{
 		fmt.Sprintf("BASELINE_ORGANIZATION_ADDRESS=%s", baselineOrganizationAddress),
 		fmt.Sprintf("BASELINE_REGISTRY_CONTRACT_ADDRESS=%s", baselineRegistryContractAddress),
-		fmt.Sprintf("IDENT_API_HOST=%s", privacyAPIHost),
-		fmt.Sprintf("IDENT_API_SCHEME=%s", privacyAPIScheme),
+		fmt.Sprintf("IDENT_API_HOST=%s", identAPIHost),
+		fmt.Sprintf("IDENT_API_SCHEME=%s", identAPIScheme),
 		fmt.Sprintf("JWT_SIGNER_PUBLIC_KEY=%s", jwtSignerPublicKey),
 		fmt.Sprintf("LOG_LEVEL=%s", logLevel),
 		fmt.Sprintf("NCHAIN_API_HOST=%s", nchainAPIHost),
@@ -184,7 +202,7 @@ func runNATS(docker *client.Client) {
 		natsContainerImage,
 		nil,
 		&[]string{"-auth", natsAuthToken, "-p", fmt.Sprintf("%d", natsPort), "-D", "-V"},
-		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", "localhost:4222"},
+		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsPort)},
 		[]portMapping{
 			{
 				hostPort:      natsPort,
@@ -375,6 +393,8 @@ func init() {
 	runBaselineProxyCmd.Flags().StringVar(&vaultSealUnsealKey, "vault-seal-unseal-key", os.Getenv("VAULT_SEAL_UNSEAL_KEY"), "seal/unseal key for the vault service")
 
 	runBaselineProxyCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
+	runBaselineProxyCmd.MarkFlagRequired("organization")
+
 	runBaselineProxyCmd.Flags().StringVar(&organizationRefreshToken, "organization-refresh-token", os.Getenv("PROVIDE_ORGANIZATION_REFRESH_TOKEN"), "refresh token to vend access tokens for use with the local organization")
 
 	defaultBaselineOrganizationAddress := "0x"
