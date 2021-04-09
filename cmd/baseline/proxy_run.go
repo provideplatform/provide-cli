@@ -13,6 +13,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/docker/go-connections/nat"
 	"github.com/provideservices/provide-cli/cmd/common"
 
@@ -137,7 +138,7 @@ func containerEnvironmentFactory() []string {
 }
 
 func runProxyAPI(docker *client.Client) {
-	container, err := runContainer(
+	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-api", strings.ReplaceAll(name, " ", "")),
 		apiHostname,
@@ -155,16 +156,10 @@ func runProxyAPI(docker *client.Client) {
 		log.Printf("failed to create baseline proxy API container; %s", err.Error())
 		os.Exit(1)
 	}
-
-	err = docker.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
-	if err != nil {
-		log.Printf("failed to start baseline proxy API container; %s", err.Error())
-		os.Exit(1)
-	}
 }
 
 func runProxyConsumer(docker *client.Client) {
-	container, err := runContainer(
+	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-consumer", strings.ReplaceAll(name, " ", "")),
 		natsHostname,
@@ -176,19 +171,13 @@ func runProxyConsumer(docker *client.Client) {
 	)
 
 	if err != nil {
-		log.Printf("failed to create baseline proxy messaging container; %s", err.Error())
-		os.Exit(1)
-	}
-
-	err = docker.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
-	if err != nil {
-		log.Printf("failed to start baseline proxy messaging container; %s", err.Error())
+		log.Printf("failed to create baseline proxy consumer container; %s", err.Error())
 		os.Exit(1)
 	}
 }
 
 func runNATS(docker *client.Client) {
-	container, err := runContainer(
+	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-nats", strings.ReplaceAll(name, " ", "")),
 		natsHostname,
@@ -212,16 +201,10 @@ func runNATS(docker *client.Client) {
 		log.Printf("failed to create baseline proxy NATS container; %s", err.Error())
 		os.Exit(1)
 	}
-
-	err = docker.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
-	if err != nil {
-		log.Printf("failed to start baseline proxy NATS container; %s", err.Error())
-		os.Exit(1)
-	}
 }
 
 func runRedis(docker *client.Client) {
-	container, err := runContainer(
+	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-redis", strings.ReplaceAll(name, " ", "")),
 		redisHostname,
@@ -236,13 +219,7 @@ func runRedis(docker *client.Client) {
 	)
 
 	if err != nil {
-		log.Printf("failed to create baseline proxy messaging container; %s", err.Error())
-		os.Exit(1)
-	}
-
-	err = docker.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
-	if err != nil {
-		log.Printf("failed to start baseline proxy messaging container; %s", err.Error())
+		log.Printf("failed to create baseline proxy Redis container; %s", err.Error())
 		os.Exit(1)
 	}
 }
@@ -301,12 +278,29 @@ func runContainer(
 		return nil, err
 	}
 
-	err = docker.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
+	ctx := context.Background()
+	err = docker.ContainerStart(ctx, container.ID, types.ContainerStartOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	return &container, nil
+}
+
+func logContainers(docker *client.Client) error {
+	for _, container := range listContainers(docker) {
+		out, err := docker.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
+			ShowStderr: true,
+			ShowStdout: true,
+		})
+		if err != nil {
+			return err
+		}
+
+		stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+	}
+
+	return nil
 }
 
 func listContainers(docker *client.Client) []types.Container {
@@ -367,7 +361,7 @@ func init() {
 	runBaselineProxyCmd.Flags().StringVar(&privacyAPIScheme, "privacy-scheme", "https", "protocol scheme of the privacy service")
 
 	runBaselineProxyCmd.Flags().StringVar(&sorID, "sor", "", "primary internal system of record identifier being baselined")
-	runBaselineProxyCmd.Flags().StringVar(&sorURL, "sor-url", "https", "url of the primary internal system of record being baselined")
+	runBaselineProxyCmd.Flags().StringVar(&sorURL, "sor-url", "https://", "url of the primary internal system of record being baselined")
 
 	// runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIHost, "servicenow-api-host", "", "hostname of the ServiceNow service")
 	// runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIScheme, "servicenow-api-scheme", "https", "protocol scheme of the ServiceNow service")
