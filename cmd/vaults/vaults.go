@@ -9,7 +9,7 @@ import (
 var VaultsCmd = &cobra.Command{
 	Use:   "vaults",
 	Short: "Manage vaults",
-	Long: `Create an manage vaults and their associated keys and secrets.
+	Long: `Create and manage vaults and their associated keys and secrets.
 
 Supports encrypt/decrypt and sign/verify operations for select key specs.`,
 	Run: func(cmd *cobra.Command, args []string) {
