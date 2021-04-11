@@ -78,7 +78,7 @@ func createAPIToken(cmd *cobra.Command, args []string) {
 		params["organization_id"] = common.OrganizationID
 		token, err := provide.CreateToken(userToken, params)
 		if err != nil {
-			log.Printf("Failed to authorize API token on behalf of organization %s; %s", common.ApplicationID, err.Error())
+			log.Printf("failed to authorize API access token on behalf of organization %s; %s", common.OrganizationID, err.Error())
 			os.Exit(1)
 		}
 
