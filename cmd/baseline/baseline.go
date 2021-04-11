@@ -18,6 +18,7 @@ Supports encrypt/decrypt and sign/verify operations for select key specs.`,
 }
 
 func init() {
+	BaselineCmd.AddCommand(logsBaselineProxyCmd)
 	BaselineCmd.AddCommand(runBaselineProxyCmd)
 	BaselineCmd.AddCommand(stopBaselineProxyCmd)
 }

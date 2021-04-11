@@ -44,5 +44,5 @@ func purgeContainers(docker *client.Client) {
 }
 
 func init() {
-
+	stopBaselineProxyCmd.Flags().StringVar(&name, "name", "baseline-proxy", "name of the baseline proxy instance")
 }

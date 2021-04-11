@@ -14,7 +14,6 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/docker/go-connections/nat"
 	"github.com/provideservices/provide-cli/cmd/common"
 
@@ -327,22 +326,6 @@ func runContainer(
 	}
 
 	return &container, nil
-}
-
-func logContainers(docker *client.Client) error {
-	for _, container := range listContainers(docker) {
-		out, err := docker.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
-			ShowStderr: true,
-			ShowStdout: true,
-		})
-		if err != nil {
-			return err
-		}
-
-		stdcopy.StdCopy(os.Stdout, os.Stderr, out)
-	}
-
-	return nil
 }
 
 func listContainers(docker *client.Client) []types.Container {
