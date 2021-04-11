@@ -42,7 +42,6 @@ func logContainers(docker *client.Client, wg *sync.WaitGroup) error {
 		copy(containerID, container.ID)
 
 		go func() {
-			log.Printf("%s", string(containerID))
 			logContainer(docker, string(containerID))
 			if wg != nil {
 				wg.Done()
