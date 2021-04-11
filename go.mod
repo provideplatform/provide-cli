@@ -14,7 +14,8 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
-	github.com/provideservices/provide-go v0.0.0-20210411022411-9b167dd265b4
+	github.com/provideservices/provide-go v0.0.0-20210411024808-f0706be386f2
+	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
