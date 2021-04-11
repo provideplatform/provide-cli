@@ -3,6 +3,7 @@ package baseline
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -101,6 +102,18 @@ func runProxy(cmd *cobra.Command, args []string) {
 
 	authorizeContext()
 	purgeContainers(docker)
+
+	for _, image := range []string{
+		baselineProxyContainerImage,
+		natsContainerImage,
+		redisContainerImage,
+	} {
+		err := pullImage(docker, image)
+		if err != nil {
+			log.Printf("failed to pull proxy container image: %s; %s", image, err.Error())
+			os.Exit(1)
+		}
+	}
 
 	// run local deps
 	runNATS(docker)
@@ -240,6 +253,17 @@ func runRedis(docker *client.Client) {
 		log.Printf("failed to create baseline proxy Redis container; %s", err.Error())
 		os.Exit(1)
 	}
+}
+
+func pullImage(docker *client.Client, image string) error {
+	reader, err := docker.ImagePull(context.Background(), image, types.ImagePullOptions{})
+	if err != nil {
+		return err
+	}
+
+	io.Copy(os.Stdout, reader)
+
+	return nil
 }
 
 func runContainer(
