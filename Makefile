@@ -13,7 +13,8 @@ build: clean mod
 
 install: clean
 	go install ./...
-	mv ${GOPATH}/bin/provide-cli ${GOPATH}/bin/prvd
+	mkdir -p "${GOPATH}/bin"
+	mv "${GOPATH}/bin/provide-cli" "${GOPATH}/bin/prvd"
 
 mod:
 	go mod init 2>/dev/null || true
