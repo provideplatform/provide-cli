@@ -54,12 +54,12 @@ func doEmailPrompt() string {
 		log.Println("Failed to read email from stdin")
 		os.Exit(1)
 	}
-	return strings.Trim(email, "\n")
+	return strings.Trim(strings.Trim(email, "\n"), "\r")
 }
 
 func doPasswordPrompt() string {
 	fmt.Print("Password: ")
-	password, err := terminal.ReadPassword(0)
+	password, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
@@ -69,7 +69,7 @@ func doPasswordPrompt() string {
 		log.Println("Failed to read password from stdin")
 		os.Exit(1)
 	}
-	return strings.Trim(passwd, "\n")
+	return strings.Trim(strings.Trim(passwd, "\n"), "\r")
 }
 
 func cacheAPIToken(token string) {

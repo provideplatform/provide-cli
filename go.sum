@@ -378,6 +378,8 @@ github.com/prometheus/tsdb v0.7.1 h1:YZcsG11NqnK4czYLrWd9mpEuAJIHVQLwdrleYfszMAA
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
 github.com/provideservices/provide-go v0.0.0-20210411034757-69a9e6315431 h1:TvGnxcyAfVIIM5KsLwwztgjA3XKjLwgXJkxAgmmQbkI=
 github.com/provideservices/provide-go v0.0.0-20210411034757-69a9e6315431/go.mod h1:0miBiPK7hYDGGxVmf6nTd9Qsx1i6qs9Fdk/43eTt9XU=
+github.com/provideservices/provide-go v0.0.0-20210411044517-3364cd17e4fd h1:ytAJeUCphloeRjWP6sUCY3Ax0G9bWJxxtYe470w6pW0=
+github.com/provideservices/provide-go v0.0.0-20210411044517-3364cd17e4fd/go.mod h1:0miBiPK7hYDGGxVmf6nTd9Qsx1i6qs9Fdk/43eTt9XU=
 github.com/rjeczalik/notify v0.9.1 h1:CLCKso/QK1snAlnhNR/CNvNiFU2saUtjV0bx3EwNeCE=
 github.com/rjeczalik/notify v0.9.1/go.mod h1:rKwnCoCGeuQnwBtTSPL9Dad03Vh2n40ePRrjvIXnJho=
 github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=
