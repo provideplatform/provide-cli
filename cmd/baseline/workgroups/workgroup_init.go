@@ -32,6 +32,8 @@ var networkID string
 var organizationAccessToken string
 var applicationAccessToken string
 
+var messagingEndpoint string
+
 var vaultID string
 var babyJubJubKeyID string
 var secp256k1KeyID string
@@ -82,7 +84,7 @@ func authorizeOrganizationContext() {
 func initWorkgroup(cmd *cobra.Command, args []string) {
 	authorizeOrganizationContext()
 
-	token := common.RequireAPIToken()
+	token := common.RequireUserAuthToken()
 	application, err := ident.CreateApplication(token, map[string]interface{}{
 		"config": map[string]interface{}{
 			"baselined": true,
@@ -103,6 +105,7 @@ func initWorkgroup(cmd *cobra.Command, args []string) {
 
 	requireOrganizationVault()
 	requireOrganizationKeys()
+	requireOrganizationMessagingEndpoint()
 	registerWorkgroupOrganization(application.ID.String())
 
 	log.Printf("initialized baseline workgroup: %s", application.ID)
@@ -191,6 +194,26 @@ func requireContract(contractID, contractType *string) error {
 				time.Sleep(requireContractSleepInterval)
 			}
 		}
+	}
+}
+
+func requireOrganizationMessagingEndpoint() {
+	org, err := ident.GetOrganizationDetails(organizationAccessToken, common.OrganizationID, map[string]interface{}{})
+	if err != nil {
+		log.Printf("failed to retrieve organization: %s; %s", common.OrganizationID, err.Error())
+		os.Exit(1)
+	}
+
+	if _, messagingEndpointOk := org.Metadata["messaging_endpoint"].(string); !messagingEndpointOk {
+		org.Metadata["messaging_endpoint"] = messagingEndpoint // FIXME-- resolve public IP
+	}
+
+	err = ident.UpdateOrganization(common.RequireUserAuthToken(), common.OrganizationID, map[string]interface{}{
+		"metadata": org.Metadata,
+	})
+	if err != nil {
+		log.Printf("failed to update messaging endpoint for organization: %s; %s", common.OrganizationID, err.Error())
+		os.Exit(1)
 	}
 }
 
@@ -320,4 +343,9 @@ func init() {
 
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	initBaselineWorkgroupCmd.MarkFlagRequired("organization")
+
+	hostname := "localhost" // FIXME-- resolve to public IP
+	defaultMessagingEndpoint := fmt.Sprintf("nats://%s:4222", hostname)
+
+	initBaselineWorkgroupCmd.Flags().StringVar(&messagingEndpoint, "endpoint", defaultMessagingEndpoint, "public messaging endpoint used for sending and receiving protocol messages")
 }
