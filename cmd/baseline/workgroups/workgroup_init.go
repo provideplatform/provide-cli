@@ -3,6 +3,7 @@ package workgroups
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	api "github.com/provideservices/provide-go/api"
 	ident "github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
+	"github.com/provideservices/provide-go/api/vault"
 	util "github.com/provideservices/provide-go/common"
 	"github.com/spf13/cobra"
 )
@@ -29,6 +31,11 @@ var name string
 var networkID string
 var organizationAccessToken string
 var applicationAccessToken string
+
+var vaultID string
+var babyJubJubKeyID string
+var secp256k1KeyID string
+var hdwalletID string
 
 var initBaselineWorkgroupCmd = &cobra.Command{
 	Use:   "init",
@@ -88,6 +95,9 @@ func initWorkgroup(cmd *cobra.Command, args []string) {
 	authorizeApplicationContext()
 
 	initWorkgroupContract()
+
+	requireOrganizationVault()
+	requireOrganizationKeys()
 	registerWorkgroupOrganization(application.ID.String())
 
 	log.Printf("initialized baseline workgroup: %s", application.ID)
@@ -177,8 +187,84 @@ func requireContract(contractID, contractType *string) error {
 			}
 		}
 	}
+}
 
-	return nil
+func requireOrganizationVault() {
+	// FIXME-- parameterize with --vault or similar?
+	vaults, err := vault.ListVaults(organizationAccessToken, map[string]interface{}{
+		"organization_id": common.OrganizationID,
+	})
+	if err != nil {
+		log.Printf("failed to retrieve vaults for organization: %s; %s", common.OrganizationID, err.Error())
+		os.Exit(1)
+	}
+
+	if len(vaults) > 0 {
+		vaultID = vaults[0].ID.String()
+	} else {
+		vault, err := vault.CreateVault(organizationAccessToken, map[string]interface{}{
+			"name":        fmt.Sprintf("vault for organization: %s", common.OrganizationID),
+			"description": fmt.Sprintf("identity/signing keystore for organization: %s", common.OrganizationID),
+		})
+		if err != nil {
+			log.Printf("failed to create vault for organization: %s; %s", common.OrganizationID, err.Error())
+			os.Exit(1)
+		}
+		vaultID = vault.ID.String()
+	}
+
+	if vaultID == "" {
+		log.Printf("failed to require vault for organization: %s", common.OrganizationID)
+		os.Exit(1)
+	}
+}
+
+func requireOrganizationKeys() {
+	var key *vault.Key
+	var err error
+
+	key, err = requireOrganizationKeypair("babyJubJub")
+	if err == nil {
+		babyJubJubKeyID = key.ID.String()
+	}
+
+	key, err = requireOrganizationKeypair("secp256k1")
+	if err == nil {
+		secp256k1KeyID = key.ID.String()
+	}
+
+	key, err = requireOrganizationKeypair("BIP39")
+	if err == nil {
+		hdwalletID = key.ID.String()
+	}
+}
+
+func requireOrganizationKeypair(spec string) (*vault.Key, error) {
+	// FIXME-- parameterize each key i.e. --secp256k1-key or similar?
+	keys, err := vault.ListKeys(organizationAccessToken, vaultID, map[string]interface{}{
+		"spec": spec,
+	})
+	if err != nil {
+		log.Printf("failed to retrieve %s keys for organization: %s; %s", spec, common.OrganizationID, err.Error())
+		return nil, err
+	}
+
+	if len(keys) > 0 {
+		return keys[0], nil
+	}
+
+	key, err := vault.CreateKey(organizationAccessToken, vaultID, map[string]interface{}{
+		"name":        fmt.Sprintf("%s key organization: %s", spec, common.OrganizationID),
+		"description": fmt.Sprintf("%s key organization: %s", spec, common.OrganizationID),
+		"spec":        spec,
+		"type":        "asymmetric",
+		"usage":       "sign/verify",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return key, nil
 }
 
 func resolveCapabilities() (map[string]interface{}, error) {
