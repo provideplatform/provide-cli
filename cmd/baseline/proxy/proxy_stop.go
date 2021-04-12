@@ -26,6 +26,7 @@ func stopProxy(cmd *cobra.Command, args []string) {
 	}
 
 	purgeContainers(docker)
+	purgeNetwork(docker)
 
 	log.Printf("%s proxy instance stopped", name)
 }
@@ -39,6 +40,15 @@ func purgeContainers(docker *client.Client) {
 
 		if err != nil {
 			log.Printf("WARNING: failed to remove container: %s; %s", container.Names[0], err.Error())
+		}
+	}
+}
+
+func purgeNetwork(docker *client.Client) {
+	networks, _ := docker.NetworkList(context.Background(), types.NetworkListOptions{})
+	for _, ntwrk := range networks {
+		if ntwrk.Name == name {
+			docker.NetworkRemove(context.Background(), ntwrk.ID)
 		}
 	}
 }

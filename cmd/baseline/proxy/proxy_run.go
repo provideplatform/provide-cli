@@ -13,9 +13,12 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/provideservices/provide-cli/cmd/common"
+	"github.com/provideservices/provide-go/api/ident"
+	"github.com/provideservices/provide-go/api/nchain"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -23,6 +26,7 @@ import (
 
 const baselineProxyContainerImage = "provide/baseline"
 const natsContainerImage = "provide/nats-server"
+const natsStreamingContainerImage = "provide/nats-streaming"
 const redisContainerImage = "redis"
 
 const defaultJWTSignerPublicKey = `-----BEGIN PUBLIC KEY-----
@@ -40,19 +44,26 @@ xH2b0OBcVjYsgRnQ9OZpQ+kIPaFhaWChnfEArCmhrOEgOnhfkr6YGDHFenfT3/RA
 PUl1cxrvY7BHh4obNa6Bf8ECAwEAAQ==
 -----END PUBLIC KEY-----`
 
+const defaultNATSStreamingClusterID = "provide"
+
 type portMapping struct {
 	hostPort      int
 	containerPort int
 }
 
+var dockerNetworkID string
+
 var name string
 var port int
 var natsPort int
 var natsWebsocketPort int
+var natsStreamingPort int
 var redisPort int
 
 var apiHostname string
+var consumerHostname string
 var natsHostname string
+var natsStreamingHostname string
 var redisHostname string
 var redisHosts string
 
@@ -61,6 +72,8 @@ var logLevel string
 
 var baselineOrganizationAddress string
 var baselineRegistryContractAddress string
+var baselineWorkgroupID string
+
 var nchainBaselineNetworkID string
 
 var jwtSignerPublicKey string
@@ -72,6 +85,7 @@ var identAPIScheme string
 var nchainAPIHost string
 var nchainAPIScheme string
 
+var workgroupAccessToken string
 var organizationRefreshToken string
 
 var privacyAPIHost string
@@ -100,11 +114,14 @@ func runProxy(cmd *cobra.Command, args []string) {
 	}
 
 	authorizeContext()
+	authorizeWorkgroupContext()
+
 	purgeContainers(docker)
 
 	for _, image := range []string{
 		baselineProxyContainerImage,
 		natsContainerImage,
+		natsStreamingContainerImage,
 		redisContainerImage,
 	} {
 		err := pullImage(docker, image)
@@ -114,8 +131,11 @@ func runProxy(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	configureNetwork(docker)
+
 	// run local deps
 	runNATS(docker)
+	runNATSStreaming(docker)
 	runRedis(docker)
 
 	// run proxy
@@ -123,6 +143,34 @@ func runProxy(cmd *cobra.Command, args []string) {
 	runProxyConsumer(docker)
 
 	log.Printf("%s proxy instance started", name)
+}
+
+func configureNetwork(docker *client.Client) {
+	network, err := docker.NetworkCreate(
+		context.Background(),
+		name,
+		types.NetworkCreate{
+			// CheckDuplicate bool
+			Driver: "bridge",
+			// Scope          string
+			// EnableIPv6     bool
+			IPAM: &network.IPAM{},
+			// Internal       bool
+			// Attachable     bool
+			// Ingress        bool
+			// ConfigOnly     bool
+			// ConfigFrom     *network.ConfigReference
+			// Options        map[string]string
+			// Labels         map[string]string
+		},
+	)
+
+	if err != nil {
+		log.Printf("failed to setup docker network; %s", err.Error())
+		os.Exit(1)
+	}
+
+	dockerNetworkID = network.ID
 }
 
 func authorizeContext() {
@@ -141,6 +189,42 @@ func authorizeContext() {
 	}
 }
 
+func authorizeWorkgroupContext() {
+	token, err := ident.CreateToken(common.RequireUserAuthToken(), map[string]interface{}{
+		"scope":          "offline_access",
+		"application_id": baselineWorkgroupID,
+	})
+	if err != nil {
+		log.Printf("failed to authorize API access token on behalf of workgroup %s; %s", baselineWorkgroupID, err.Error())
+		os.Exit(1)
+	}
+
+	if token.AccessToken != nil {
+		workgroupAccessToken = *token.AccessToken
+	}
+
+	_, err = ident.GetApplicationDetails(workgroupAccessToken, baselineWorkgroupID, map[string]interface{}{})
+	if err != nil {
+		log.Printf("failed to resolve workgroup: %s; %s", baselineWorkgroupID, err.Error())
+		os.Exit(1)
+	}
+
+	contracts, err := nchain.ListContracts(workgroupAccessToken, map[string]interface{}{
+		"type": "organization-registry",
+	})
+	if err != nil {
+		log.Printf("failed to resolve global organization registry contract; %s", err.Error())
+		os.Exit(1)
+	}
+
+	orgRegistryContract := contracts[0]
+	if orgRegistryContract.Address == nil || *orgRegistryContract.Address == "0x" {
+		log.Printf("failed to resolve global organization registry contract; %s", err.Error())
+		os.Exit(1)
+	}
+	baselineRegistryContractAddress = *contracts[0].Address
+}
+
 func containerEnvironmentFactory() []string {
 	return []string{
 		fmt.Sprintf("BASELINE_ORGANIZATION_ADDRESS=%s", baselineOrganizationAddress),
@@ -149,6 +233,10 @@ func containerEnvironmentFactory() []string {
 		fmt.Sprintf("IDENT_API_SCHEME=%s", identAPIScheme),
 		fmt.Sprintf("JWT_SIGNER_PUBLIC_KEY=%s", jwtSignerPublicKey),
 		fmt.Sprintf("LOG_LEVEL=%s", logLevel),
+		fmt.Sprintf("NATS_CLIENT_PREFIX=%s", fmt.Sprintf("%s-", name)),
+		fmt.Sprintf("NATS_STREAMING_URL=%s", fmt.Sprintf("nats://%s:%d", natsStreamingHostname, natsPort)),
+		fmt.Sprintf("NATS_TOKEN=%s", natsAuthToken),
+		fmt.Sprintf("NATS_URL=%s", fmt.Sprintf("nats://%s:%d", natsHostname, natsPort)),
 		fmt.Sprintf("NCHAIN_API_HOST=%s", nchainAPIHost),
 		fmt.Sprintf("NCHAIN_API_SCHEME=%s", nchainAPIScheme),
 		fmt.Sprintf("NCHAIN_BASELINE_NETWORK_ID=%s", nchainBaselineNetworkID),
@@ -233,6 +321,29 @@ func runNATS(docker *client.Client) {
 	}
 }
 
+func runNATSStreaming(docker *client.Client) {
+	_, err := runContainer(
+		docker,
+		fmt.Sprintf("%s-nats-streaming", strings.ReplaceAll(name, " ", "")),
+		natsStreamingHostname,
+		natsStreamingContainerImage,
+		nil,
+		&[]string{"-cid", defaultNATSStreamingClusterID, "--auth", natsAuthToken, "-SDV"},
+		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsPort)},
+		[]portMapping{
+			{
+				hostPort:      natsStreamingPort,
+				containerPort: natsPort,
+			},
+		}...,
+	)
+
+	if err != nil {
+		log.Printf("failed to create baseline proxy NATS streaming container; %s", err.Error())
+		os.Exit(1)
+	}
+}
+
 func runRedis(docker *client.Client) {
 	_, err := runContainer(
 		docker,
@@ -309,9 +420,13 @@ func runContainer(
 		containerConfig,
 		&container.HostConfig{
 			AutoRemove:   autoRemove,
+			NetworkMode:  "bridge",
 			PortBindings: portBinding,
+			RestartPolicy: container.RestartPolicy{
+				Name: "unless-stopped",
+			},
 		},
-		nil,
+		&network.NetworkingConfig{},
 		strings.ReplaceAll(name, " ", ""),
 	)
 
@@ -321,6 +436,16 @@ func runContainer(
 
 	ctx := context.Background()
 	err = docker.ContainerStart(ctx, container.ID, types.ContainerStartOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = docker.NetworkConnect(
+		context.Background(),
+		dockerNetworkID,
+		container.ID,
+		&network.EndpointSettings{},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -346,6 +471,10 @@ func listContainers(docker *client.Client) []types.Container {
 			},
 			{
 				Key:   "name",
+				Value: fmt.Sprintf("%s-nats-streaming", strings.ReplaceAll(name, " ", "")),
+			},
+			{
+				Key:   "name",
 				Value: fmt.Sprintf("%s-redis", strings.ReplaceAll(name, " ", "")),
 			},
 		}...),
@@ -363,10 +492,13 @@ func init() {
 	runBaselineProxyCmd.Flags().IntVar(&port, "port", 8080, "local API port to expose on the proxy")
 	runBaselineProxyCmd.Flags().IntVar(&natsPort, "nats-port", 4222, "local NATS port to expose on the proxy")
 	runBaselineProxyCmd.Flags().IntVar(&natsWebsocketPort, "nats-ws-port", 4221, "local NATS websocket port to expose on the proxy")
+	runBaselineProxyCmd.Flags().IntVar(&natsStreamingPort, "nats-streaming-port", 4220, "local NATS streaming port to expose on the proxy")
 	runBaselineProxyCmd.Flags().IntVar(&redisPort, "redis-port", 6379, "local NATS port to expose on the proxy")
 
 	runBaselineProxyCmd.Flags().StringVar(&apiHostname, "hostname", "baseline-proxy-api", "hostname for the proxy API container")
+	runBaselineProxyCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", "baseline-proxy-consumer", "hostname for the proxy consumer container")
 	runBaselineProxyCmd.Flags().StringVar(&natsHostname, "nats-hostname", "baseline-proxy-nats", "hostname for the proxy NATS container")
+	runBaselineProxyCmd.Flags().StringVar(&natsStreamingHostname, "nats-streaming-hostname", "baseline-proxy-nats-streaming", "hostname for the proxy NATS streaming container")
 	runBaselineProxyCmd.Flags().StringVar(&redisHostname, "redis-hostname", "baseline-proxy-redis", "hostname for the proxy Redis container")
 	runBaselineProxyCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisPort), "list of clustered redis hosts")
 
@@ -421,5 +553,7 @@ func init() {
 
 	runBaselineProxyCmd.Flags().StringVar(&baselineOrganizationAddress, "organization-address", defaultBaselineOrganizationAddress, "public baseline regsitry address of the organization")
 	runBaselineProxyCmd.Flags().StringVar(&baselineRegistryContractAddress, "registry-contract-address", defaultBaselineRegistryContractAddress, "public baseline regsitry contract address")
+	runBaselineProxyCmd.Flags().StringVar(&baselineWorkgroupID, "workgroup", "", "baseline workgroup identifier")
+
 	runBaselineProxyCmd.Flags().StringVar(&nchainBaselineNetworkID, "nchain-network-id", defaultNChainBaselineNetworkID, "nchain network id of the baseline mainnet")
 }
