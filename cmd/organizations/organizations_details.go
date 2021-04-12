@@ -19,7 +19,7 @@ var organizationsDetailsCmd = &cobra.Command{
 }
 
 func fetchOrganizationDetails(cmd *cobra.Command, args []string) {
-	token := common.RequireAPIToken()
+	token := common.RequireUserAuthToken()
 	params := map[string]interface{}{}
 	organization, err := provide.GetOrganizationDetails(token, common.OrganizationID, params)
 	if err != nil {
