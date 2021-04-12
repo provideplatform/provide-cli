@@ -57,6 +57,11 @@ func authorizeApplicationContext() {
 	if token.AccessToken != nil {
 		applicationAccessToken = *token.AccessToken
 	}
+
+	// HACK...
+	_, err = nchain.CreateWallet(applicationAccessToken, map[string]interface{}{
+		"purpose": 44,
+	})
 }
 
 func authorizeOrganizationContext() {
