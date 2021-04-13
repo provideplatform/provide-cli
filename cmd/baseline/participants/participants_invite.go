@@ -10,12 +10,13 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/kthomas/go-pgputil"
 	"github.com/provideservices/provide-cli/cmd/common"
 	ident "github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
 	"github.com/provideservices/provide-go/api/vault"
-	"github.com/provideservices/provide-go/common/util"
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh"
 )
 
 var name string
@@ -132,11 +133,24 @@ func vendJWT(vaultID string, params map[string]interface{}) string {
 		os.Exit(1)
 	}
 	if natsClaims != nil {
-		claims[util.JWTNatsClaimsKey] = natsClaims
+		claims["nats"] = natsClaims
 	}
 
+	publicKey, err := pgputil.DecodeRSAPublicKeyFromPEM([]byte(*key.PublicKey))
+	if err != nil {
+		log.Printf("failed to decode RSA public key from PEM; %s", err.Error())
+		os.Exit(1)
+	}
+
+	sshPublicKey, err := ssh.NewPublicKey(publicKey)
+	if err != nil {
+		log.Printf("failed to decode SSH public key for fingerprinting; %s", err.Error())
+		os.Exit(1)
+	}
+	fingerprint := ssh.FingerprintLegacyMD5(sshPublicKey)
+
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims(claims))
-	// jwtToken.Header["kid"] = t.Kid // FIX
+	jwtToken.Header["kid"] = fingerprint
 
 	strToSign, err := jwtToken.SigningString()
 	if err != nil {

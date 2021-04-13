@@ -18,6 +18,7 @@ var WorkgroupsCmd = &cobra.Command{
 
 func init() {
 	WorkgroupsCmd.AddCommand(initBaselineWorkgroupCmd)
+	WorkgroupsCmd.AddCommand(joinBaselineWorkgroupCmd)
 	WorkgroupsCmd.AddCommand(listBaselineWorkgroupsCmd)
 	WorkgroupsCmd.AddCommand(participants.ParticipantsCmd)
 }
