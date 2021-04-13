@@ -38,6 +38,7 @@ var vaultID string
 var babyJubJubKeyID string
 var secp256k1KeyID string
 var hdwalletID string
+var rsa4096Key string
 
 var initBaselineWorkgroupCmd = &cobra.Command{
 	Use:   "init",
@@ -268,6 +269,11 @@ func requireOrganizationKeys() {
 	key, err = requireOrganizationKeypair("BIP39")
 	if err == nil {
 		hdwalletID = key.ID.String()
+	}
+
+	key, err = requireOrganizationKeypair("RSA-4096")
+	if err == nil {
+		rsa4096Key = key.ID.String()
 	}
 }
 

@@ -81,6 +81,36 @@ func RequireUserAuthToken() string {
 	return token
 }
 
+func RequireApplicationToken() string {
+	var token string
+	tokenKey := BuildConfigKeyWithApp(APIAccessTokenConfigKeyPartial, ApplicationID)
+	if viper.IsSet(tokenKey) {
+		token = viper.GetString(tokenKey)
+	}
+
+	if token == "" {
+		log.Printf("Authorized organization API token required in prvd configuration; run 'prvd api_tokens init --application <id>'")
+		os.Exit(1)
+	}
+
+	return token
+}
+
+func RequireOrganizationToken() string {
+	var token string
+	tokenKey := BuildConfigKeyWithOrg(APIAccessTokenConfigKeyPartial, OrganizationID)
+	if viper.IsSet(tokenKey) {
+		token = viper.GetString(tokenKey)
+	}
+
+	if token == "" {
+		log.Printf("Authorized organization API token required in prvd configuration; run 'prvd api_tokens init --organization <id>'")
+		os.Exit(1)
+	}
+
+	return token
+}
+
 func RequireAPIToken() string {
 	var token string
 	var appAPITokenKey string

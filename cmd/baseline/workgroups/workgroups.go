@@ -3,6 +3,7 @@ package workgroups
 import (
 	"fmt"
 
+	"github.com/provideservices/provide-cli/cmd/baseline/participants"
 	"github.com/spf13/cobra"
 )
 
@@ -18,4 +19,5 @@ var WorkgroupsCmd = &cobra.Command{
 func init() {
 	WorkgroupsCmd.AddCommand(initBaselineWorkgroupCmd)
 	WorkgroupsCmd.AddCommand(listBaselineWorkgroupsCmd)
+	WorkgroupsCmd.AddCommand(participants.ParticipantsCmd)
 }
