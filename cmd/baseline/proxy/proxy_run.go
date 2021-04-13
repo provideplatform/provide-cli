@@ -495,11 +495,11 @@ func init() {
 	runBaselineProxyCmd.Flags().IntVar(&natsStreamingPort, "nats-streaming-port", 4220, "local NATS streaming port to expose on the proxy")
 	runBaselineProxyCmd.Flags().IntVar(&redisPort, "redis-port", 6379, "local NATS port to expose on the proxy")
 
-	runBaselineProxyCmd.Flags().StringVar(&apiHostname, "hostname", "baseline-proxy-api", "hostname for the proxy API container")
-	runBaselineProxyCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", "baseline-proxy-consumer", "hostname for the proxy consumer container")
-	runBaselineProxyCmd.Flags().StringVar(&natsHostname, "nats-hostname", "baseline-proxy-nats", "hostname for the proxy NATS container")
-	runBaselineProxyCmd.Flags().StringVar(&natsStreamingHostname, "nats-streaming-hostname", "baseline-proxy-nats-streaming", "hostname for the proxy NATS streaming container")
-	runBaselineProxyCmd.Flags().StringVar(&redisHostname, "redis-hostname", "baseline-proxy-redis", "hostname for the proxy Redis container")
+	runBaselineProxyCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the proxy API container")
+	runBaselineProxyCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the proxy consumer container")
+	runBaselineProxyCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the proxy NATS container")
+	runBaselineProxyCmd.Flags().StringVar(&natsStreamingHostname, fmt.Sprintf("%s-nats-streaming", name), "baseline-proxy-nats-streaming", "hostname for the proxy NATS streaming container")
+	runBaselineProxyCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the proxy Redis container")
 	runBaselineProxyCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisPort), "list of clustered redis hosts")
 
 	runBaselineProxyCmd.Flags().BoolVar(&autoRemove, "autoremove", false, "when true, containers are automatically pruned upon exit")
