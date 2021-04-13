@@ -46,6 +46,12 @@ PUl1cxrvY7BHh4obNa6Bf8ECAwEAAQ==
 
 const defaultNATSStreamingClusterID = "provide"
 
+const apiContainerPort = 8080
+const natsContainerPort = 4222
+const natsWebsocketContainerPort = 4221
+const natsStreamingContainerPort = 4222
+const redisContainerPort = 6379
+
 type portMapping struct {
 	hostPort      int
 	containerPort int
@@ -306,11 +312,11 @@ func runNATS(docker *client.Client) {
 		[]portMapping{
 			{
 				hostPort:      natsPort,
-				containerPort: natsPort,
+				containerPort: natsContainerPort,
 			},
 			{
 				hostPort:      natsWebsocketPort,
-				containerPort: natsWebsocketPort,
+				containerPort: natsWebsocketContainerPort,
 			},
 		}...,
 	)
@@ -333,7 +339,7 @@ func runNATSStreaming(docker *client.Client) {
 		[]portMapping{
 			{
 				hostPort:      natsStreamingPort,
-				containerPort: natsPort,
+				containerPort: natsStreamingContainerPort,
 			},
 		}...,
 	)
@@ -355,7 +361,7 @@ func runRedis(docker *client.Client) {
 		&[]string{"CMD", "redis-cli", "ping"},
 		[]portMapping{{
 			hostPort:      redisPort,
-			containerPort: redisPort,
+			containerPort: redisContainerPort,
 		}}...,
 	)
 
