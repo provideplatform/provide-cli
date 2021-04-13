@@ -204,6 +204,10 @@ func requireOrganizationMessagingEndpoint() {
 		os.Exit(1)
 	}
 
+	if org.Metadata == nil {
+		org.Metadata = map[string]interface{}{}
+	}
+
 	if _, messagingEndpointOk := org.Metadata["messaging_endpoint"].(string); !messagingEndpointOk {
 		org.Metadata["messaging_endpoint"] = messagingEndpoint // FIXME-- resolve public IP
 	}
