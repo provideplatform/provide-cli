@@ -272,7 +272,7 @@ func runProxyAPI(docker *client.Client) {
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", apiHostname, port)},
 		[]portMapping{{
 			hostPort:      port,
-			containerPort: port,
+			containerPort: apiContainerPort,
 		}}...,
 	)
 
