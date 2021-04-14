@@ -290,6 +290,8 @@ github.com/kthomas/go-self-signed-cert v0.0.0-20200602041729-f9878375d46e h1:G//
 github.com/kthomas/go-self-signed-cert v0.0.0-20200602041729-f9878375d46e/go.mod h1:2U4e9gFnjUVWhKO7bMhpRh5k3SoQIZAsahqb+gQhaFI=
 github.com/kthomas/go.uuid v1.2.1-0.20190324131420-28d1fa77e9a4 h1:xWgita+beQTA+NaWz1dSFnWMZFLFPpRNZ0NdG1VOfOQ=
 github.com/kthomas/go.uuid v1.2.1-0.20190324131420-28d1fa77e9a4/go.mod h1:HqzG4AC71EusLj6ojuBNx8UKX03eWGSSXNYuKE7sUNo=
+github.com/kthomas/gonnel v0.0.0-20210414024049-dc8a82ded7bd h1:c8hwgbHnB4PAFM+xnyAycedLAge401W6yfICfTlPC4M=
+github.com/kthomas/gonnel v0.0.0-20210414024049-dc8a82ded7bd/go.mod h1:Hssl9b/FFLYz9B7zm3jzewiWFaIdFV+wAmI9U9g9T1U=
 github.com/kthomas/logrus v1.8.2-0.20210411034302-11586d6ce483 h1:ExiGazJPdhftNnvVsxWHsbPNIuWxpjLE2IJttEkFzn4=
 github.com/kthomas/logrus v1.8.2-0.20210411034302-11586d6ce483/go.mod h1:Ik/HFmBi2zLl3r5G0STfy5dg80oXLm4B0cVTyiTc3nw=
 github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+fNqagV/RAw=

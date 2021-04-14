@@ -13,6 +13,7 @@ require (
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/kthomas/go-pgputil v0.0.0-20200602073402-784e96083943
+	github.com/kthomas/gonnel v0.0.0-20210414024049-dc8a82ded7bd
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect

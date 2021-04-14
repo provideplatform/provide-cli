@@ -1,14 +1,17 @@
 package workgroups
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
+	"github.com/kthomas/gonnel"
 	"github.com/provideservices/provide-cli/cmd/common"
 	api "github.com/provideservices/provide-go/api"
 	ident "github.com/provideservices/provide-go/api/ident"
@@ -33,6 +36,8 @@ var organizationAccessToken string
 var applicationAccessToken string
 
 var messagingEndpoint string
+var exposeTunnel bool
+var tunnelClient *gonnel.Client
 
 var vaultID string
 var babyJubJubKeyID string
@@ -199,6 +204,13 @@ func requireContract(contractID, contractType *string) error {
 }
 
 func requireOrganizationMessagingEndpoint() {
+	setupMessagingEndpoint()
+	if exposeTunnel {
+		for messagingEndpoint == "" {
+			time.Sleep(time.Millisecond * 50)
+		}
+	}
+
 	org, err := ident.GetOrganizationDetails(organizationAccessToken, common.OrganizationID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("failed to retrieve organization: %s; %s", common.OrganizationID, err.Error())
@@ -220,6 +232,7 @@ func requireOrganizationMessagingEndpoint() {
 		log.Printf("failed to update messaging endpoint for organization: %s; %s", common.OrganizationID, err.Error())
 		os.Exit(1)
 	}
+	log.Printf("messaging endpoint set: %s", messagingEndpoint)
 }
 
 func requireOrganizationVault() {
@@ -345,6 +358,53 @@ func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 	return registryArtifact
 }
 
+func setupMessagingEndpoint() {
+	if messagingEndpoint == "" && !exposeTunnel {
+		publicIP, err := util.ResolvePublicIP()
+		if err != nil {
+			log.Printf("WARNING: failed to resolve public IP")
+			os.Exit(1)
+		}
+
+		messagingEndpoint = fmt.Sprintf("nats://%s:4222", *publicIP)
+	} else if exposeTunnel {
+		var out bytes.Buffer
+		cmd := exec.Command("which", "ngrok")
+		cmd.Stdout = &out
+		err := cmd.Run()
+		if err == nil {
+			tunnelClient, err = gonnel.NewClient(gonnel.Options{
+				BinaryPath: strings.Trim(out.String(), "\n"),
+			})
+			if err != nil {
+				log.Printf("WARNING: failed to initialize tunnel; %s", err.Error())
+				os.Exit(1)
+			}
+
+			done := make(chan bool)
+			go tunnelClient.StartServer(done)
+			<-done
+
+			tunnelClient.AddTunnel(&gonnel.Tunnel{
+				Proto:        gonnel.TCP,
+				Name:         fmt.Sprintf("%s-endpoint", common.OrganizationID),
+				LocalAddress: "127.0.0.1:4222", // FIXME-- this port
+			})
+
+			tunnelClient.ConnectAll()
+
+			messagingEndpoint = tunnelClient.Tunnel[0].RemoteAddress
+			log.Printf("established tunnel connection for messaging endpoint: %s", messagingEndpoint)
+
+			// fmt.Print("Press any to disconnect")
+			// reader := bufio.NewReader(os.Stdin)
+			// reader.ReadRune()
+
+			// client.DisconnectAll()
+		}
+	}
+}
+
 func init() {
 	initBaselineWorkgroupCmd.Flags().StringVar(&name, "name", "", "name of the baseline workgroup")
 	initBaselineWorkgroupCmd.MarkFlagRequired("name")
@@ -354,8 +414,6 @@ func init() {
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	initBaselineWorkgroupCmd.MarkFlagRequired("organization")
 
-	hostname := "localhost" // FIXME-- resolve to public IP
-	defaultMessagingEndpoint := fmt.Sprintf("nats://%s:4222", hostname)
-
-	initBaselineWorkgroupCmd.Flags().StringVar(&messagingEndpoint, "endpoint", defaultMessagingEndpoint, "public messaging endpoint used for sending and receiving protocol messages")
+	initBaselineWorkgroupCmd.Flags().StringVar(&messagingEndpoint, "endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
+	initBaselineWorkgroupCmd.Flags().BoolVar(&exposeTunnel, "tunnel", false, "when true, a tunnel established to expose this endpoint to the WAN")
 }
