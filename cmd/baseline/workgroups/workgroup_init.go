@@ -16,6 +16,7 @@ const defaultNChainBaselineNetworkID = "66d44f30-9092-4182-a3c4-bc02736d6ae5"
 const defaultWorkgroupType = "baseline"
 
 var name string
+var networkID string
 
 var messagingEndpoint string
 var exposeTunnel bool
@@ -46,6 +47,7 @@ func authorizeApplicationContext() {
 }
 
 func initWorkgroup(cmd *cobra.Command, args []string) {
+	common.NetworkID = networkID
 	common.AuthorizeOrganizationContext()
 
 	token := common.RequireUserAuthToken()
@@ -105,7 +107,7 @@ func init() {
 	initBaselineWorkgroupCmd.Flags().StringVar(&name, "name", "", "name of the baseline workgroup")
 	initBaselineWorkgroupCmd.MarkFlagRequired("name")
 
-	initBaselineWorkgroupCmd.Flags().StringVar(&common.NetworkID, "network", defaultNChainBaselineNetworkID, "nchain network id of the baseline mainnet to use for this workgroup")
+	initBaselineWorkgroupCmd.Flags().StringVar(&networkID, "network", defaultNChainBaselineNetworkID, "nchain network id of the baseline mainnet to use for this workgroup")
 
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	initBaselineWorkgroupCmd.MarkFlagRequired("organization")

@@ -147,6 +147,6 @@ func init() {
 	joinBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	joinBaselineWorkgroupCmd.MarkFlagRequired("organization")
 
-	joinBaselineWorkgroupCmd.Flags().StringVar(&inviteJWT, "jwt", defaultNChainBaselineNetworkID, "JWT invitation token received from the inviting counterparty")
+	joinBaselineWorkgroupCmd.Flags().StringVar(&inviteJWT, "jwt", "", "JWT invitation token received from the inviting counterparty")
 	joinBaselineWorkgroupCmd.MarkFlagRequired("jwt")
 }
