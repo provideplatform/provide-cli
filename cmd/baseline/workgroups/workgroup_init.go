@@ -218,11 +218,9 @@ func requireOrganizationMessagingEndpoint() {
 	}
 
 	if org.Metadata == nil {
-		org.Metadata = map[string]interface{}{}
-	}
-
-	if _, messagingEndpointOk := org.Metadata["messaging_endpoint"].(string); !messagingEndpointOk {
-		org.Metadata["messaging_endpoint"] = messagingEndpoint // FIXME-- resolve public IP
+		org.Metadata = map[string]interface{}{
+			"messaging_endpoint": messagingEndpoint,
+		}
 	}
 
 	err = ident.UpdateOrganization(common.RequireUserAuthToken(), common.OrganizationID, map[string]interface{}{
