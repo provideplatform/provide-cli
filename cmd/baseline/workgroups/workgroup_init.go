@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/kthomas/gonnel"
 	"github.com/provideservices/provide-cli/cmd/common"
 	ident "github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
@@ -17,10 +16,6 @@ const defaultWorkgroupType = "baseline"
 
 var name string
 var networkID string
-
-var messagingEndpoint string
-var exposeTunnel bool
-var tunnelClient *gonnel.Client
 
 var vaultID string
 var babyJubJubKeyID string
@@ -112,6 +107,6 @@ func init() {
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	initBaselineWorkgroupCmd.MarkFlagRequired("organization")
 
-	initBaselineWorkgroupCmd.Flags().StringVar(&messagingEndpoint, "endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
-	initBaselineWorkgroupCmd.Flags().BoolVar(&exposeTunnel, "tunnel", false, "when true, a tunnel is established to expose this endpoint to the WAN")
+	initBaselineWorkgroupCmd.Flags().StringVar(&common.MessagingEndpoint, "endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
+	initBaselineWorkgroupCmd.Flags().BoolVar(&common.ExposeTunnel, "tunnel", false, "when true, a tunnel is established to expose this endpoint to the WAN")
 }
