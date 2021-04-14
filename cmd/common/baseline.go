@@ -1,14 +1,19 @@
 package common
 
 import (
+	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
+	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/kthomas/gonnel"
@@ -24,6 +29,8 @@ const defaultBaselineRegistryContractName = "Shuttle"
 const requireContractSleepInterval = time.Second * 1
 const requireContractTickerInterval = time.Second * 5
 const requireContractTimeout = time.Minute * 10
+
+const requireOrganizationMessagingEndpointTimeout = time.Second * 5
 
 var ExposeTunnel bool
 var MessagingEndpoint string
@@ -114,11 +121,19 @@ func RegisterWorkgroupOrganization(applicationID string) {
 	}
 }
 
-func RequireOrganizationMessagingEndpoint() {
-	setupMessagingEndpoint()
+// fn is the function to call after the tunnel has been established,
+// prior to the runloop and signal handling is installed
+func RequireOrganizationMessagingEndpoint(fn func()) {
+	setupMessagingEndpoint(fn)
+
 	if ExposeTunnel {
+		startTime := time.Now()
 		for MessagingEndpoint == "" {
 			time.Sleep(time.Millisecond * 50)
+			if startTime.Add(requireOrganizationMessagingEndpointTimeout).Before(time.Now()) {
+				log.Printf("WARNING: organization messaging endpoint tunnel timed out")
+				os.Exit(1)
+			}
 		}
 	}
 
@@ -140,6 +155,7 @@ func RequireOrganizationMessagingEndpoint() {
 		log.Printf("failed to update messaging endpoint for organization: %s; %s", OrganizationID, err.Error())
 		os.Exit(1)
 	}
+
 	log.Printf("messaging endpoint set: %s", MessagingEndpoint)
 }
 
@@ -277,7 +293,9 @@ func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 	return registryArtifact
 }
 
-func setupMessagingEndpoint() {
+// fn is the function to call after the tunnel has been established,
+// prior to the runloop and signal handling is installed
+func setupMessagingEndpoint(fn func()) {
 	if MessagingEndpoint == "" && !ExposeTunnel {
 		publicIP, err := util.ResolvePublicIP()
 		if err != nil {
@@ -287,39 +305,99 @@ func setupMessagingEndpoint() {
 
 		MessagingEndpoint = fmt.Sprintf("nats://%s:4222", *publicIP)
 	} else if ExposeTunnel {
-		var out bytes.Buffer
-		cmd := exec.Command("which", "ngrok")
-		cmd.Stdout = &out
-		err := cmd.Run()
-		if err == nil {
-			tunnelClient, err = gonnel.NewClient(gonnel.Options{
-				BinaryPath: strings.Trim(out.String(), "\n"),
-			})
-			if err != nil {
-				log.Printf("WARNING: failed to initialize tunnel; %s", err.Error())
-				os.Exit(1)
-			}
+		const runloopSleepInterval = 250 * time.Millisecond
+		const runloopTickInterval = 5000 * time.Millisecond
 
-			done := make(chan bool)
-			go tunnelClient.StartServer(done)
-			<-done
+		var (
+			cancelF     context.CancelFunc
+			closing     uint32
+			shutdownCtx context.Context
+			sigs        chan os.Signal
+		)
 
-			tunnelClient.AddTunnel(&gonnel.Tunnel{
-				Proto:        gonnel.TCP,
-				Name:         fmt.Sprintf("%s-endpoint", OrganizationID),
-				LocalAddress: "127.0.0.1:4222", // FIXME-- this port
-			})
-
-			tunnelClient.ConnectAll()
-
-			MessagingEndpoint = tunnelClient.Tunnel[0].RemoteAddress
-			log.Printf("established tunnel connection for messaging endpoint: %s", MessagingEndpoint)
-
-			// fmt.Print("Press any to disconnect")
-			// reader := bufio.NewReader(os.Stdin)
-			// reader.ReadRune()
-
-			// client.DisconnectAll()
+		installSignalHandlers := func() {
+			log.Printf("installing signal handlers for baseline-proxy API")
+			sigs = make(chan os.Signal, 1)
+			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
+			shutdownCtx, cancelF = context.WithCancel(context.Background())
 		}
+
+		shutdown := func() {
+			if atomic.AddUint32(&closing, 1) == 1 {
+				log.Print("shutting down baseline-proxy API")
+				cancelF()
+				os.Exit(0)
+			}
+		}
+
+		shuttingDown := func() bool {
+			return (atomic.LoadUint32(&closing) > 0)
+		}
+
+		log.Printf("starting tunnel runloop")
+		installSignalHandlers()
+
+		go func() {
+			var out bytes.Buffer
+			cmd := exec.Command("which", "ngrok")
+			cmd.Stdout = &out
+			err := cmd.Run()
+			if err == nil {
+				tunnelClient, err = gonnel.NewClient(gonnel.Options{
+					BinaryPath: strings.Trim(out.String(), "\n"),
+				})
+				if err != nil {
+					log.Printf("WARNING: failed to initialize tunnel; %s", err.Error())
+					os.Exit(1)
+				}
+
+				defer tunnelClient.Close()
+
+				done := make(chan bool)
+				go tunnelClient.StartServer(done)
+				<-done
+
+				tunnelClient.AddTunnel(&gonnel.Tunnel{
+					Proto:        gonnel.TCP,
+					Name:         fmt.Sprintf("%s-endpoint", OrganizationID),
+					LocalAddress: "127.0.0.1:4222", // FIXME-- this port
+				})
+
+				tunnelClient.ConnectAll()
+
+				MessagingEndpoint = tunnelClient.Tunnel[0].RemoteAddress
+				log.Printf("established tunnel connection for messaging endpoint: %s\n", MessagingEndpoint)
+
+				fmt.Print("Press any key to disconnect...\n")
+				reader := bufio.NewReader(os.Stdin)
+				reader.ReadRune()
+
+				tunnelClient.DisconnectAll()
+			}
+		}()
+
+		if fn != nil {
+			go fn()
+		}
+
+		timer := time.NewTicker(runloopTickInterval)
+		defer timer.Stop()
+
+		for !shuttingDown() {
+			select {
+			case <-timer.C:
+				// tick... no-op
+			case sig := <-sigs:
+				fmt.Printf("received signal: %s", sig)
+				shutdown()
+			case <-shutdownCtx.Done():
+				close(sigs)
+			default:
+				time.Sleep(runloopSleepInterval)
+			}
+		}
+
+		log.Printf("exiting tunnel runloop")
+		cancelF()
 	}
 }

@@ -52,7 +52,7 @@ func joinWorkgroup(cmd *cobra.Command, args []string) {
 	common.RequireOrganizationVault()
 	requireOrganizationKeys()
 	common.RegisterWorkgroupOrganization(common.ApplicationID)
-	common.RequireOrganizationMessagingEndpoint()
+	common.RequireOrganizationMessagingEndpoint(nil)
 }
 
 func parseJWT(token string) *InviteClaims {

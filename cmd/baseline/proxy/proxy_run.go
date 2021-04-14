@@ -120,8 +120,6 @@ func runProxy(cmd *cobra.Command, args []string) {
 	}
 
 	authorizeContext()
-	authorizeWorkgroupContext()
-
 	purgeContainers(docker)
 
 	for _, image := range []string{
@@ -138,17 +136,20 @@ func runProxy(cmd *cobra.Command, args []string) {
 	}
 
 	configureNetwork(docker)
+	common.RequireOrganizationMessagingEndpoint(
+		func() {
+			// run local deps
+			runNATS(docker)
+			runNATSStreaming(docker)
+			runRedis(docker)
 
-	// run local deps
-	runNATS(docker)
-	runNATSStreaming(docker)
-	runRedis(docker)
+			// run proxy
+			runProxyAPI(docker)
+			runProxyConsumer(docker)
 
-	// run proxy
-	runProxyAPI(docker)
-	runProxyConsumer(docker)
-
-	log.Printf("%s proxy instance started", name)
+			log.Printf("%s proxy instance started", name)
+		},
+	)
 }
 
 func configureNetwork(docker *client.Client) {
@@ -180,6 +181,9 @@ func configureNetwork(docker *client.Client) {
 }
 
 func authorizeContext() {
+	authorizeWorkgroupContext()
+	common.AuthorizeOrganizationContext()
+
 	if organizationRefreshToken == "" {
 		refreshTokenKey := common.BuildConfigKeyWithOrg(common.APIRefreshTokenConfigKeyPartial, common.OrganizationID)
 		if viper.IsSet(refreshTokenKey) {
@@ -557,6 +561,9 @@ func init() {
 	if os.Getenv("NCHAIN_BASELINE_NETWORK_ID") != "" {
 		defaultNChainBaselineNetworkID = os.Getenv("NCHAIN_BASELINE_NETWORK_ID")
 	}
+
+	runBaselineProxyCmd.Flags().StringVar(&common.MessagingEndpoint, "endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
+	runBaselineProxyCmd.Flags().BoolVar(&common.ExposeTunnel, "tunnel", false, "when true, a tunnel is established to expose the endpoint to the WAN")
 
 	runBaselineProxyCmd.Flags().StringVar(&baselineOrganizationAddress, "organization-address", defaultBaselineOrganizationAddress, "public baseline regsitry address of the organization")
 	runBaselineProxyCmd.Flags().StringVar(&baselineRegistryContractAddress, "registry-contract-address", defaultBaselineRegistryContractAddress, "public baseline regsitry contract address")
