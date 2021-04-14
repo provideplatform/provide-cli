@@ -218,10 +218,9 @@ func requireOrganizationMessagingEndpoint() {
 	}
 
 	if org.Metadata == nil {
-		org.Metadata = map[string]interface{}{
-			"messaging_endpoint": messagingEndpoint,
-		}
+		org.Metadata = map[string]interface{}{}
 	}
+	org.Metadata["messaging_endpoint"] = messagingEndpoint
 
 	err = ident.UpdateOrganization(common.RequireUserAuthToken(), common.OrganizationID, map[string]interface{}{
 		"metadata": org.Metadata,
@@ -413,5 +412,5 @@ func init() {
 	initBaselineWorkgroupCmd.MarkFlagRequired("organization")
 
 	initBaselineWorkgroupCmd.Flags().StringVar(&messagingEndpoint, "endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
-	initBaselineWorkgroupCmd.Flags().BoolVar(&exposeTunnel, "tunnel", false, "when true, a tunnel established to expose this endpoint to the WAN")
+	initBaselineWorkgroupCmd.Flags().BoolVar(&exposeTunnel, "tunnel", false, "when true, a tunnel is established to expose this endpoint to the WAN")
 }
