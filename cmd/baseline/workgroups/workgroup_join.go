@@ -44,15 +44,15 @@ func joinWorkgroup(cmd *cobra.Command, args []string) {
 	log.Printf("resolved baseline claims containing invitation for workgroup: %s", *claims.Baseline.WorkgroupID)
 
 	common.ApplicationID = *claims.Baseline.WorkgroupID
-	authorizeOrganizationContext()
+	common.AuthorizeOrganizationContext()
 	authorizeApplicationContext()
 
 	// initWorkgroupContract()
 
-	requireOrganizationVault()
+	common.RequireOrganizationVault()
 	requireOrganizationKeys()
-	requireOrganizationMessagingEndpoint()
-	registerWorkgroupOrganization(common.ApplicationID)
+	common.RegisterWorkgroupOrganization(common.ApplicationID)
+	common.RequireOrganizationMessagingEndpoint()
 }
 
 func parseJWT(token string) *InviteClaims {
