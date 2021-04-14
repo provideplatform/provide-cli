@@ -77,6 +77,7 @@ var autoRemove bool
 var logLevel string
 
 var baselineOrganizationAddress string
+var baselineOrganizationProxyEndpoint string
 var baselineRegistryContractAddress string
 var baselineWorkgroupID string
 
@@ -239,6 +240,7 @@ func containerEnvironmentFactory() []string {
 	return []string{
 		fmt.Sprintf("BASELINE_ORGANIZATION_ADDRESS=%s", baselineOrganizationAddress),
 		fmt.Sprintf("BASELINE_ORGANIZATION_MESSAGING_ENDPOINT=%s", common.MessagingEndpoint),
+		fmt.Sprintf("BASELINE_ORGANIZATION_PROXY_ENDPOINT=%s", baselineOrganizationProxyEndpoint),
 		fmt.Sprintf("BASELINE_REGISTRY_CONTRACT_ADDRESS=%s", baselineRegistryContractAddress),
 		fmt.Sprintf("IDENT_API_HOST=%s", identAPIHost),
 		fmt.Sprintf("IDENT_API_SCHEME=%s", identAPIScheme),
@@ -516,7 +518,7 @@ func init() {
 	runBaselineProxyCmd.Flags().BoolVar(&autoRemove, "autoremove", false, "when true, containers are automatically pruned upon exit")
 	runBaselineProxyCmd.Flags().StringVar(&logLevel, "log-level", "DEBUG", "log level to set within the running proxy instance")
 
-	runBaselineProxyCmd.Flags().StringVar(&jwtSignerPublicKey, "jwt-signer-public-key", defaultJWTSignerPublicKey, "PEM-encoded public key of the authorized JWT signer for verifying inbound proxy connection attempts")
+	runBaselineProxyCmd.Flags().StringVar(&jwtSignerPublicKey, "jwt-signer-public-key", "", "PEM-encoded public key of the authorized JWT signer for verifying inbound proxy connection attempts")
 	runBaselineProxyCmd.Flags().StringVar(&natsAuthToken, "nats-auth-token", "testtoken", "authorization token for the NATS service; will be passed as the -auth argument to NATS")
 
 	runBaselineProxyCmd.Flags().StringVar(&identAPIHost, "ident-host", "ident.provide.services", "hostname of the ident service")
@@ -562,8 +564,10 @@ func init() {
 		defaultNChainBaselineNetworkID = os.Getenv("NCHAIN_BASELINE_NETWORK_ID")
 	}
 
-	runBaselineProxyCmd.Flags().StringVar(&common.MessagingEndpoint, "endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
+	runBaselineProxyCmd.Flags().StringVar(&common.MessagingEndpoint, "messaging-endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
 	runBaselineProxyCmd.Flags().BoolVar(&common.ExposeTunnel, "tunnel", false, "when true, a tunnel is established to expose the endpoint to the WAN")
+
+	runBaselineProxyCmd.Flags().StringVar(&baselineOrganizationProxyEndpoint, "proxy-endpoint", "", "baseline proxy endpoint used by one or more systems of record")
 
 	runBaselineProxyCmd.Flags().StringVar(&baselineOrganizationAddress, "organization-address", defaultBaselineOrganizationAddress, "public baseline regsitry address of the organization")
 	runBaselineProxyCmd.Flags().StringVar(&baselineRegistryContractAddress, "registry-contract-address", defaultBaselineRegistryContractAddress, "public baseline regsitry contract address")
