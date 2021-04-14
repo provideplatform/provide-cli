@@ -125,38 +125,6 @@ func RegisterWorkgroupOrganization(applicationID string) {
 // prior to the runloop and signal handling is installed
 func RequireOrganizationMessagingEndpoint(fn func()) {
 	setupMessagingEndpoint(fn)
-
-	if ExposeTunnel {
-		startTime := time.Now()
-		for MessagingEndpoint == "" {
-			time.Sleep(time.Millisecond * 50)
-			if startTime.Add(requireOrganizationMessagingEndpointTimeout).Before(time.Now()) {
-				log.Printf("WARNING: organization messaging endpoint tunnel timed out")
-				os.Exit(1)
-			}
-		}
-	}
-
-	org, err := ident.GetOrganizationDetails(OrganizationAccessToken, OrganizationID, map[string]interface{}{})
-	if err != nil {
-		log.Printf("failed to retrieve organization: %s; %s", OrganizationID, err.Error())
-		os.Exit(1)
-	}
-
-	if org.Metadata == nil {
-		org.Metadata = map[string]interface{}{}
-	}
-	org.Metadata["messaging_endpoint"] = MessagingEndpoint
-
-	err = ident.UpdateOrganization(RequireUserAuthToken(), OrganizationID, map[string]interface{}{
-		"metadata": org.Metadata,
-	})
-	if err != nil {
-		log.Printf("failed to update messaging endpoint for organization: %s; %s", OrganizationID, err.Error())
-		os.Exit(1)
-	}
-
-	log.Printf("messaging endpoint set: %s", MessagingEndpoint)
 }
 
 func RequireOrganizationVault() {
@@ -379,6 +347,38 @@ func setupMessagingEndpoint(fn func()) {
 		if fn != nil {
 			go fn()
 		}
+
+		if ExposeTunnel {
+			startTime := time.Now()
+			for MessagingEndpoint == "" {
+				time.Sleep(time.Millisecond * 50)
+				if startTime.Add(requireOrganizationMessagingEndpointTimeout).Before(time.Now()) {
+					log.Printf("WARNING: organization messaging endpoint tunnel timed out")
+					os.Exit(1)
+				}
+			}
+		}
+
+		org, err := ident.GetOrganizationDetails(OrganizationAccessToken, OrganizationID, map[string]interface{}{})
+		if err != nil {
+			log.Printf("failed to retrieve organization: %s; %s", OrganizationID, err.Error())
+			os.Exit(1)
+		}
+
+		if org.Metadata == nil {
+			org.Metadata = map[string]interface{}{}
+		}
+		org.Metadata["messaging_endpoint"] = MessagingEndpoint
+
+		err = ident.UpdateOrganization(RequireUserAuthToken(), OrganizationID, map[string]interface{}{
+			"metadata": org.Metadata,
+		})
+		if err != nil {
+			log.Printf("failed to update messaging endpoint for organization: %s; %s", OrganizationID, err.Error())
+			os.Exit(1)
+		}
+
+		log.Printf("messaging endpoint set: %s", MessagingEndpoint)
 
 		timer := time.NewTicker(runloopTickInterval)
 		defer timer.Stop()
