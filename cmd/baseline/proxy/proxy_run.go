@@ -79,7 +79,7 @@ var autoRemove bool
 var logLevel string
 
 var baselineOrganizationAddress string
-var baselineOrganizationProxyEndpoint string
+var baselineOrganizationAPIEndpoint string
 var baselineRegistryContractAddress string
 var baselineWorkgroupID string
 
@@ -122,8 +122,8 @@ var serviceNowAPIPath string
 
 var runBaselineProxyCmd = &cobra.Command{
 	Use:   "run",
-	Short: "Run the baseline proxy",
-	Long:  `Start a local baseline proxy instance and connect to internal systems of record`,
+	Short: "Run the baseline stack",
+	Long:  `Start a local baseline stack instance and connect to internal systems of record`,
 	Run:   runProxy,
 }
 
@@ -145,7 +145,7 @@ func runProxy(cmd *cobra.Command, args []string) {
 	} {
 		err := pullImage(docker, image)
 		if err != nil {
-			log.Printf("failed to pull proxy container image: %s; %s", image, err.Error())
+			log.Printf("failed to pull local baseline container image: %s; %s", image, err.Error())
 			os.Exit(1)
 		}
 	}
@@ -162,7 +162,7 @@ func runProxy(cmd *cobra.Command, args []string) {
 			runProxyAPI(docker)
 			runProxyConsumer(docker)
 
-			log.Printf("%s proxy instance started", name)
+			log.Printf("%s local baseline instance started", name)
 		},
 	)
 }
@@ -194,7 +194,7 @@ func configureNetwork(docker *client.Client) {
 
 	dockerNetworkID = network.ID
 
-	log.Printf("configured network for baseline proxy: %s", name)
+	log.Printf("configured network for local baseline instance: %s", name)
 }
 
 func authorizeContext() {
@@ -260,7 +260,7 @@ func containerEnvironmentFactory() []string {
 	for _, envvar := range []string{
 		fmt.Sprintf("BASELINE_ORGANIZATION_ADDRESS=%s", baselineOrganizationAddress),
 		fmt.Sprintf("BASELINE_ORGANIZATION_MESSAGING_ENDPOINT=%s", common.MessagingEndpoint),
-		fmt.Sprintf("BASELINE_ORGANIZATION_PROXY_ENDPOINT=%s", baselineOrganizationProxyEndpoint),
+		fmt.Sprintf("BASELINE_ORGANIZATION_PROXY_ENDPOINT=%s", baselineOrganizationAPIEndpoint),
 		fmt.Sprintf("BASELINE_REGISTRY_CONTRACT_ADDRESS=%s", baselineRegistryContractAddress),
 		fmt.Sprintf("IDENT_API_HOST=%s", identAPIHost),
 		fmt.Sprintf("IDENT_API_SCHEME=%s", identAPIScheme),
@@ -362,7 +362,7 @@ func runProxyAPI(docker *client.Client) {
 	)
 
 	if err != nil {
-		log.Printf("failed to create baseline proxy API container; %s", err.Error())
+		log.Printf("failed to create local baseline API container; %s", err.Error())
 		os.Exit(1)
 	}
 }
@@ -380,7 +380,7 @@ func runProxyConsumer(docker *client.Client) {
 	)
 
 	if err != nil {
-		log.Printf("failed to create baseline proxy consumer container; %s", err.Error())
+		log.Printf("failed to create local baseline consumer container; %s", err.Error())
 		os.Exit(1)
 	}
 }
@@ -407,7 +407,7 @@ func runNATS(docker *client.Client) {
 	)
 
 	if err != nil {
-		log.Printf("failed to create baseline proxy NATS container; %s", err.Error())
+		log.Printf("failed to create local baseline NATS container; %s", err.Error())
 		os.Exit(1)
 	}
 }
@@ -430,7 +430,7 @@ func runNATSStreaming(docker *client.Client) {
 	)
 
 	if err != nil {
-		log.Printf("failed to create baseline proxy NATS streaming container; %s", err.Error())
+		log.Printf("failed to create local baseline NATS streaming container; %s", err.Error())
 		os.Exit(1)
 	}
 }
@@ -451,13 +451,13 @@ func runRedis(docker *client.Client) {
 	)
 
 	if err != nil {
-		log.Printf("failed to create baseline proxy Redis container; %s", err.Error())
+		log.Printf("failed to create local baseline redis container; %s", err.Error())
 		os.Exit(1)
 	}
 }
 
 func pullImage(docker *client.Client, image string) error {
-	log.Printf("pulling proxy container image: %s", image)
+	log.Printf("pulling local baseline container image: %s", image)
 	reader, err := docker.ImagePull(context.Background(), image, types.ImagePullOptions{})
 	if err != nil {
 		return err
@@ -481,7 +481,7 @@ func runContainer(
 	entrypoint, cmd, healthcheck *[]string,
 	ports ...portMapping,
 ) (*container.ContainerCreateCreatedBody, error) {
-	log.Printf("running proxy container image: %s", image)
+	log.Printf("running local baseline container image: %s", image)
 	portBinding := nat.PortMap{}
 	for _, mapping := range ports {
 		port, _ := nat.NewPort("tcp", strconv.Itoa(mapping.containerPort))
@@ -588,25 +588,38 @@ func listContainers(docker *client.Client) []types.Container {
 }
 
 func init() {
-	runBaselineProxyCmd.Flags().StringVar(&name, "name", "baseline-proxy", "name of the baseline proxy instance")
-	runBaselineProxyCmd.Flags().IntVar(&port, "port", 8080, "local API port to expose on the proxy")
-	runBaselineProxyCmd.Flags().IntVar(&natsPort, "nats-port", 4222, "local NATS port to expose on the proxy")
-	runBaselineProxyCmd.Flags().IntVar(&natsWebsocketPort, "nats-ws-port", 4221, "local NATS websocket port to expose on the proxy")
-	runBaselineProxyCmd.Flags().IntVar(&natsStreamingPort, "nats-streaming-port", 4220, "local NATS streaming port to expose on the proxy")
-	runBaselineProxyCmd.Flags().IntVar(&redisPort, "redis-port", 6379, "local redis port to expose on the proxy")
+	runBaselineProxyCmd.Flags().StringVar(&name, "name", "baseline-local", "name of the local baseline stack")
 
-	runBaselineProxyCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the proxy API container")
-	runBaselineProxyCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the proxy consumer container")
-	runBaselineProxyCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the proxy NATS container")
-	runBaselineProxyCmd.Flags().StringVar(&natsStreamingHostname, fmt.Sprintf("%s-nats-streaming", name), "baseline-proxy-nats-streaming", "hostname for the proxy NATS streaming container")
-	runBaselineProxyCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the proxy redis container")
-	runBaselineProxyCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisPort), "list of clustered redis hosts")
+	runBaselineProxyCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
+	runBaselineProxyCmd.MarkFlagRequired("organization")
+
+	runBaselineProxyCmd.Flags().StringVar(&baselineOrganizationAPIEndpoint, "api-endpoint", "", "local baseline API endpoint for use by one or more authorized systems of record")
+	runBaselineProxyCmd.Flags().StringVar(&common.MessagingEndpoint, "messaging-endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
+	runBaselineProxyCmd.Flags().BoolVar(&common.ExposeTunnel, "tunnel", false, "when true, a tunnel is established to expose the endpoint to the WAN")
+
+	runBaselineProxyCmd.Flags().StringVar(&sorID, "sor", "", "primary internal system of record identifier being baselined")
+	runBaselineProxyCmd.Flags().StringVar(&sorURL, "sor-url", "https://", "url of the primary internal system of record being baselined")
+
+	runBaselineProxyCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the local baseline API container")
+	runBaselineProxyCmd.Flags().IntVar(&port, "port", 8080, "port to expose on the local baseline API container")
+
+	runBaselineProxyCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the local baseline consumer container")
+	runBaselineProxyCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the local baseline NATS container")
+	runBaselineProxyCmd.Flags().IntVar(&natsPort, "nats-port", 4222, "port to expose on the local baseline NATS container")
+	runBaselineProxyCmd.Flags().IntVar(&natsWebsocketPort, "nats-ws-port", 4221, "websocket port to expose on the local baseline NATS container")
+	runBaselineProxyCmd.Flags().StringVar(&natsAuthToken, "nats-auth-token", "testtoken", "authorization token for the local baseline NATS service; will be passed as the -auth argument to NATS")
+
+	runBaselineProxyCmd.Flags().StringVar(&natsStreamingHostname, fmt.Sprintf("%s-nats-streaming", name), "nats-streaming-hostname", "hostname for the local baseline NATS streaming container")
+	runBaselineProxyCmd.Flags().IntVar(&natsStreamingPort, "nats-streaming-port", 4220, "port to expose on the local baseline NATS streaming container")
+
+	runBaselineProxyCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the local baseline redis container")
+	runBaselineProxyCmd.Flags().IntVar(&redisPort, "redis-port", 6379, "port to expose on the local baseline redis container")
+	runBaselineProxyCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisPort), "list of clustered redis hosts in the local baseline stack")
 
 	runBaselineProxyCmd.Flags().BoolVar(&autoRemove, "autoremove", false, "when true, containers are automatically pruned upon exit")
-	runBaselineProxyCmd.Flags().StringVar(&logLevel, "log-level", "DEBUG", "log level to set within the running proxy instance")
+	runBaselineProxyCmd.Flags().StringVar(&logLevel, "log-level", "DEBUG", "log level to set within the running local baseline stack")
 
-	runBaselineProxyCmd.Flags().StringVar(&jwtSignerPublicKey, "jwt-signer-public-key", "", "PEM-encoded public key of the authorized JWT signer for verifying inbound proxy connection attempts")
-	runBaselineProxyCmd.Flags().StringVar(&natsAuthToken, "nats-auth-token", "testtoken", "authorization token for the NATS service; will be passed as the -auth argument to NATS")
+	runBaselineProxyCmd.Flags().StringVar(&jwtSignerPublicKey, "jwt-signer-public-key", "", "PEM-encoded public key of the authorized JWT signer for verifying inbound connection attempts")
 
 	runBaselineProxyCmd.Flags().StringVar(&identAPIHost, "ident-host", "ident.provide.services", "hostname of the ident service")
 	runBaselineProxyCmd.Flags().StringVar(&identAPIScheme, "ident-scheme", "https", "protocol scheme of the ident service")
@@ -617,16 +630,10 @@ func init() {
 	runBaselineProxyCmd.Flags().StringVar(&privacyAPIHost, "privacy-host", "privacy.provide.services", "hostname of the privacy service")
 	runBaselineProxyCmd.Flags().StringVar(&privacyAPIScheme, "privacy-scheme", "https", "protocol scheme of the privacy service")
 
-	runBaselineProxyCmd.Flags().StringVar(&sorID, "sor", "", "primary internal system of record identifier being baselined")
-	runBaselineProxyCmd.Flags().StringVar(&sorURL, "sor-url", "https://", "url of the primary internal system of record being baselined")
-
 	runBaselineProxyCmd.Flags().StringVar(&vaultAPIHost, "vault-host", "vault.provide.services", "hostname of the vault service")
 	runBaselineProxyCmd.Flags().StringVar(&vaultAPIScheme, "vault-scheme", "https", "protocol scheme of the vault service")
 	runBaselineProxyCmd.Flags().StringVar(&vaultRefreshToken, "vault-refresh-token", os.Getenv("VAULT_REFRESH_TOKEN"), "refresh token to vend access tokens for use with vault")
 	runBaselineProxyCmd.Flags().StringVar(&vaultSealUnsealKey, "vault-seal-unseal-key", os.Getenv("VAULT_SEAL_UNSEAL_KEY"), "seal/unseal key for the vault service")
-
-	runBaselineProxyCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
-	runBaselineProxyCmd.MarkFlagRequired("organization")
 
 	runBaselineProxyCmd.Flags().StringVar(&organizationRefreshToken, "organization-refresh-token", os.Getenv("PROVIDE_ORGANIZATION_REFRESH_TOKEN"), "refresh token to vend access tokens for use with the local organization")
 
@@ -644,11 +651,6 @@ func init() {
 	if os.Getenv("NCHAIN_BASELINE_NETWORK_ID") != "" {
 		defaultNChainBaselineNetworkID = os.Getenv("NCHAIN_BASELINE_NETWORK_ID")
 	}
-
-	runBaselineProxyCmd.Flags().StringVar(&common.MessagingEndpoint, "messaging-endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
-	runBaselineProxyCmd.Flags().BoolVar(&common.ExposeTunnel, "tunnel", false, "when true, a tunnel is established to expose the endpoint to the WAN")
-
-	runBaselineProxyCmd.Flags().StringVar(&baselineOrganizationProxyEndpoint, "proxy-endpoint", "", "baseline proxy endpoint used by one or more systems of record")
 
 	runBaselineProxyCmd.Flags().StringVar(&baselineOrganizationAddress, "organization-address", defaultBaselineOrganizationAddress, "public baseline regsitry address of the organization")
 	runBaselineProxyCmd.Flags().StringVar(&baselineRegistryContractAddress, "registry-contract-address", defaultBaselineRegistryContractAddress, "public baseline regsitry contract address")
