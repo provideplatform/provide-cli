@@ -307,9 +307,12 @@ func containerEnvironmentFactory() []string {
 		for _, envvar := range []string{
 			fmt.Sprintf("SAP_API_HOST=%s", _url.Host),
 			fmt.Sprintf("SAP_API_SCHEME=%s", _url.Scheme),
-			fmt.Sprintf("SAP_API_PATH=%s", _url.Path),
 		} {
 			env = append(env, envvar)
+		}
+
+		if _url.Path != "" {
+			env = append(env, fmt.Sprintf("SAP_API_PATH=%s", strings.TrimLeft(_url.Path, "/")))
 		}
 	}
 
@@ -331,9 +334,12 @@ func containerEnvironmentFactory() []string {
 		for _, envvar := range []string{
 			fmt.Sprintf("SERVICENOW_API_HOST=%s", _url.Host),
 			fmt.Sprintf("SERVICENOW_API_SCHEME=%s", _url.Scheme),
-			fmt.Sprintf("SERVICENOW_API_PATH=%s", _url.Path),
 		} {
 			env = append(env, envvar)
+		}
+
+		if _url.Path != "" {
+			env = append(env, fmt.Sprintf("SERVICENOW_API_PATH=%s", strings.TrimLeft(_url.Path, "/")))
 		}
 	}
 
@@ -587,13 +593,13 @@ func init() {
 	runBaselineProxyCmd.Flags().IntVar(&natsPort, "nats-port", 4222, "local NATS port to expose on the proxy")
 	runBaselineProxyCmd.Flags().IntVar(&natsWebsocketPort, "nats-ws-port", 4221, "local NATS websocket port to expose on the proxy")
 	runBaselineProxyCmd.Flags().IntVar(&natsStreamingPort, "nats-streaming-port", 4220, "local NATS streaming port to expose on the proxy")
-	runBaselineProxyCmd.Flags().IntVar(&redisPort, "redis-port", 6379, "local NATS port to expose on the proxy")
+	runBaselineProxyCmd.Flags().IntVar(&redisPort, "redis-port", 6379, "local redis port to expose on the proxy")
 
 	runBaselineProxyCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the proxy API container")
 	runBaselineProxyCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the proxy consumer container")
 	runBaselineProxyCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the proxy NATS container")
 	runBaselineProxyCmd.Flags().StringVar(&natsStreamingHostname, fmt.Sprintf("%s-nats-streaming", name), "baseline-proxy-nats-streaming", "hostname for the proxy NATS streaming container")
-	runBaselineProxyCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the proxy Redis container")
+	runBaselineProxyCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the proxy redis container")
 	runBaselineProxyCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisPort), "list of clustered redis hosts")
 
 	runBaselineProxyCmd.Flags().BoolVar(&autoRemove, "autoremove", false, "when true, containers are automatically pruned upon exit")
