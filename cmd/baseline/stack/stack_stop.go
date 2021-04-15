@@ -1,4 +1,4 @@
-package proxy
+package stack
 
 import (
 	"context"
@@ -11,10 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var stopBaselineProxyCmd = &cobra.Command{
+var stopBaselineStackCmd = &cobra.Command{
 	Use:   "stop",
-	Short: "Stop the baseline proxy",
-	Long:  `Stop a local baseline proxy instance`,
+	Short: "Stop the baseline stack",
+	Long:  `Stop a local baseline stack instance`,
 	Run:   stopProxy,
 }
 
@@ -28,11 +28,11 @@ func stopProxy(cmd *cobra.Command, args []string) {
 	purgeContainers(docker)
 	purgeNetwork(docker)
 
-	log.Printf("%s proxy instance stopped", name)
+	log.Printf("%s local baseline instance stopped", name)
 }
 
 func purgeContainers(docker *client.Client) {
-	// log.Printf("purging containers for baseline proxy instance: %s", name)
+	// log.Printf("purging containers for local baseline instance: %s", name)
 	for _, container := range listContainers(docker) {
 		err := docker.ContainerRemove(context.Background(), container.ID, types.ContainerRemoveOptions{
 			RemoveVolumes: true,
@@ -55,5 +55,5 @@ func purgeNetwork(docker *client.Client) {
 }
 
 func init() {
-	stopBaselineProxyCmd.Flags().StringVar(&name, "name", "baseline-proxy", "name of the baseline proxy instance")
+	stopBaselineStackCmd.Flags().StringVar(&name, "name", "baseline-local", "name of the baseline stack instance")
 }

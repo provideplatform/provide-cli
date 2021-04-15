@@ -24,6 +24,27 @@ import (
 	util "github.com/provideservices/provide-go/common"
 )
 
+//                                         :os/`
+//                                     ./ymNNNNNdo-
+//                                  -odNNNNNNNNNNNNNy+.
+//                                omNNNNNNNNNNNNNNNNNNNm.
+//                                +dNNNNNNNNNNNNNNNNNNdo`
+//                        :.      :..+yNNNNNNNNNNNNy+.-+.
+//                        /oo/-`  sNms:`-ohNNNNms:`:smmy`
+//                          .:+s+/.`:odNho-./+-.+yNdo-`-
+//                              -/os+:`./ymmysdNh+..:+s+
+//                                 `-/oo/-`-os:`-/oo/-`
+//                                     .:+s+::+o+:.
+//  `/:                                   `-//-`      :/` .:`
+//  -NN                                               mN- sd:
+//  -NN`:+o+/-      `-/+/:`-/-  -/+++-     `:/+/:`    mN- /+. ./--++/.      `:++/-
+//  -NNmNhsymNd/  `sNNdyhmNmNy sNdssdNh` -hNmysymNy`  mN- dN: oNNNhymNh.  -hNmysymNs`
+//  -NNs`    :NN/`dNy`    /NNy mNo..`//`-NN:    `oNm` mN- dN: oNd`   sNh :Nm:    `oNm`
+//  -NN`      yNh:NN.      yNy -hmNNNms`oNNmmmmmmmmm: mN- dN: oNs    /Nh oNNmmmmmmmmm.
+//  -NNh.   `+NN: dNy`    /NNy :/.``-NN-:NN+    .so-  mN- dN: oNs    /Nh :NN+`   .so.
+//  -NNdNdhhmNh:  `smNdhhNNmNy +NNhhmNh` -yNNhhdNms`  mN- dN: oNs    /Nh  -hNNhhdNms`
+//  `// .///:`      `-///-`:/:  `:///-     `:///-     //` //. -/-    ./:    `:///-`
+
 const defaultBaselineRegistryContractName = "Shuttle"
 
 const requireContractSleepInterval = time.Second * 1

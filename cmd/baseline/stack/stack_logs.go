@@ -1,4 +1,4 @@
-package proxy
+package stack
 
 import (
 	"context"
@@ -13,10 +13,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var logsBaselineProxyCmd = &cobra.Command{
+var logsBaselineStackCmd = &cobra.Command{
 	Use:   "logs",
-	Short: "Print baseline proxy logs",
-	Long:  `Print the logs from each container in a local baseline proxy instance`,
+	Short: "Print baseline stack logs",
+	Long:  `Print the logs from each container in a local baseline stack instance`,
 	Run:   logsProxy,
 }
 
@@ -67,5 +67,5 @@ func logContainer(docker *client.Client, containerID string) error {
 }
 
 func init() {
-	logsBaselineProxyCmd.Flags().StringVar(&name, "name", "baseline-proxy", "name of the baseline proxy instance")
+	logsBaselineStackCmd.Flags().StringVar(&name, "name", "baseline-local", "name of the baseline stack instance")
 }

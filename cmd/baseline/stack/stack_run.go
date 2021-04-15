@@ -1,4 +1,4 @@
-package proxy
+package stack
 
 import (
 	"context"
@@ -26,7 +26,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const baselineProxyContainerImage = "provide/baseline"
+const baselineContainerImage = "provide/baseline"
 const natsContainerImage = "provide/nats-server"
 const natsStreamingContainerImage = "provide/nats-streaming"
 const redisContainerImage = "redis"
@@ -120,7 +120,7 @@ var serviceNowAPIUsername string
 var serviceNowAPIPassword string
 var serviceNowAPIPath string
 
-var runBaselineProxyCmd = &cobra.Command{
+var runBaselineStackCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run the baseline stack",
 	Long:  `Start a local baseline stack instance and connect to internal systems of record`,
@@ -138,7 +138,7 @@ func runProxy(cmd *cobra.Command, args []string) {
 	purgeContainers(docker)
 
 	for _, image := range []string{
-		baselineProxyContainerImage,
+		baselineContainerImage,
 		natsContainerImage,
 		natsStreamingContainerImage,
 		redisContainerImage,
@@ -351,7 +351,7 @@ func runProxyAPI(docker *client.Client) {
 		docker,
 		fmt.Sprintf("%s-api", strings.ReplaceAll(name, " ", "")),
 		apiHostname,
-		baselineProxyContainerImage,
+		baselineContainerImage,
 		&[]string{"./ops/run_api.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", apiHostname, apiContainerPort)},
@@ -371,8 +371,8 @@ func runProxyConsumer(docker *client.Client) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-consumer", strings.ReplaceAll(name, " ", "")),
-		natsHostname,
-		baselineProxyContainerImage,
+		consumerHostname,
+		baselineContainerImage,
 		&[]string{"./ops/run_consumer.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", apiHostname, port)},
@@ -588,54 +588,54 @@ func listContainers(docker *client.Client) []types.Container {
 }
 
 func init() {
-	runBaselineProxyCmd.Flags().StringVar(&name, "name", "baseline-local", "name of the local baseline stack")
+	runBaselineStackCmd.Flags().StringVar(&name, "name", "baseline-local", "name of the baseline stack instance")
 
-	runBaselineProxyCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
-	runBaselineProxyCmd.MarkFlagRequired("organization")
+	runBaselineStackCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
+	runBaselineStackCmd.MarkFlagRequired("organization")
 
-	runBaselineProxyCmd.Flags().StringVar(&baselineOrganizationAPIEndpoint, "api-endpoint", "", "local baseline API endpoint for use by one or more authorized systems of record")
-	runBaselineProxyCmd.Flags().StringVar(&common.MessagingEndpoint, "messaging-endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
-	runBaselineProxyCmd.Flags().BoolVar(&common.ExposeTunnel, "tunnel", false, "when true, a tunnel is established to expose the endpoint to the WAN")
+	runBaselineStackCmd.Flags().StringVar(&baselineOrganizationAPIEndpoint, "api-endpoint", "", "local baseline API endpoint for use by one or more authorized systems of record")
+	runBaselineStackCmd.Flags().StringVar(&common.MessagingEndpoint, "messaging-endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
+	runBaselineStackCmd.Flags().BoolVar(&common.ExposeTunnel, "tunnel", false, "when true, a tunnel is established to expose the endpoint to the WAN")
 
-	runBaselineProxyCmd.Flags().StringVar(&sorID, "sor", "", "primary internal system of record identifier being baselined")
-	runBaselineProxyCmd.Flags().StringVar(&sorURL, "sor-url", "https://", "url of the primary internal system of record being baselined")
+	runBaselineStackCmd.Flags().StringVar(&sorID, "sor", "", "primary internal system of record identifier being baselined")
+	runBaselineStackCmd.Flags().StringVar(&sorURL, "sor-url", "https://", "url of the primary internal system of record being baselined")
 
-	runBaselineProxyCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the local baseline API container")
-	runBaselineProxyCmd.Flags().IntVar(&port, "port", 8080, "port to expose on the local baseline API container")
+	runBaselineStackCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the local baseline API container")
+	runBaselineStackCmd.Flags().IntVar(&port, "port", 8080, "port to expose on the local baseline API container")
 
-	runBaselineProxyCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the local baseline consumer container")
-	runBaselineProxyCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the local baseline NATS container")
-	runBaselineProxyCmd.Flags().IntVar(&natsPort, "nats-port", 4222, "port to expose on the local baseline NATS container")
-	runBaselineProxyCmd.Flags().IntVar(&natsWebsocketPort, "nats-ws-port", 4221, "websocket port to expose on the local baseline NATS container")
-	runBaselineProxyCmd.Flags().StringVar(&natsAuthToken, "nats-auth-token", "testtoken", "authorization token for the local baseline NATS service; will be passed as the -auth argument to NATS")
+	runBaselineStackCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the local baseline consumer container")
+	runBaselineStackCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the local baseline NATS container")
+	runBaselineStackCmd.Flags().IntVar(&natsPort, "nats-port", 4222, "port to expose on the local baseline NATS container")
+	runBaselineStackCmd.Flags().IntVar(&natsWebsocketPort, "nats-ws-port", 4221, "websocket port to expose on the local baseline NATS container")
+	runBaselineStackCmd.Flags().StringVar(&natsAuthToken, "nats-auth-token", "testtoken", "authorization token for the local baseline NATS service; will be passed as the -auth argument to NATS")
 
-	runBaselineProxyCmd.Flags().StringVar(&natsStreamingHostname, fmt.Sprintf("%s-nats-streaming", name), "nats-streaming-hostname", "hostname for the local baseline NATS streaming container")
-	runBaselineProxyCmd.Flags().IntVar(&natsStreamingPort, "nats-streaming-port", 4220, "port to expose on the local baseline NATS streaming container")
+	runBaselineStackCmd.Flags().StringVar(&natsStreamingHostname, fmt.Sprintf("%s-nats-streaming", name), "nats-streaming-hostname", "hostname for the local baseline NATS streaming container")
+	runBaselineStackCmd.Flags().IntVar(&natsStreamingPort, "nats-streaming-port", 4220, "port to expose on the local baseline NATS streaming container")
 
-	runBaselineProxyCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the local baseline redis container")
-	runBaselineProxyCmd.Flags().IntVar(&redisPort, "redis-port", 6379, "port to expose on the local baseline redis container")
-	runBaselineProxyCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisPort), "list of clustered redis hosts in the local baseline stack")
+	runBaselineStackCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the local baseline redis container")
+	runBaselineStackCmd.Flags().IntVar(&redisPort, "redis-port", 6379, "port to expose on the local baseline redis container")
+	runBaselineStackCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisPort), "list of clustered redis hosts in the local baseline stack")
 
-	runBaselineProxyCmd.Flags().BoolVar(&autoRemove, "autoremove", false, "when true, containers are automatically pruned upon exit")
-	runBaselineProxyCmd.Flags().StringVar(&logLevel, "log-level", "DEBUG", "log level to set within the running local baseline stack")
+	runBaselineStackCmd.Flags().BoolVar(&autoRemove, "autoremove", false, "when true, containers are automatically pruned upon exit")
+	runBaselineStackCmd.Flags().StringVar(&logLevel, "log-level", "DEBUG", "log level to set within the running local baseline stack")
 
-	runBaselineProxyCmd.Flags().StringVar(&jwtSignerPublicKey, "jwt-signer-public-key", "", "PEM-encoded public key of the authorized JWT signer for verifying inbound connection attempts")
+	runBaselineStackCmd.Flags().StringVar(&jwtSignerPublicKey, "jwt-signer-public-key", "", "PEM-encoded public key of the authorized JWT signer for verifying inbound connection attempts")
 
-	runBaselineProxyCmd.Flags().StringVar(&identAPIHost, "ident-host", "ident.provide.services", "hostname of the ident service")
-	runBaselineProxyCmd.Flags().StringVar(&identAPIScheme, "ident-scheme", "https", "protocol scheme of the ident service")
+	runBaselineStackCmd.Flags().StringVar(&identAPIHost, "ident-host", "ident.provide.services", "hostname of the ident service")
+	runBaselineStackCmd.Flags().StringVar(&identAPIScheme, "ident-scheme", "https", "protocol scheme of the ident service")
 
-	runBaselineProxyCmd.Flags().StringVar(&nchainAPIHost, "nchain-host", "nchain.provide.services", "hostname of the nchain service")
-	runBaselineProxyCmd.Flags().StringVar(&nchainAPIScheme, "nchain-scheme", "https", "protocol scheme of the nchain service")
+	runBaselineStackCmd.Flags().StringVar(&nchainAPIHost, "nchain-host", "nchain.provide.services", "hostname of the nchain service")
+	runBaselineStackCmd.Flags().StringVar(&nchainAPIScheme, "nchain-scheme", "https", "protocol scheme of the nchain service")
 
-	runBaselineProxyCmd.Flags().StringVar(&privacyAPIHost, "privacy-host", "privacy.provide.services", "hostname of the privacy service")
-	runBaselineProxyCmd.Flags().StringVar(&privacyAPIScheme, "privacy-scheme", "https", "protocol scheme of the privacy service")
+	runBaselineStackCmd.Flags().StringVar(&privacyAPIHost, "privacy-host", "privacy.provide.services", "hostname of the privacy service")
+	runBaselineStackCmd.Flags().StringVar(&privacyAPIScheme, "privacy-scheme", "https", "protocol scheme of the privacy service")
 
-	runBaselineProxyCmd.Flags().StringVar(&vaultAPIHost, "vault-host", "vault.provide.services", "hostname of the vault service")
-	runBaselineProxyCmd.Flags().StringVar(&vaultAPIScheme, "vault-scheme", "https", "protocol scheme of the vault service")
-	runBaselineProxyCmd.Flags().StringVar(&vaultRefreshToken, "vault-refresh-token", os.Getenv("VAULT_REFRESH_TOKEN"), "refresh token to vend access tokens for use with vault")
-	runBaselineProxyCmd.Flags().StringVar(&vaultSealUnsealKey, "vault-seal-unseal-key", os.Getenv("VAULT_SEAL_UNSEAL_KEY"), "seal/unseal key for the vault service")
+	runBaselineStackCmd.Flags().StringVar(&vaultAPIHost, "vault-host", "vault.provide.services", "hostname of the vault service")
+	runBaselineStackCmd.Flags().StringVar(&vaultAPIScheme, "vault-scheme", "https", "protocol scheme of the vault service")
+	runBaselineStackCmd.Flags().StringVar(&vaultRefreshToken, "vault-refresh-token", os.Getenv("VAULT_REFRESH_TOKEN"), "refresh token to vend access tokens for use with vault")
+	runBaselineStackCmd.Flags().StringVar(&vaultSealUnsealKey, "vault-seal-unseal-key", os.Getenv("VAULT_SEAL_UNSEAL_KEY"), "seal/unseal key for the vault service")
 
-	runBaselineProxyCmd.Flags().StringVar(&organizationRefreshToken, "organization-refresh-token", os.Getenv("PROVIDE_ORGANIZATION_REFRESH_TOKEN"), "refresh token to vend access tokens for use with the local organization")
+	runBaselineStackCmd.Flags().StringVar(&organizationRefreshToken, "organization-refresh-token", os.Getenv("PROVIDE_ORGANIZATION_REFRESH_TOKEN"), "refresh token to vend access tokens for use with the local organization")
 
 	defaultBaselineOrganizationAddress := "0x"
 	if os.Getenv("BASELINE_ORGANIZATION_ADDRESS") != "" {
@@ -652,29 +652,29 @@ func init() {
 		defaultNChainBaselineNetworkID = os.Getenv("NCHAIN_BASELINE_NETWORK_ID")
 	}
 
-	runBaselineProxyCmd.Flags().StringVar(&baselineOrganizationAddress, "organization-address", defaultBaselineOrganizationAddress, "public baseline regsitry address of the organization")
-	runBaselineProxyCmd.Flags().StringVar(&baselineRegistryContractAddress, "registry-contract-address", defaultBaselineRegistryContractAddress, "public baseline regsitry contract address")
-	runBaselineProxyCmd.Flags().StringVar(&baselineWorkgroupID, "workgroup", "", "baseline workgroup identifier")
+	runBaselineStackCmd.Flags().StringVar(&baselineOrganizationAddress, "organization-address", defaultBaselineOrganizationAddress, "public baseline regsitry address of the organization")
+	runBaselineStackCmd.Flags().StringVar(&baselineRegistryContractAddress, "registry-contract-address", defaultBaselineRegistryContractAddress, "public baseline regsitry contract address")
+	runBaselineStackCmd.Flags().StringVar(&baselineWorkgroupID, "workgroup", "", "baseline workgroup identifier")
 
-	runBaselineProxyCmd.Flags().StringVar(&nchainBaselineNetworkID, "nchain-network-id", defaultNChainBaselineNetworkID, "nchain network id of the baseline mainnet")
+	runBaselineStackCmd.Flags().StringVar(&nchainBaselineNetworkID, "nchain-network-id", defaultNChainBaselineNetworkID, "nchain network id of the baseline mainnet")
 
 	initSORFlags()
 }
 
 func initSORFlags() {
-	// runBaselineProxyCmd.Flags().StringVar(&salesforceAPIHost, "salesforce-api-host", "", "hostname of the Salesforce API service")
-	// runBaselineProxyCmd.Flags().StringVar(&salesforceAPIScheme, "salesforce-api-scheme", "https", "protocol scheme of the Salesforce API service")
-	// runBaselineProxyCmd.Flags().StringVar(&salesforceAPIPath, "salesforce-api-path", "", "base path of the Salesforce API service")
+	// runBaselineStackCmd.Flags().StringVar(&salesforceAPIHost, "salesforce-api-host", "", "hostname of the Salesforce API service")
+	// runBaselineStackCmd.Flags().StringVar(&salesforceAPIScheme, "salesforce-api-scheme", "https", "protocol scheme of the Salesforce API service")
+	// runBaselineStackCmd.Flags().StringVar(&salesforceAPIPath, "salesforce-api-path", "", "base path of the Salesforce API service")
 
-	runBaselineProxyCmd.Flags().StringVar(&sapAPIHost, "sap-api-host", "", "hostname of the internal SAP API service")
-	runBaselineProxyCmd.Flags().StringVar(&sapAPIScheme, "sap-api-scheme", "https", "protocol scheme of the internal SAP API service")
-	runBaselineProxyCmd.Flags().StringVar(&sapAPIPath, "sap-api-path", "ubc", "base path of the SAP API service")
-	runBaselineProxyCmd.Flags().StringVar(&sapAPIUsername, "sap-api-username", "", "username to use for basic authorization against the SAP API service")
-	runBaselineProxyCmd.Flags().StringVar(&sapAPIPassword, "sap-api-password", "", "password to use for basic authorization against the SAP API service")
+	runBaselineStackCmd.Flags().StringVar(&sapAPIHost, "sap-api-host", "", "hostname of the internal SAP API service")
+	runBaselineStackCmd.Flags().StringVar(&sapAPIScheme, "sap-api-scheme", "https", "protocol scheme of the internal SAP API service")
+	runBaselineStackCmd.Flags().StringVar(&sapAPIPath, "sap-api-path", "ubc", "base path of the SAP API service")
+	runBaselineStackCmd.Flags().StringVar(&sapAPIUsername, "sap-api-username", "", "username to use for basic authorization against the SAP API service")
+	runBaselineStackCmd.Flags().StringVar(&sapAPIPassword, "sap-api-password", "", "password to use for basic authorization against the SAP API service")
 
-	runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIHost, "servicenow-api-host", "", "hostname of the ServiceNow service")
-	runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIScheme, "servicenow-api-scheme", "https", "protocol scheme of the ServiceNow service")
-	runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIPath, "servicenow-api-path", "api/now/table", "base path of the ServiceNow API")
-	runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIUsername, "servicenow-api-username", "", "username to use for basic authorization against the ServiceNow API")
-	runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIPassword, "servicenow-api-password", "", "password to use for basic authorization against the ServiceNow API")
+	runBaselineStackCmd.Flags().StringVar(&serviceNowAPIHost, "servicenow-api-host", "", "hostname of the ServiceNow service")
+	runBaselineStackCmd.Flags().StringVar(&serviceNowAPIScheme, "servicenow-api-scheme", "https", "protocol scheme of the ServiceNow service")
+	runBaselineStackCmd.Flags().StringVar(&serviceNowAPIPath, "servicenow-api-path", "api/now/table", "base path of the ServiceNow API")
+	runBaselineStackCmd.Flags().StringVar(&serviceNowAPIUsername, "servicenow-api-username", "", "username to use for basic authorization against the ServiceNow API")
+	runBaselineStackCmd.Flags().StringVar(&serviceNowAPIPassword, "servicenow-api-password", "", "password to use for basic authorization against the ServiceNow API")
 }

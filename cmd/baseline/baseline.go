@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/provideservices/provide-cli/cmd/baseline/proxy"
+	"github.com/provideservices/provide-cli/cmd/baseline/stack"
 	"github.com/provideservices/provide-cli/cmd/baseline/workgroups"
 )
 
@@ -18,7 +18,19 @@ var BaselineCmd = &cobra.Command{
 	},
 }
 
+var proxyCmd = &cobra.Command{
+	Use:   "proxy",
+	Short: "See `prvd baseline stack --help` instead",
+	Long: `Create, manage and interact with local baseline stack instances.
+
+See: prvd baseline stack --help instead. This command is deprecated and will be removed soon.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		stack.StackCmd.Run(cmd, args)
+	},
+}
+
 func init() {
-	BaselineCmd.AddCommand(proxy.ProxyCmd)
+	BaselineCmd.AddCommand(proxyCmd)
+	BaselineCmd.AddCommand(stack.StackCmd)
 	BaselineCmd.AddCommand(workgroups.WorkgroupsCmd)
 }
