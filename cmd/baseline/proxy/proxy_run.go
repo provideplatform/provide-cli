@@ -260,7 +260,7 @@ func containerEnvironmentFactory() []string {
 		fmt.Sprintf("IDENT_API_SCHEME=%s", identAPIScheme),
 		fmt.Sprintf("JWT_SIGNER_PUBLIC_KEY=%s", jwtSignerPublicKey),
 		fmt.Sprintf("LOG_LEVEL=%s", logLevel),
-		fmt.Sprintf("NATS_CLIENT_PREFIX=%s", fmt.Sprintf("%s-", name)),
+		fmt.Sprintf("NATS_CLIENT_PREFIX=%s", name),
 		fmt.Sprintf("NATS_STREAMING_URL=%s", fmt.Sprintf("nats://%s:%d", natsStreamingHostname, natsPort)),
 		fmt.Sprintf("NATS_TOKEN=%s", natsAuthToken),
 		fmt.Sprintf("NATS_URL=%s", fmt.Sprintf("nats://%s:%d", natsHostname, natsPort)),
@@ -342,7 +342,7 @@ func runProxyAPI(docker *client.Client) {
 		baselineProxyContainerImage,
 		&[]string{"./ops/run_api.sh"},
 		nil,
-		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", apiHostname, port)},
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", apiHostname, apiContainerPort)},
 		[]portMapping{{
 			hostPort:      port,
 			containerPort: apiContainerPort,
@@ -381,7 +381,7 @@ func runNATS(docker *client.Client) {
 		natsContainerImage,
 		nil,
 		&[]string{"-auth", natsAuthToken, "-p", fmt.Sprintf("%d", natsPort), "-D", "-V"},
-		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsPort)},
+		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsContainerPort)},
 		[]portMapping{
 			{
 				hostPort:      natsPort,
@@ -408,7 +408,7 @@ func runNATSStreaming(docker *client.Client) {
 		natsStreamingContainerImage,
 		nil,
 		&[]string{"-cid", defaultNATSStreamingClusterID, "--auth", natsAuthToken, "-SDV"},
-		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsPort)},
+		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsStreamingContainerPort)},
 		[]portMapping{
 			{
 				hostPort:      natsStreamingPort,
