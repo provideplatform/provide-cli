@@ -284,7 +284,7 @@ func setupMessagingEndpoint(fn func()) {
 		)
 
 		installSignalHandlers := func() {
-			log.Printf("installing signal handlers for baseline-proxy API")
+			log.Printf("installing signal handlers")
 			sigs = make(chan os.Signal, 1)
 			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 			shutdownCtx, cancelF = context.WithCancel(context.Background())
@@ -292,7 +292,7 @@ func setupMessagingEndpoint(fn func()) {
 
 		shutdown := func() {
 			if atomic.AddUint32(&closing, 1) == 1 {
-				log.Print("shutting down baseline-proxy API")
+				log.Print("shutting down")
 				cancelF()
 				os.Exit(0)
 			}
@@ -302,7 +302,6 @@ func setupMessagingEndpoint(fn func()) {
 			return (atomic.LoadUint32(&closing) > 0)
 		}
 
-		log.Printf("starting tunnel runloop")
 		installSignalHandlers()
 
 		go func() {
@@ -378,7 +377,7 @@ func setupMessagingEndpoint(fn func()) {
 			os.Exit(1)
 		}
 
-		log.Printf("messaging endpoint set: %s", MessagingEndpoint)
+		log.Printf("starting tunnel runloop")
 
 		timer := time.NewTicker(runloopTickInterval)
 		defer timer.Stop()
