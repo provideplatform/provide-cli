@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -105,6 +106,18 @@ var vaultAPIHost string
 var vaultAPIScheme string
 var vaultRefreshToken string
 var vaultSealUnsealKey string
+
+var sapAPIHost string
+var sapAPIScheme string
+var sapAPIUsername string
+var sapAPIPassword string
+var sapAPIPath string
+
+var serviceNowAPIHost string
+var serviceNowAPIScheme string
+var serviceNowAPIUsername string
+var serviceNowAPIPassword string
+var serviceNowAPIPath string
 
 var runBaselineProxyCmd = &cobra.Command{
 	Use:   "run",
@@ -237,7 +250,8 @@ func authorizeWorkgroupContext() {
 }
 
 func containerEnvironmentFactory() []string {
-	return []string{
+	env := make([]string, 0)
+	for _, envvar := range []string{
 		fmt.Sprintf("BASELINE_ORGANIZATION_ADDRESS=%s", baselineOrganizationAddress),
 		fmt.Sprintf("BASELINE_ORGANIZATION_MESSAGING_ENDPOINT=%s", common.MessagingEndpoint),
 		fmt.Sprintf("BASELINE_ORGANIZATION_PROXY_ENDPOINT=%s", baselineOrganizationProxyEndpoint),
@@ -265,7 +279,59 @@ func containerEnvironmentFactory() []string {
 		fmt.Sprintf("VAULT_API_SCHEME=%s", vaultAPIScheme),
 		fmt.Sprintf("VAULT_REFRESH_TOKEN=%s", vaultRefreshToken),
 		fmt.Sprintf("VAULT_SEAL_UNSEAL_KEY=%s", vaultSealUnsealKey),
+	} {
+		env = append(env, envvar)
 	}
+
+	if sapAPIHost != "" && sapAPIUsername != "" && sapAPIPassword != "" {
+		for _, envvar := range []string{
+			fmt.Sprintf("SAP_API_HOST=%s", sapAPIHost),
+			fmt.Sprintf("SAP_API_SCHEME=%s", sapAPIScheme),
+			fmt.Sprintf("SAP_API_PATH=%s", sapAPIPath),
+			fmt.Sprintf("SAP_API_USERNAE=%s", sapAPIUsername),
+			fmt.Sprintf("SAP_API_PASSWORD=%s", sapAPIPassword),
+		} {
+			env = append(env, envvar)
+		}
+	} else if sorID == "sap" && sorURL != "" {
+		_url, err := url.Parse(sorURL)
+		if err != nil {
+			log.Printf("WARNING: system of record url invalid; %s", err.Error())
+		}
+		for _, envvar := range []string{
+			fmt.Sprintf("SAP_API_HOST=%s", _url.Host),
+			fmt.Sprintf("SAP_API_SCHEME=%s", _url.Scheme),
+			fmt.Sprintf("SAP_API_PATH=%s", _url.Path),
+		} {
+			env = append(env, envvar)
+		}
+	}
+
+	if serviceNowAPIHost != "" && serviceNowAPIUsername != "" && serviceNowAPIPassword != "" {
+		for _, envvar := range []string{
+			fmt.Sprintf("SERVICENOW_API_HOST=%s", serviceNowAPIHost),
+			fmt.Sprintf("SERVICENOW_API_SCHEME=%s", serviceNowAPIScheme),
+			fmt.Sprintf("SERVICENOW_API_PATH=%s", serviceNowAPIPath),
+			fmt.Sprintf("SERVICENOW_API_USERNAE=%s", serviceNowAPIUsername),
+			fmt.Sprintf("SERVICENOW_API_PASSWORD=%s", serviceNowAPIPassword),
+		} {
+			env = append(env, envvar)
+		}
+	} else if sorID == "servicenow" || sorID == "snow" && sorURL != "" {
+		_url, err := url.Parse(sorURL)
+		if err != nil {
+			log.Printf("WARNING: system of record url invalid; %s", err.Error())
+		}
+		for _, envvar := range []string{
+			fmt.Sprintf("SERVICENOW_API_HOST=%s", _url.Host),
+			fmt.Sprintf("SERVICENOW_API_SCHEME=%s", _url.Scheme),
+			fmt.Sprintf("SERVICENOW_API_PATH=%s", _url.Path),
+		} {
+			env = append(env, envvar)
+		}
+	}
+
+	return env
 }
 
 func runProxyAPI(docker *client.Client) {
@@ -533,12 +599,6 @@ func init() {
 	runBaselineProxyCmd.Flags().StringVar(&sorID, "sor", "", "primary internal system of record identifier being baselined")
 	runBaselineProxyCmd.Flags().StringVar(&sorURL, "sor-url", "https://", "url of the primary internal system of record being baselined")
 
-	// runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIHost, "servicenow-api-host", "", "hostname of the ServiceNow service")
-	// runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIScheme, "servicenow-api-scheme", "https", "protocol scheme of the ServiceNow service")
-	// runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIPath, "servicenow-api-path", "api/now/table", "base path of the ServiceNow API")
-	// runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIUsername, "servicenow-api-username", "", "username to use for basic authorization against the ServiceNow API")
-	// runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIPassword, "servicenow-api-password", "", "password to use for basic authorization against the ServiceNow API")
-
 	runBaselineProxyCmd.Flags().StringVar(&vaultAPIHost, "vault-host", "vault.provide.services", "hostname of the vault service")
 	runBaselineProxyCmd.Flags().StringVar(&vaultAPIScheme, "vault-scheme", "https", "protocol scheme of the vault service")
 	runBaselineProxyCmd.Flags().StringVar(&vaultRefreshToken, "vault-refresh-token", os.Getenv("VAULT_REFRESH_TOKEN"), "refresh token to vend access tokens for use with vault")
@@ -574,4 +634,24 @@ func init() {
 	runBaselineProxyCmd.Flags().StringVar(&baselineWorkgroupID, "workgroup", "", "baseline workgroup identifier")
 
 	runBaselineProxyCmd.Flags().StringVar(&nchainBaselineNetworkID, "nchain-network-id", defaultNChainBaselineNetworkID, "nchain network id of the baseline mainnet")
+
+	initSORFlags()
+}
+
+func initSORFlags() {
+	// runBaselineProxyCmd.Flags().StringVar(&salesforceAPIHost, "salesforce-api-host", "", "hostname of the Salesforce API service")
+	// runBaselineProxyCmd.Flags().StringVar(&salesforceAPIScheme, "salesforce-api-scheme", "https", "protocol scheme of the Salesforce API service")
+	// runBaselineProxyCmd.Flags().StringVar(&salesforceAPIPath, "salesforce-api-path", "", "base path of the Salesforce API service")
+
+	runBaselineProxyCmd.Flags().StringVar(&sapAPIHost, "sap-api-host", "", "hostname of the internal SAP API service")
+	runBaselineProxyCmd.Flags().StringVar(&sapAPIScheme, "sap-api-scheme", "https", "protocol scheme of the internal SAP API service")
+	runBaselineProxyCmd.Flags().StringVar(&sapAPIPath, "sap-api-path", "ubc", "base path of the SAP API service")
+	runBaselineProxyCmd.Flags().StringVar(&sapAPIUsername, "sap-api-username", "", "username to use for basic authorization against the SAP API service")
+	runBaselineProxyCmd.Flags().StringVar(&sapAPIPassword, "sap-api-password", "", "password to use for basic authorization against the SAP API service")
+
+	runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIHost, "servicenow-api-host", "", "hostname of the ServiceNow service")
+	runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIScheme, "servicenow-api-scheme", "https", "protocol scheme of the ServiceNow service")
+	runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIPath, "servicenow-api-path", "api/now/table", "base path of the ServiceNow API")
+	runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIUsername, "servicenow-api-username", "", "username to use for basic authorization against the ServiceNow API")
+	runBaselineProxyCmd.Flags().StringVar(&serviceNowAPIPassword, "servicenow-api-password", "", "password to use for basic authorization against the ServiceNow API")
 }
