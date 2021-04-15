@@ -267,7 +267,7 @@ func containerEnvironmentFactory() []string {
 		fmt.Sprintf("JWT_SIGNER_PUBLIC_KEY=%s", jwtSignerPublicKey),
 		fmt.Sprintf("LOG_LEVEL=%s", logLevel),
 		fmt.Sprintf("NATS_CLIENT_PREFIX=%s", name),
-		fmt.Sprintf("NATS_STREAMING_URL=%s", fmt.Sprintf("nats://%s:%d", natsStreamingHostname, natsPort)),
+		fmt.Sprintf("NATS_STREAMING_URL=%s", fmt.Sprintf("nats://%s:%d", natsStreamingHostname, natsStreamingPort)),
 		fmt.Sprintf("NATS_TOKEN=%s", natsAuthToken),
 		fmt.Sprintf("NATS_URL=%s", fmt.Sprintf("nats://%s:%d", natsHostname, natsPort)),
 		fmt.Sprintf("NCHAIN_API_HOST=%s", nchainAPIHost),
