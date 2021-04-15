@@ -3,7 +3,7 @@ package proxy
 import (
 	"context"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -53,10 +53,14 @@ const natsWebsocketContainerPort = 4221
 const natsStreamingContainerPort = 4222
 const redisContainerPort = 6379
 
+// const maxProgress = 5225
+
 type portMapping struct {
 	hostPort      int
 	containerPort int
 }
+
+// var progress *pb.ProgressBar
 
 var dockerNetworkID string
 
@@ -127,14 +131,18 @@ var runBaselineProxyCmd = &cobra.Command{
 }
 
 func runProxy(cmd *cobra.Command, args []string) {
+	// progress = pb.StartNew(maxProgress)
+
 	docker, err := client.NewEnvClient()
 	if err != nil {
 		log.Printf("failed to initialize docker; %s", err.Error())
 		os.Exit(1)
 	}
+	// progress.Add(100)
 
 	authorizeContext()
 	purgeContainers(docker)
+	// progress.Add(250)
 
 	for _, image := range []string{
 		baselineProxyContainerImage,
@@ -147,11 +155,14 @@ func runProxy(cmd *cobra.Command, args []string) {
 			log.Printf("failed to pull proxy container image: %s; %s", image, err.Error())
 			os.Exit(1)
 		}
+		// progress.Add(250)
 	}
 
 	configureNetwork(docker)
 	common.RequireOrganizationMessagingEndpoint(
 		func() {
+			// progress.Add(500)
+
 			// run local deps
 			runNATS(docker)
 			runNATSStreaming(docker)
@@ -161,6 +172,7 @@ func runProxy(cmd *cobra.Command, args []string) {
 			runProxyAPI(docker)
 			runProxyConsumer(docker)
 
+			// progress.Finish()
 			log.Printf("%s proxy instance started", name)
 		},
 	)
@@ -192,11 +204,19 @@ func configureNetwork(docker *client.Client) {
 	}
 
 	dockerNetworkID = network.ID
+
+	log.Printf("configured network for baseline proxy: %s", name)
+	// progress.Add(250)
 }
 
 func authorizeContext() {
+	log.Printf("authorizing workgroup context")
 	authorizeWorkgroupContext()
+	// progress.Add(50)
+
+	log.Printf("authorizing organization context")
 	common.AuthorizeOrganizationContext()
+	// progress.Add(50)
 
 	if organizationRefreshToken == "" {
 		refreshTokenKey := common.BuildConfigKeyWithOrg(common.APIRefreshTokenConfigKeyPartial, common.OrganizationID)
@@ -211,6 +231,7 @@ func authorizeContext() {
 			os.Exit(1)
 		}
 	}
+	// progress.Add(25)
 }
 
 func authorizeWorkgroupContext() {
@@ -445,12 +466,21 @@ func runRedis(docker *client.Client) {
 }
 
 func pullImage(docker *client.Client, image string) error {
+	log.Printf("pulling proxy container image: %s", image)
 	reader, err := docker.ImagePull(context.Background(), image, types.ImagePullOptions{})
 	if err != nil {
 		return err
 	}
+	defer reader.Close()
 
-	io.Copy(os.Stdout, reader)
+	_, err = ioutil.ReadAll(reader)
+	if err != nil {
+		log.Printf("WARNING: %s", err.Error())
+	}
+
+	// log.Printf("%s", string(buf))
+	// progress.Add(500)
+	// io.Copy(os.Stdout, reader)
 
 	return nil
 }
@@ -461,6 +491,9 @@ func runContainer(
 	entrypoint, cmd, healthcheck *[]string,
 	ports ...portMapping,
 ) (*container.ContainerCreateCreatedBody, error) {
+	// log.Printf("running proxy container image: %s", image)
+	// progress.Add(100)
+
 	portBinding := nat.PortMap{}
 	for _, mapping := range ports {
 		port, _ := nat.NewPort("tcp", strconv.Itoa(mapping.containerPort))
@@ -529,6 +562,7 @@ func runContainer(
 		return nil, err
 	}
 
+	// progress.Add(100)
 	return &container, nil
 }
 

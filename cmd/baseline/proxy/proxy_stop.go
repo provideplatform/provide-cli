@@ -32,6 +32,7 @@ func stopProxy(cmd *cobra.Command, args []string) {
 }
 
 func purgeContainers(docker *client.Client) {
+	// log.Printf("purging containers for baseline proxy instance: %s", name)
 	for _, container := range listContainers(docker) {
 		err := docker.ContainerRemove(context.Background(), container.ID, types.ContainerRemoveOptions{
 			RemoveVolumes: true,
