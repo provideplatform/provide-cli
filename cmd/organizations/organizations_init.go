@@ -14,7 +14,7 @@ var organizationName string
 var organizationType string
 
 var organizationsInitCmd = &cobra.Command{
-	Use:   "init --name 'Acme Inc.' --network 024ff1ef-7369-4dee-969c-1918c6edb5d4",
+	Use:   "init --name 'Acme Inc.'",
 	Short: "Initialize a new organization",
 	Long:  `Initialize a new organization`,
 	Run:   createOrganization,
