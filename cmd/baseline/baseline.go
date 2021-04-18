@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/provideservices/provide-cli/cmd/baseline/stack"
+	"github.com/provideservices/provide-cli/cmd/baseline/workflows"
 	"github.com/provideservices/provide-cli/cmd/baseline/workgroups"
 )
 
@@ -33,4 +34,5 @@ func init() {
 	BaselineCmd.AddCommand(proxyCmd)
 	BaselineCmd.AddCommand(stack.StackCmd)
 	BaselineCmd.AddCommand(workgroups.WorkgroupsCmd)
+	BaselineCmd.AddCommand(workflows.WorkflowsCmd)
 }
