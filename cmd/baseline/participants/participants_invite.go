@@ -83,6 +83,10 @@ func inviteParticipant(cmd *cobra.Command, args []string) {
 		params["organization_name"] = name
 	}
 
+	if permissions != 0 {
+		params["permissions"] = permissions
+	}
+
 	// FIXME-- authorize the organization to act on behalf of this application when sending an invite
 	err = ident.CreateInvitation(applicationAccessToken, map[string]interface{}{
 		"application_id": common.ApplicationID,
@@ -266,4 +270,5 @@ func init() {
 	inviteBaselineWorkgroupParticipantCmd.MarkFlagRequired("email")
 
 	inviteBaselineWorkgroupParticipantCmd.Flags().BoolVar(&managedTenant, "managed-tenant", false, "if set, the invited participant is authorized to leverage operator-provided infrastructure")
+	inviteBaselineWorkgroupParticipantCmd.Flags().IntVar(&permissions, "permissions", 0, "permissions for invited participant")
 }
