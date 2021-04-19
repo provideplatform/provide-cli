@@ -80,10 +80,7 @@ func init() {
 	sendBaselineMessageCmd.MarkFlagRequired("recipients")
 
 	sendBaselineMessageCmd.Flags().StringVar(&baselineID, "baseline-id", "", "the globally-unique baseline identifier for the record")
-	sendBaselineMessageCmd.MarkFlagRequired("workflow")
-
-	sendBaselineMessageCmd.Flags().StringVar(&workgroupID, "workflow", "", "workflow identifier")
-	sendBaselineMessageCmd.MarkFlagRequired("workflow")
+	sendBaselineMessageCmd.MarkFlagRequired("workflow"
 
 	sendBaselineMessageCmd.Flags().StringVar(&data, "data", "", "content of the message")
 	sendBaselineMessageCmd.MarkFlagRequired("data")
