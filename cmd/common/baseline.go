@@ -144,6 +144,14 @@ func RegisterWorkgroupOrganization(applicationID string) {
 		"organization_id": OrganizationID,
 	})
 	if err != nil {
+		orgs, err := ident.ListApplicationOrganizations(ApplicationAccessToken, applicationID, map[string]interface{}{
+			"organization_id": OrganizationID,
+		})
+		if err == nil {
+			if len(orgs) > 0 && orgs[0].ID.String() == OrganizationID {
+				return
+			}
+		}
 		log.Printf("WARNING: organization not associated with workgroup")
 		os.Exit(1)
 	}
