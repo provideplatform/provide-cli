@@ -60,6 +60,17 @@ func listParticipants(cmd *cobra.Command, args []string) {
 		log.Printf("failed to retrieve baseline workgroup participants; %s", err.Error())
 		os.Exit(1)
 	}
+
+	invitations, err := ident.ListApplicationInvitations(applicationAccessToken, common.ApplicationID, map[string]interface{}{})
+	if err != nil {
+		log.Printf("failed to retrieve invited baseline workgroup participants; %s", err.Error())
+		os.Exit(1)
+	}
+
+	if len(participants) > 0 {
+		fmt.Print("Organizations:\n")
+	}
+
 	for i := range participants {
 		participant := participants[i]
 		var endpoint string
@@ -67,6 +78,16 @@ func listParticipants(cmd *cobra.Command, args []string) {
 			endpoint = msgEndpoint
 		}
 		result := fmt.Sprintf("%s\t%s\t%s\n", participant.ID.String(), *participant.Name, endpoint)
+		fmt.Print(result)
+	}
+
+	if len(invitations) > 0 {
+		fmt.Print("\nPending Invitations:\n")
+	}
+
+	for i := range invitations {
+		invitedParticipant := invitations[i]
+		result := fmt.Sprintf("%s\t%s\n", invitedParticipant.ID.String(), invitedParticipant.Email)
 		fmt.Print(result)
 	}
 }

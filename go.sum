@@ -277,8 +277,8 @@ github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORN
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-github.com/kthomas/go-auth0 v0.0.0-20210325035251-e5ce67ed0c82 h1:GusMsITayNSULOxVpXgROTXPLxp9D5AzW/u5PbksrQQ=
-github.com/kthomas/go-auth0 v0.0.0-20210325035251-e5ce67ed0c82/go.mod h1:5o9CD0v7+NFL4+2diOZIqQ0gZIFZepkl5XRXHQt0zN8=
+github.com/kthomas/go-auth0 v0.0.0-20210417042937-27d1d2dadf19 h1:anZ2QxZWRUGU2M2bwmYcHwFBtUk/VL/PzR2GRkwOCIs=
+github.com/kthomas/go-auth0 v0.0.0-20210417042937-27d1d2dadf19/go.mod h1:5o9CD0v7+NFL4+2diOZIqQ0gZIFZepkl5XRXHQt0zN8=
 github.com/kthomas/go-logger v0.0.0-20200602041232-5c46e0cab608/go.mod h1:sXRQB767yNz+melLbxSNF+yu0H7kxguvoJHqa47Mxh4=
 github.com/kthomas/go-logger v0.0.0-20200602072946-d7d72dfc2531 h1:8SnbaD9jO9OWBECn2X6IcCLz8RASFgB0bLbVNtt7yGE=
 github.com/kthomas/go-logger v0.0.0-20200602072946-d7d72dfc2531/go.mod h1:sXRQB767yNz+melLbxSNF+yu0H7kxguvoJHqa47Mxh4=
@@ -387,8 +387,8 @@ github.com/prometheus/procfs v0.0.0-20190507164030-5867b95ac084/go.mod h1:TjEm7z
 github.com/prometheus/tsdb v0.6.2-0.20190402121629-4f204dcbc150/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
 github.com/prometheus/tsdb v0.7.1 h1:YZcsG11NqnK4czYLrWd9mpEuAJIHVQLwdrleYfszMAA=
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
-github.com/provideservices/provide-go v0.0.0-20210413041312-5e3e1699a716 h1:ULeBOVkR+sbTt8KQ7nCyhgiEk59QB7VaQs8rdizjOSg=
-github.com/provideservices/provide-go v0.0.0-20210413041312-5e3e1699a716/go.mod h1:0miBiPK7hYDGGxVmf6nTd9Qsx1i6qs9Fdk/43eTt9XU=
+github.com/provideservices/provide-go v0.0.0-20210419062033-3293d9091eeb h1:Fq/XBxyt8qikG+/CkWwhY55ZOuekXOvFwhP0OndeMUI=
+github.com/provideservices/provide-go v0.0.0-20210419062033-3293d9091eeb/go.mod h1:lAT70A7vk8dxX8lh6kcjgo3BKVJ8ceu+k9aSBrnLZwU=
 github.com/rivo/uniseg v0.1.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.2.0 h1:S1pD9weZBuJdFmowNwbpi7BJ8TNftyUImj/0WQi72jY=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=

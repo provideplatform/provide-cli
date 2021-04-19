@@ -9,6 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kthomas/go-pgputil"
 	"github.com/provideservices/provide-cli/cmd/common"
+	"github.com/provideservices/provide-go/api/baseline"
 	ident "github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/common/util"
 	"github.com/spf13/cobra"
@@ -53,6 +54,8 @@ func joinWorkgroup(cmd *cobra.Command, args []string) {
 	requireOrganizationKeys()
 	common.RegisterWorkgroupOrganization(common.ApplicationID)
 	common.RequireOrganizationMessagingEndpoint(nil)
+
+	configureBaselineStack(inviteJWT, claims)
 }
 
 func parseJWT(token string) *InviteClaims {
@@ -102,15 +105,22 @@ func parseJWT(token string) *InviteClaims {
 		}
 
 		log.Printf("%v", jwtToken)
-
-		// claims, _ = jwtToken.Claims.(jwt.MapClaims)
-		// if !claimsOk {
-		// 	log.Printf("failed to parse claims in given bearer token")
-		// 	os.Exit(1)
-		// }
 	}
 
 	return claims
+}
+
+// configureBaselineStack initializes a workgroup in the context of the running baseline stack
+func configureBaselineStack(jwt string, claims *InviteClaims) {
+	token := common.RequireAPIToken()
+	_, err := baseline.CreateWorkgroup(token, map[string]interface{}{
+		"token": jwt,
+	})
+	if err != nil {
+		log.Printf("failed to configure baseline stack to support joined workgroup; %s", err.Error())
+		os.Exit(1)
+	}
+	log.Printf("configured baseline workgroup on local stack: %s", *claims.Baseline.WorkgroupID)
 }
 
 func requirePublicJWTVerifiers() {
