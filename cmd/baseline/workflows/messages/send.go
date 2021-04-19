@@ -76,11 +76,8 @@ func sendMessage(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	sendBaselineMessageCmd.Flags().StringVar(&recipients, "recipients", "", "comma-delimited list of recipient organization ids")
-	sendBaselineMessageCmd.MarkFlagRequired("recipients")
-
 	sendBaselineMessageCmd.Flags().StringVar(&baselineID, "baseline-id", "", "the globally-unique baseline identifier for the record")
-	sendBaselineMessageCmd.MarkFlagRequired("workflow"
+	sendBaselineMessageCmd.MarkFlagRequired("baseline-id")
 
 	sendBaselineMessageCmd.Flags().StringVar(&data, "data", "", "content of the message")
 	sendBaselineMessageCmd.MarkFlagRequired("data")
@@ -89,4 +86,5 @@ func init() {
 	sendBaselineMessageCmd.MarkFlagRequired("id")
 
 	sendBaselineMessageCmd.Flags().StringVar(&messageType, "type", defaultBaselineMessageType, "type of the payload to be baselined")
+	sendBaselineMessageCmd.Flags().StringVar(&recipients, "recipients", "", "comma-delimited list of recipient organization ids")
 }
