@@ -267,7 +267,7 @@ func containerEnvironmentFactory() []string {
 		fmt.Sprintf("JWT_SIGNER_PUBLIC_KEY=%s", jwtSignerPublicKey),
 		fmt.Sprintf("LOG_LEVEL=%s", logLevel),
 		fmt.Sprintf("NATS_CLIENT_PREFIX=%s", name),
-		fmt.Sprintf("NATS_STREAMING_URL=%s", fmt.Sprintf("nats://%s:%d", natsStreamingHostname, natsStreamingPort)),
+		fmt.Sprintf("NATS_STREAMING_URL=%s", fmt.Sprintf("nats://%s:%d", natsStreamingHostname, natsStreamingContainerPort)),
 		fmt.Sprintf("NATS_TOKEN=%s", natsAuthToken),
 		fmt.Sprintf("NATS_URL=%s", fmt.Sprintf("nats://%s:%d", natsHostname, natsPort)),
 		fmt.Sprintf("NCHAIN_API_HOST=%s", nchainAPIHost),
@@ -609,7 +609,7 @@ func init() {
 	runBaselineStackCmd.Flags().IntVar(&natsWebsocketPort, "nats-ws-port", 4221, "websocket port to expose on the local baseline NATS container")
 	runBaselineStackCmd.Flags().StringVar(&natsAuthToken, "nats-auth-token", "testtoken", "authorization token for the local baseline NATS service; will be passed as the -auth argument to NATS")
 
-	runBaselineStackCmd.Flags().StringVar(&natsStreamingHostname, fmt.Sprintf("%s-nats-streaming", name), "nats-streaming-hostname", "hostname for the local baseline NATS streaming container")
+	runBaselineStackCmd.Flags().StringVar(&natsStreamingHostname, fmt.Sprintf("%s-nats-streaming", name), fmt.Sprintf("%s-nats-streaming", name), "hostname for the local baseline NATS streaming container")
 	runBaselineStackCmd.Flags().IntVar(&natsStreamingPort, "nats-streaming-port", 4220, "port to expose on the local baseline NATS streaming container")
 
 	runBaselineStackCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the local baseline redis container")
