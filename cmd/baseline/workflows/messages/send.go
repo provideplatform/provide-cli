@@ -87,4 +87,10 @@ func init() {
 
 	sendBaselineMessageCmd.Flags().StringVar(&messageType, "type", defaultBaselineMessageType, "type of the payload to be baselined")
 	sendBaselineMessageCmd.Flags().StringVar(&recipients, "recipients", "", "comma-delimited list of recipient organization ids")
+
+	sendBaselineMessageCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier")
+	sendBaselineMessageCmd.MarkFlagRequired("organization")
+
+	sendBaselineMessageCmd.Flags().StringVar(&common.ApplicationID, "workgroup", "", "workgroup identifier")
+	sendBaselineMessageCmd.MarkFlagRequired("workgroup")
 }
