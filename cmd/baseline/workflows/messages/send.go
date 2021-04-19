@@ -1,11 +1,24 @@
 package messages
 
 import (
+	"encoding/json"
 	"log"
 	"os"
+	"strings"
 
+	"github.com/provideservices/provide-cli/cmd/common"
+	"github.com/provideservices/provide-go/api/baseline"
+	"github.com/provideservices/provide-go/api/ident"
 	"github.com/spf13/cobra"
 )
+
+const defaultBaselineMessageType = "arbitrary"
+
+var baselineID string
+var data string
+var id string
+var messageType string
+var recipients string
 
 var sendBaselineMessageCmd = &cobra.Command{
 	Use:   "send",
@@ -15,10 +28,68 @@ var sendBaselineMessageCmd = &cobra.Command{
 }
 
 func sendMessage(cmd *cobra.Command, args []string) {
-	log.Printf("not implemented")
-	os.Exit(1)
+	var payload map[string]interface{}
+	err := json.Unmarshal([]byte(data), &payload)
+	if err != nil {
+		log.Printf("WARNING: failed to send baseline message; failed to parse message data as JSON; %s", err.Error())
+		os.Exit(1)
+	}
+
+	token := common.RequireAPIToken()
+
+	params := map[string]interface{}{
+		"id":      id,
+		"payload": payload,
+		"type":    messageType,
+	}
+	if baselineID != "" {
+		params["baseline_id"] = baselineID
+	}
+	if recipients != "" {
+		_recipients := make([]*baseline.Participant, 0)
+		for _, id := range strings.Split(recipients, ",") {
+			orgs, err := ident.ListApplicationOrganizations(token, common.ApplicationID, map[string]interface{}{
+				"organization_id": id,
+			})
+			if err != nil {
+				log.Printf("WARNING: failed to send message message data as JSON; %s", err.Error())
+				os.Exit(1)
+			}
+			for _, org := range orgs {
+				if addr, addrOk := org.Metadata["address"].(string); addrOk {
+					_recipients = append(_recipients, &baseline.Participant{
+						Address: &addr,
+					})
+				}
+
+			}
+		}
+		params["recipients"] = _recipients
+	}
+
+	baselinedRecord, err := baseline.CreateBusinessObject(token, params)
+	if err != nil {
+		log.Printf("WARNING: failed to baseline %d-byte payload; %s", len(payload), err.Error())
+		os.Exit(1)
+	}
+	log.Printf("baselined record: %v", baselinedRecord)
 }
 
 func init() {
+	sendBaselineMessageCmd.Flags().StringVar(&recipients, "recipients", "", "comma-delimited list of recipient organization ids")
+	sendBaselineMessageCmd.MarkFlagRequired("recipients")
 
+	sendBaselineMessageCmd.Flags().StringVar(&baselineID, "baseline-id", "", "the globally-unique baseline identifier for the record")
+	sendBaselineMessageCmd.MarkFlagRequired("workflow")
+
+	sendBaselineMessageCmd.Flags().StringVar(&workgroupID, "workflow", "", "workflow identifier")
+	sendBaselineMessageCmd.MarkFlagRequired("workflow")
+
+	sendBaselineMessageCmd.Flags().StringVar(&data, "data", "", "content of the message")
+	sendBaselineMessageCmd.MarkFlagRequired("data")
+
+	sendBaselineMessageCmd.Flags().StringVar(&id, "id", "", "identifier of the associated payload in the internal system of record")
+	sendBaselineMessageCmd.MarkFlagRequired("id")
+
+	sendBaselineMessageCmd.Flags().StringVar(&messageType, "type", defaultBaselineMessageType, "type of the payload to be baselined")
 }
