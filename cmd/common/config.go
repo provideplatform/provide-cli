@@ -89,7 +89,7 @@ func RequireApplicationToken() string {
 	}
 
 	if token == "" {
-		log.Printf("Authorized application  API token required in prvd configuration; run 'prvd api_tokens init --application <id>'")
+		log.Printf("Authorized application API token required in prvd configuration; run 'prvd api_tokens init --application <id>'")
 		os.Exit(1)
 	}
 
