@@ -148,6 +148,12 @@ func RegisterWorkgroupOrganization(applicationID string) {
 			"organization_id": OrganizationID,
 		})
 		if err == nil {
+			// FIXME--
+			for _, org := range orgs {
+				if org.ID.String() == OrganizationID {
+					return
+				}
+			}
 			if len(orgs) > 0 && orgs[0].ID.String() == OrganizationID {
 				return
 			}
