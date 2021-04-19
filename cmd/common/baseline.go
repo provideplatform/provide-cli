@@ -157,10 +157,9 @@ func RegisterWorkgroupOrganization(applicationID string) {
 			if len(orgs) > 0 && orgs[0].ID.String() == OrganizationID {
 				return
 			}
-		} else {
-			log.Printf("WARNING: organization not associated with workgroup")
-			os.Exit(1)
 		}
+		log.Printf("WARNING: organization not associated with workgroup")
+		os.Exit(1)
 	}
 }
 
