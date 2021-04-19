@@ -35,7 +35,7 @@ func sendMessage(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	token := common.RequireAPIToken()
+	token := common.RequireApplicationToken()
 
 	params := map[string]interface{}{
 		"id":      id,
@@ -67,7 +67,8 @@ func sendMessage(cmd *cobra.Command, args []string) {
 		params["recipients"] = _recipients
 	}
 
-	baselinedRecord, err := baseline.CreateBusinessObject(token, params)
+	orgToken := common.RequireOrganizationToken()
+	baselinedRecord, err := baseline.CreateBusinessObject(orgToken, params)
 	if err != nil {
 		log.Printf("WARNING: failed to baseline %d-byte payload; %s", len(payload), err.Error())
 		os.Exit(1)
