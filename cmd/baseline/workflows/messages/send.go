@@ -77,7 +77,6 @@ func sendMessage(cmd *cobra.Command, args []string) {
 
 func init() {
 	sendBaselineMessageCmd.Flags().StringVar(&baselineID, "baseline-id", "", "the globally-unique baseline identifier for the record")
-	sendBaselineMessageCmd.MarkFlagRequired("baseline-id")
 
 	sendBaselineMessageCmd.Flags().StringVar(&data, "data", "", "content of the message")
 	sendBaselineMessageCmd.MarkFlagRequired("data")
