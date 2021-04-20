@@ -28,14 +28,15 @@ var sendBaselineMessageCmd = &cobra.Command{
 }
 
 func sendMessage(cmd *cobra.Command, args []string) {
+	common.AuthorizeApplicationContext()
+	common.AuthorizeOrganizationContext()
+
 	var payload map[string]interface{}
 	err := json.Unmarshal([]byte(data), &payload)
 	if err != nil {
 		log.Printf("WARNING: failed to send baseline message; failed to parse message data as JSON; %s", err.Error())
 		os.Exit(1)
 	}
-
-	token := common.RequireApplicationToken()
 
 	params := map[string]interface{}{
 		"id":      id,
@@ -48,7 +49,7 @@ func sendMessage(cmd *cobra.Command, args []string) {
 	if recipients != "" {
 		_recipients := make([]*baseline.Participant, 0)
 		for _, id := range strings.Split(recipients, ",") {
-			orgs, err := ident.ListApplicationOrganizations(token, common.ApplicationID, map[string]interface{}{
+			orgs, err := ident.ListApplicationOrganizations(common.ApplicationAccessToken, common.ApplicationID, map[string]interface{}{
 				"organization_id": id,
 			})
 			if err != nil {
@@ -67,8 +68,7 @@ func sendMessage(cmd *cobra.Command, args []string) {
 		params["recipients"] = _recipients
 	}
 
-	orgToken := common.RequireOrganizationToken()
-	baselinedRecord, err := baseline.CreateBusinessObject(orgToken, params)
+	baselinedRecord, err := baseline.CreateBusinessObject(common.OrganizationAccessToken, params)
 	if err != nil {
 		log.Printf("WARNING: failed to baseline %d-byte payload; %s", len(data), err.Error())
 		os.Exit(1)
