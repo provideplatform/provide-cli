@@ -70,7 +70,7 @@ func sendMessage(cmd *cobra.Command, args []string) {
 	orgToken := common.RequireOrganizationToken()
 	baselinedRecord, err := baseline.CreateBusinessObject(orgToken, params)
 	if err != nil {
-		log.Printf("WARNING: failed to baseline %d-byte payload; %s", len(payload), err.Error())
+		log.Printf("WARNING: failed to baseline %d-byte payload; %s", len(data), err.Error())
 		os.Exit(1)
 	}
 	log.Printf("baselined record: %v", baselinedRecord)
