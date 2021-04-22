@@ -28,7 +28,11 @@ func listOrganizations(cmd *cobra.Command, args []string) {
 	}
 	for i := range organizations {
 		organization := organizations[i]
-		result := fmt.Sprintf("%s\t%s\n", organization.ID.String(), *organization.Name)
+		address := "0x"
+		if addr, addrOk := organization.Metadata["address"].(string); addrOk {
+			address = addr
+		}
+		result := fmt.Sprintf("%s\t%s\t%s\n", organization.ID.String(), *organization.Name, address)
 		fmt.Print(result)
 	}
 }
