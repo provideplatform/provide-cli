@@ -73,11 +73,17 @@ func listParticipants(cmd *cobra.Command, args []string) {
 
 	for i := range participants {
 		participant := participants[i]
+
+		address := "0x"
+		if addr, addrOk := participant.Metadata["address"].(string); addrOk {
+			address = addr
+		}
+
 		var endpoint string
 		if msgEndpoint, msgEndpointOk := participant.Metadata["messaging_endpoint"].(string); msgEndpointOk {
 			endpoint = msgEndpoint
 		}
-		result := fmt.Sprintf("%s\t%s\t%s\n", participant.ID.String(), *participant.Name, endpoint)
+		result := fmt.Sprintf("%s\t%s\t%s\t%s\n", participant.ID.String(), *participant.Name, address, endpoint)
 		fmt.Print(result)
 	}
 

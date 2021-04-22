@@ -409,6 +409,11 @@ func setupMessagingEndpoint(fn func()) {
 		if org.Metadata == nil {
 			org.Metadata = map[string]interface{}{}
 		}
+
+		key, err := RequireOrganizationKeypair("secp256k1")
+		if err == nil {
+			org.Metadata["address"] = key.Address
+		}
 		org.Metadata["messaging_endpoint"] = MessagingEndpoint
 
 		err = ident.UpdateOrganization(RequireUserAuthToken(), OrganizationID, map[string]interface{}{
