@@ -67,7 +67,7 @@ func initWorkgroup(cmd *cobra.Command, args []string) {
 	common.RequireOrganizationVault()
 	requireOrganizationKeys()
 
-	common.RequireOrganizationMessagingEndpoint(nil)
+	common.RequireOrganizationEndpoints(nil)
 	common.RegisterWorkgroupOrganization(application.ID.String())
 
 	log.Printf("initialized baseline workgroup: %s", application.ID)
@@ -108,5 +108,5 @@ func init() {
 	initBaselineWorkgroupCmd.MarkFlagRequired("organization")
 
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.MessagingEndpoint, "endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
-	initBaselineWorkgroupCmd.Flags().BoolVar(&common.ExposeTunnel, "tunnel", false, "when true, a tunnel is established to expose this endpoint to the WAN")
+	initBaselineWorkgroupCmd.Flags().BoolVar(&common.ExposeMessagingTunnel, "tunnel", false, "when true, a tunnel is established to expose this endpoint to the WAN")
 }

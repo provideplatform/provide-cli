@@ -151,7 +151,7 @@ func runProxy(cmd *cobra.Command, args []string) {
 	}
 
 	configureNetwork(docker)
-	common.RequireOrganizationMessagingEndpoint(
+	common.RequireOrganizationEndpoints(
 		func() {
 			// run local deps
 			runNATS(docker)
@@ -595,7 +595,9 @@ func init() {
 
 	runBaselineStackCmd.Flags().StringVar(&baselineOrganizationAPIEndpoint, "api-endpoint", "", "local baseline API endpoint for use by one or more authorized systems of record")
 	runBaselineStackCmd.Flags().StringVar(&common.MessagingEndpoint, "messaging-endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
-	runBaselineStackCmd.Flags().BoolVar(&common.ExposeTunnel, "tunnel", false, "when true, a tunnel is established to expose the endpoint to the WAN")
+	runBaselineStackCmd.Flags().BoolVar(&common.Tunnel, "tunnel", false, "when true, a tunnel is established to expose the API and messaging endpoints to the WAN")
+	runBaselineStackCmd.Flags().BoolVar(&common.ExposeAPITunnel, "api-tunnel", false, "when true, a tunnel is established to expose the API endpoint to the WAN")
+	runBaselineStackCmd.Flags().BoolVar(&common.ExposeMessagingTunnel, "messaging-tunnel", false, "when true, a tunnel is established to expose the messaging endpoint to the WAN")
 
 	runBaselineStackCmd.Flags().StringVar(&sorID, "sor", "", "primary internal system of record identifier being baselined")
 	runBaselineStackCmd.Flags().StringVar(&sorURL, "sor-url", "https://", "url of the primary internal system of record being baselined")

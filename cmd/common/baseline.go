@@ -58,9 +58,13 @@ const requireContractSleepInterval = time.Second * 1
 const requireContractTickerInterval = time.Second * 5
 const requireContractTimeout = time.Minute * 10
 
+const requireOrganizationAPIEndpointTimeout = time.Second * 5
 const requireOrganizationMessagingEndpointTimeout = time.Second * 5
 
-var ExposeTunnel bool
+var Tunnel bool
+var APIEndpoint string
+var ExposeAPITunnel bool
+var ExposeMessagingTunnel bool
 var MessagingEndpoint string
 var tunnelClient *gonnel.Client
 
@@ -161,12 +165,6 @@ func RegisterWorkgroupOrganization(applicationID string) {
 		log.Printf("WARNING: organization not associated with workgroup")
 		os.Exit(1)
 	}
-}
-
-// fn is the function to call after the tunnel has been established,
-// prior to the runloop and signal handling is installed
-func RequireOrganizationMessagingEndpoint(fn func()) {
-	setupMessagingEndpoint(fn)
 }
 
 func RequireOrganizationVault() {
@@ -307,18 +305,24 @@ func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 	return registryArtifact
 }
 
-// fn is the function to call after the tunnel has been established,
+// RequireOrganizationEndpoints fn is the function to call after the tunnel has been established,
 // prior to the runloop and signal handling is installed
-func setupMessagingEndpoint(fn func()) {
-	if MessagingEndpoint == "" && !ExposeTunnel {
+func RequireOrganizationEndpoints(fn func()) {
+	if Tunnel {
+		ExposeAPITunnel = true
+		ExposeMessagingTunnel = true
+	}
+
+	if !ExposeAPITunnel && !ExposeMessagingTunnel {
 		publicIP, err := util.ResolvePublicIP()
 		if err != nil {
 			log.Printf("WARNING: failed to resolve public IP")
 			os.Exit(1)
 		}
 
+		APIEndpoint = fmt.Sprintf("http://%s:8080", *publicIP)
 		MessagingEndpoint = fmt.Sprintf("nats://%s:4222", *publicIP)
-	} else if ExposeTunnel {
+	} else {
 		const runloopSleepInterval = 250 * time.Millisecond
 		const runloopTickInterval = 5000 * time.Millisecond
 
@@ -370,16 +374,37 @@ func setupMessagingEndpoint(fn func()) {
 				go tunnelClient.StartServer(done)
 				<-done
 
-				tunnelClient.AddTunnel(&gonnel.Tunnel{
-					Proto:        gonnel.TCP,
-					Name:         fmt.Sprintf("%s-endpoint", OrganizationID),
-					LocalAddress: "127.0.0.1:4222", // FIXME-- this port
-				})
+				if ExposeAPITunnel {
+					tunnelClient.AddTunnel(&gonnel.Tunnel{
+						Proto:        gonnel.HTTP,
+						Name:         fmt.Sprintf("%s-api", OrganizationID),
+						LocalAddress: "127.0.0.1:8080", // FIXME-- this port
+					})
+				}
 
-				tunnelClient.ConnectAll()
+				if ExposeMessagingTunnel {
+					tunnelClient.AddTunnel(&gonnel.Tunnel{
+						Proto:        gonnel.TCP,
+						Name:         fmt.Sprintf("%s-msg", OrganizationID),
+						LocalAddress: "127.0.0.1:4222", // FIXME-- this port
+					})
+				}
 
-				MessagingEndpoint = tunnelClient.Tunnel[0].RemoteAddress
-				log.Printf("established tunnel connection for messaging endpoint: %s\n", MessagingEndpoint)
+				err = tunnelClient.ConnectAll()
+				if err != nil {
+					log.Printf("WARNING: failed to initialize tunnel(s); %s", err.Error())
+					os.Exit(1)
+				}
+
+				if ExposeAPITunnel {
+					APIEndpoint = tunnelClient.Tunnel[0].RemoteAddress
+					log.Printf("established tunnel connection for API endpoint: %s\n", APIEndpoint)
+				}
+
+				if ExposeMessagingTunnel {
+					MessagingEndpoint = tunnelClient.Tunnel[len(tunnelClient.Tunnel)-1].RemoteAddress
+					log.Printf("established tunnel connection for messaging endpoint: %s\n", MessagingEndpoint)
+				}
 
 				fmt.Print("Press any key to disconnect...\n")
 				reader := bufio.NewReader(os.Stdin)
@@ -393,7 +418,18 @@ func setupMessagingEndpoint(fn func()) {
 			go fn()
 		}
 
-		if ExposeTunnel {
+		if ExposeAPITunnel {
+			startTime := time.Now()
+			for APIEndpoint == "" {
+				time.Sleep(time.Millisecond * 50)
+				if startTime.Add(requireOrganizationAPIEndpointTimeout).Before(time.Now()) {
+					log.Printf("WARNING: organization API endpoint tunnel timed out")
+					os.Exit(1)
+				}
+			}
+		}
+
+		if ExposeMessagingTunnel {
 			startTime := time.Now()
 			for MessagingEndpoint == "" {
 				time.Sleep(time.Millisecond * 50)
@@ -418,6 +454,7 @@ func setupMessagingEndpoint(fn func()) {
 		if err == nil {
 			org.Metadata["address"] = key.Address
 		}
+		org.Metadata["api_endpoint"] = APIEndpoint
 		org.Metadata["messaging_endpoint"] = MessagingEndpoint
 
 		err = ident.UpdateOrganization(RequireUserAuthToken(), OrganizationID, map[string]interface{}{
