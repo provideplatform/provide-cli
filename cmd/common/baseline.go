@@ -200,6 +200,10 @@ func RequireOrganizationVault() {
 }
 
 func RequireOrganizationKeypair(spec string) (*vault.Key, error) {
+	if VaultID == "" {
+		RequireOrganizationVault()
+	}
+
 	// FIXME-- parameterize each key i.e. --secp256k1-key or similar?
 	keys, err := vault.ListKeys(OrganizationAccessToken, VaultID, map[string]interface{}{
 		"spec": spec,
