@@ -67,8 +67,8 @@ func initWorkgroup(cmd *cobra.Command, args []string) {
 	common.RequireOrganizationVault()
 	requireOrganizationKeys()
 
-	common.RequireOrganizationEndpoints(nil)
 	common.RegisterWorkgroupOrganization(application.ID.String())
+	common.RequireOrganizationEndpoints(nil)
 
 	log.Printf("initialized baseline workgroup: %s", application.ID)
 }
