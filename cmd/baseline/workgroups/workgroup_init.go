@@ -108,5 +108,4 @@ func init() {
 	initBaselineWorkgroupCmd.MarkFlagRequired("organization")
 
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.MessagingEndpoint, "endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
-	initBaselineWorkgroupCmd.Flags().BoolVar(&common.ExposeMessagingTunnel, "tunnel", false, "when true, a tunnel is established to expose this endpoint to the WAN")
 }

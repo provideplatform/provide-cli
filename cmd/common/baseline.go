@@ -461,8 +461,19 @@ func RequireOrganizationEndpoints(fn func()) {
 		if err == nil {
 			org.Metadata["address"] = key.Address
 		}
-		org.Metadata["api_endpoint"] = APIEndpoint
-		org.Metadata["messaging_endpoint"] = MessagingEndpoint
+
+		if APIEndpoint != "" {
+			org.Metadata["api_endpoint"] = APIEndpoint
+		} else {
+			org.Metadata["api_endpoint"] = "http://localhost:8080"
+		}
+
+		if MessagingEndpoint != "" {
+			org.Metadata["messaging_endpoint"] = MessagingEndpoint
+		} else {
+			org.Metadata["messaging_endpoint"] = "nats://localhost:4222"
+		}
+
 		org.Metadata["domain"] = "baseline.local"
 
 		err = ident.UpdateOrganization(RequireUserAuthToken(), OrganizationID, map[string]interface{}{
