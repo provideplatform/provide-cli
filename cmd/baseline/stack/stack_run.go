@@ -611,7 +611,7 @@ func init() {
 	runBaselineStackCmd.Flags().IntVar(&natsWebsocketPort, "nats-ws-port", 4221, "websocket port to expose on the local baseline NATS container")
 	runBaselineStackCmd.Flags().StringVar(&natsAuthToken, "nats-auth-token", "testtoken", "authorization token for the local baseline NATS service; will be passed as the -auth argument to NATS")
 
-	runBaselineStackCmd.Flags().StringVar(&natsStreamingHostname, fmt.Sprintf("%s-nats-streaming", name), fmt.Sprintf("%s-nats-streaming", name), "hostname for the local baseline NATS streaming container")
+	runBaselineStackCmd.Flags().StringVar(&natsStreamingHostname, "nats-streaming-hostname", fmt.Sprintf("%s-nats-streaming", name), "hostname for the local baseline NATS streaming container")
 	runBaselineStackCmd.Flags().IntVar(&natsStreamingPort, "nats-streaming-port", 4220, "port to expose on the local baseline NATS streaming container")
 
 	runBaselineStackCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the local baseline redis container")
