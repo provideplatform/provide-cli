@@ -474,7 +474,9 @@ func RequireOrganizationEndpoints(fn func()) {
 			org.Metadata["messaging_endpoint"] = "nats://localhost:4222"
 		}
 
-		org.Metadata["domain"] = "baseline.local"
+		if _, domainOk := org.Metadata["domain"].(string); !domainOk {
+			org.Metadata["domain"] = "baseline.local"
+		}
 
 		err = ident.UpdateOrganization(RequireUserAuthToken(), OrganizationID, map[string]interface{}{
 			"metadata": org.Metadata,
