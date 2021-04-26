@@ -290,7 +290,14 @@ func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 	if baseline, baselineOk := capabilities["baseline"].(map[string]interface{}); baselineOk {
 		if contracts, contractsOk := baseline["contracts"].([]interface{}); contractsOk {
 			for _, contract := range contracts {
+				isShuttleContract := false
 				if name, nameOk := contract.(map[string]interface{})["name"].(string); nameOk && strings.ToLower(name) == "shuttle" {
+					isShuttleContract = true
+				} else if name, nameOk := contract.(map[string]interface{})["contractName"].(string); nameOk && strings.ToLower(name) == "shuttle" {
+					isShuttleContract = true
+				}
+
+				if isShuttleContract {
 					raw, _ := json.Marshal(contract)
 					err := json.Unmarshal(raw, &registryArtifact)
 					if err != nil {
