@@ -463,6 +463,7 @@ func RequireOrganizationEndpoints(fn func()) {
 		}
 		org.Metadata["api_endpoint"] = APIEndpoint
 		org.Metadata["messaging_endpoint"] = MessagingEndpoint
+		org.Metadata["domain"] = "baseline.local"
 
 		err = ident.UpdateOrganization(RequireUserAuthToken(), OrganizationID, map[string]interface{}{
 			"metadata": org.Metadata,
