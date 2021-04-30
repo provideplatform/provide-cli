@@ -14,6 +14,7 @@ import (
 
 const defaultBaselineMessageType = "arbitrary"
 
+var baselineAPIEndpoint string
 var baselineID string
 var data string
 var id string
@@ -77,6 +78,8 @@ func sendMessage(cmd *cobra.Command, args []string) {
 }
 
 func init() {
+	// runBaselineStackCmd.Flags().StringVar(&baselineAPIEndpoint, "baseline-api-endpoint", "", "baseline API endpoint for use by one or more authorized systems of record")
+
 	sendBaselineMessageCmd.Flags().StringVar(&baselineID, "baseline-id", "", "the globally-unique baseline identifier for the record")
 
 	sendBaselineMessageCmd.Flags().StringVar(&data, "data", "", "content of the message")
