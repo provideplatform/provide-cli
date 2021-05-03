@@ -262,6 +262,7 @@ func containerEnvironmentFactory() []string {
 		fmt.Sprintf("BASELINE_ORGANIZATION_MESSAGING_ENDPOINT=%s", common.MessagingEndpoint),
 		fmt.Sprintf("BASELINE_ORGANIZATION_PROXY_ENDPOINT=%s", baselineOrganizationAPIEndpoint),
 		fmt.Sprintf("BASELINE_REGISTRY_CONTRACT_ADDRESS=%s", baselineRegistryContractAddress),
+		fmt.Sprintf("BASELINE_WORKGROUP_ID=%s", baselineWorkgroupID),
 		fmt.Sprintf("IDENT_API_HOST=%s", identAPIHost),
 		fmt.Sprintf("IDENT_API_SCHEME=%s", identAPIScheme),
 		fmt.Sprintf("JWT_SIGNER_PUBLIC_KEY=%s", jwtSignerPublicKey),
