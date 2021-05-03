@@ -423,10 +423,6 @@ func RequireOrganizationEndpoints(fn func()) {
 			}
 		}()
 
-		if fn != nil {
-			go fn()
-		}
-
 		if ExposeAPITunnel {
 			startTime := time.Now()
 			for APIEndpoint == "" {
@@ -487,6 +483,10 @@ func RequireOrganizationEndpoints(fn func()) {
 		if err != nil {
 			log.Printf("failed to update messaging endpoint for organization: %s; %s", OrganizationID, err.Error())
 			os.Exit(1)
+		}
+
+		if fn != nil {
+			go fn()
 		}
 
 		log.Printf("starting tunnel runloop")

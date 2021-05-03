@@ -150,6 +150,7 @@ func runProxy(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	applyFlags()
 	configureNetwork(docker)
 	common.RequireOrganizationEndpoints(
 		func() {
