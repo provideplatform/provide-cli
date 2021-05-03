@@ -255,11 +255,40 @@ func authorizeWorkgroupContext() {
 	baselineRegistryContractAddress = *contracts[0].Address
 }
 
-func containerEnvironmentFactory() []string {
+func applyFlags() {
 	if (baselineOrganizationAddress == "" || baselineOrganizationAddress == "0x") && common.ResolvedBaselineOrgAddress != "" {
 		// FIXME-- this belongs somewhere better
 		baselineOrganizationAddress = common.ResolvedBaselineOrgAddress
 	}
+
+	// HACK
+	if strings.HasSuffix(apiHostname, "-api") {
+		apiHostname = fmt.Sprintf("%s-api", name)
+	}
+
+	// HACK
+	if strings.HasSuffix(consumerHostname, "-consumer") {
+		consumerHostname = fmt.Sprintf("%s-consumer", name)
+	}
+
+	// HACK
+	if strings.HasSuffix(natsHostname, "-nats") {
+		natsHostname = fmt.Sprintf("%s-nats", name)
+	}
+
+	// HACK
+	if strings.HasSuffix(natsStreamingHostname, "-nats-streaming") {
+		natsStreamingHostname = fmt.Sprintf("%s-nats-streaming", name)
+	}
+
+	// HACK
+	if strings.HasSuffix(redisHostname, "-redis") {
+		redisHostname = fmt.Sprintf("%s-redis", name)
+	}
+}
+
+func containerEnvironmentFactory() []string {
+	applyFlags()
 
 	env := make([]string, 0)
 	for _, envvar := range []string{
