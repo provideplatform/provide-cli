@@ -256,6 +256,11 @@ func authorizeWorkgroupContext() {
 }
 
 func containerEnvironmentFactory() []string {
+	if (baselineOrganizationAddress == "" || baselineOrganizationAddress == "0x") && common.ResolvedBaselineOrgAddress != "" {
+		// FIXME-- this belongs somewhere better
+		baselineOrganizationAddress = common.ResolvedBaselineOrgAddress
+	}
+
 	env := make([]string, 0)
 	for _, envvar := range []string{
 		fmt.Sprintf("BASELINE_ORGANIZATION_ADDRESS=%s", baselineOrganizationAddress),

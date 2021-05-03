@@ -73,6 +73,8 @@ var OrganizationAccessToken string
 
 var VaultID string
 
+var ResolvedBaselineOrgAddress string // HACK
+
 func AuthorizeApplicationContext() {
 	token, err := ident.CreateToken(RequireUserAuthToken(), map[string]interface{}{
 		"scope":          "offline_access",
@@ -460,6 +462,7 @@ func RequireOrganizationEndpoints(fn func()) {
 		key, err := RequireOrganizationKeypair("secp256k1")
 		if err == nil {
 			org.Metadata["address"] = key.Address
+			ResolvedBaselineOrgAddress = *key.Address
 		}
 
 		if APIEndpoint != "" {
