@@ -285,6 +285,7 @@ func applyFlags() {
 	// HACK
 	if strings.HasSuffix(redisHostname, "-redis") {
 		redisHostname = fmt.Sprintf("%s-redis", name)
+		redisHosts = fmt.Sprintf("%s:%d", redisHostname, redisPort)
 	}
 }
 
