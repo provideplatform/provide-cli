@@ -121,6 +121,10 @@ var serviceNowAPIUsername string
 var serviceNowAPIPassword string
 var serviceNowAPIPath string
 
+var salesforceAPIHost string
+var salesforceAPIScheme string
+var salesforceAPIPath string
+
 var runBaselineStackCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run the baseline stack",
@@ -291,17 +295,18 @@ func applyFlags() {
 
 	// HACK
 	if jwtSignerPublicKey == "" {
-		keys, err := vault.ListKeys(common.OrganizationAccessToken, common.Vault.ID.String(), map[string]interface{}{
+		keys, err := vault.ListKeys(common.OrganizationAccessToken, common.VaultID, map[string]interface{}{
 			"spec": "RSA-4096",
 		})
 		if err != nil {
-			common.Log.Warningf("failed to resolve RSA-4096 key for organization; %s", err.Error())
-			return nil, err
-		}
-		if len(keys) == 0 {
-			common.Log.Warningf("failed to resolve RSA-4096 key for organization")
+			log.Printf("WARNING: failed to resolve RSA-4096 key for organization; %s", err.Error())
 			return
 		}
+		if len(keys) == 0 {
+			log.Printf("WARNING: failed to resolve RSA-4096 key for organization")
+			return
+		}
+
 		jwtSignerPublicKey = *keys[0].PublicKey
 	}
 }
