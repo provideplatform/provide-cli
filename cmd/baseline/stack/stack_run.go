@@ -21,6 +21,7 @@ import (
 	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
+	"github.com/provideservices/provide-go/api/vault"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -286,6 +287,22 @@ func applyFlags() {
 	if strings.HasSuffix(redisHostname, "-redis") {
 		redisHostname = fmt.Sprintf("%s-redis", name)
 		redisHosts = fmt.Sprintf("%s:%d", redisHostname, redisPort)
+	}
+
+	// HACK
+	if jwtSignerPublicKey == "" {
+		keys, err := vault.ListKeys(common.OrganizationAccessToken, common.Vault.ID.String(), map[string]interface{}{
+			"spec": "RSA-4096",
+		})
+		if err != nil {
+			common.Log.Warningf("failed to resolve RSA-4096 key for organization; %s", err.Error())
+			return nil, err
+		}
+		if len(keys) == 0 {
+			common.Log.Warningf("failed to resolve RSA-4096 key for organization")
+			return
+		}
+		jwtSignerPublicKey = *keys[0].PublicKey
 	}
 }
 
@@ -701,9 +718,9 @@ func init() {
 }
 
 func initSORFlags() {
-	// runBaselineStackCmd.Flags().StringVar(&salesforceAPIHost, "salesforce-api-host", "", "hostname of the Salesforce API service")
-	// runBaselineStackCmd.Flags().StringVar(&salesforceAPIScheme, "salesforce-api-scheme", "https", "protocol scheme of the Salesforce API service")
-	// runBaselineStackCmd.Flags().StringVar(&salesforceAPIPath, "salesforce-api-path", "", "base path of the Salesforce API service")
+	runBaselineStackCmd.Flags().StringVar(&salesforceAPIHost, "salesforce-api-host", "testnet.dappsuite.network", "hostname of the Salesforce API service")
+	runBaselineStackCmd.Flags().StringVar(&salesforceAPIScheme, "salesforce-api-scheme", "https", "protocol scheme of the Salesforce API service")
+	runBaselineStackCmd.Flags().StringVar(&salesforceAPIPath, "salesforce-api-path", "api", "base path of the Salesforce API service")
 
 	runBaselineStackCmd.Flags().StringVar(&sapAPIHost, "sap-api-host", "", "hostname of the internal SAP API service")
 	runBaselineStackCmd.Flags().StringVar(&sapAPIScheme, "sap-api-scheme", "https", "protocol scheme of the internal SAP API service")
