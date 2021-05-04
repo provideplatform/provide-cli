@@ -40,6 +40,6 @@ func init() {
 	vaultsInitCmd.Flags().StringVar(&name, "name", "", "name of the vault")
 	vaultsInitCmd.Flags().StringVar(&description, "description", "", "description of the vault")
 
-	vaultsInitCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter vaults")
-	vaultsInitCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier to filter vaults")
+	vaultsInitCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier for which the vault will be created")
+	vaultsInitCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier for which the vault will be created")
 }
