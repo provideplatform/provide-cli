@@ -80,7 +80,8 @@ var autoRemove bool
 var logLevel string
 
 var baselineOrganizationAddress string
-var baselineOrganizationAPIEndpoint string
+
+// var baselineOrganizationAPIEndpoint string
 var baselineRegistryContractAddress string
 var baselineWorkgroupID string
 
@@ -317,7 +318,7 @@ func containerEnvironmentFactory() []string {
 	for _, envvar := range []string{
 		fmt.Sprintf("BASELINE_ORGANIZATION_ADDRESS=%s", baselineOrganizationAddress),
 		fmt.Sprintf("BASELINE_ORGANIZATION_MESSAGING_ENDPOINT=%s", common.MessagingEndpoint),
-		fmt.Sprintf("BASELINE_ORGANIZATION_PROXY_ENDPOINT=%s", baselineOrganizationAPIEndpoint),
+		fmt.Sprintf("BASELINE_ORGANIZATION_PROXY_ENDPOINT=%s", common.APIEndpoint),
 		fmt.Sprintf("BASELINE_REGISTRY_CONTRACT_ADDRESS=%s", baselineRegistryContractAddress),
 		fmt.Sprintf("BASELINE_WORKGROUP_ID=%s", baselineWorkgroupID),
 		fmt.Sprintf("IDENT_API_HOST=%s", identAPIHost),
@@ -651,7 +652,7 @@ func init() {
 	runBaselineStackCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	runBaselineStackCmd.MarkFlagRequired("organization")
 
-	runBaselineStackCmd.Flags().StringVar(&baselineOrganizationAPIEndpoint, "api-endpoint", "", "local baseline API endpoint for use by one or more authorized systems of record")
+	runBaselineStackCmd.Flags().StringVar(&common.APIEndpoint, "api-endpoint", "", "local baseline API endpoint for use by one or more authorized systems of record")
 	runBaselineStackCmd.Flags().StringVar(&common.MessagingEndpoint, "messaging-endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
 	runBaselineStackCmd.Flags().BoolVar(&common.Tunnel, "tunnel", false, "when true, a tunnel is established to expose the API and messaging endpoints to the WAN")
 	runBaselineStackCmd.Flags().BoolVar(&common.ExposeAPITunnel, "api-tunnel", false, "when true, a tunnel is established to expose the API endpoint to the WAN")
