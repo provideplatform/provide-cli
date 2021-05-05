@@ -155,10 +155,11 @@ func runProxy(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	applyFlags()
 	configureNetwork(docker)
 	common.RequireOrganizationEndpoints(
 		func() {
+			applyFlags()
+
 			// run local deps
 			runNATS(docker)
 			runNATSStreaming(docker)
@@ -312,8 +313,6 @@ func applyFlags() {
 }
 
 func containerEnvironmentFactory() []string {
-	applyFlags()
-
 	env := make([]string, 0)
 	for _, envvar := range []string{
 		fmt.Sprintf("BASELINE_ORGANIZATION_ADDRESS=%s", baselineOrganizationAddress),
