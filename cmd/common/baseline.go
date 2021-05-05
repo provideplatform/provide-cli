@@ -170,6 +170,10 @@ func RegisterWorkgroupOrganization(applicationID string) {
 }
 
 func RequireOrganizationVault() {
+	if OrganizationAccessToken == "" {
+		return
+	}
+
 	// FIXME-- parameterize with --vault or similar?
 	vaults, err := vault.ListVaults(OrganizationAccessToken, map[string]interface{}{
 		"organization_id": OrganizationID,
