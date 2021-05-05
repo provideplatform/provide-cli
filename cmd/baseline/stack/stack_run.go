@@ -723,9 +723,9 @@ func init() {
 }
 
 func initSORFlags() {
-	runBaselineStackCmd.Flags().StringVar(&salesforceAPIHost, "salesforce-api-host", "testnet.dappsuite.network", "hostname of the Salesforce API service")
+	runBaselineStackCmd.Flags().StringVar(&salesforceAPIHost, "salesforce-api-host", "", "hostname of the Salesforce API service")
 	runBaselineStackCmd.Flags().StringVar(&salesforceAPIScheme, "salesforce-api-scheme", "https", "protocol scheme of the Salesforce API service")
-	runBaselineStackCmd.Flags().StringVar(&salesforceAPIPath, "salesforce-api-path", "api", "base path of the Salesforce API service")
+	runBaselineStackCmd.Flags().StringVar(&salesforceAPIPath, "salesforce-api-path", "", "base path of the Salesforce API service")
 
 	runBaselineStackCmd.Flags().StringVar(&sapAPIHost, "sap-api-host", "", "hostname of the internal SAP API service")
 	runBaselineStackCmd.Flags().StringVar(&sapAPIScheme, "sap-api-scheme", "https", "protocol scheme of the internal SAP API service")
