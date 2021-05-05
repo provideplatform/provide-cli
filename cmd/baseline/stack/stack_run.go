@@ -28,9 +28,10 @@ import (
 )
 
 const baselineContainerImage = "provide/baseline"
-const natsContainerImage = "provide/nats-server"
+const natsContainerImage = "provide/nats-server:2.2.3-beta.4-PRVD"
 const natsStreamingContainerImage = "provide/nats-streaming"
 const redisContainerImage = "redis"
+const defaultNatsServerName = "prvd"
 
 const defaultJWTSignerPublicKey = `-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAullT/WoZnxecxKwQFlwE
@@ -72,6 +73,7 @@ var redisPort int
 var apiHostname string
 var consumerHostname string
 var natsHostname string
+var natsServerName string
 var natsStreamingHostname string
 var redisHostname string
 var redisHosts string
@@ -296,6 +298,11 @@ func applyFlags() {
 	}
 
 	// HACK
+	if natsServerName == "" {
+		natsServerName = defaultNatsServerName
+	}
+
+	// HACK
 	if jwtSignerPublicKey == "" {
 		keys, err := vault.ListKeys(common.OrganizationAccessToken, common.VaultID, map[string]interface{}{
 			"spec": "RSA-4096",
@@ -451,7 +458,7 @@ func runNATS(docker *client.Client) {
 		natsHostname,
 		natsContainerImage,
 		nil,
-		&[]string{"-auth", natsAuthToken, "-p", fmt.Sprintf("%d", natsPort), "-D", "-V"},
+		&[]string{"--auth", natsAuthToken, "--name", natsServerName, "--port", fmt.Sprintf("%d", natsPort), "-DVV"},
 		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsContainerPort)},
 		[]portMapping{
 			{
