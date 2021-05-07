@@ -179,6 +179,8 @@ func runProxy(cmd *cobra.Command, args []string) {
 
 			log.Printf("%s local baseline instance started", name)
 		},
+		port,
+		natsPort,
 	)
 }
 

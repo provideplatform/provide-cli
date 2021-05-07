@@ -320,7 +320,7 @@ func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 
 // RequireOrganizationEndpoints fn is the function to call after the tunnel has been established,
 // prior to the runloop and signal handling is installed
-func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort *int) {
+func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
 	if Tunnel {
 		ExposeAPITunnel = true
 		ExposeMessagingTunnel = true
@@ -333,8 +333,8 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort *int) {
 			os.Exit(1)
 		}
 
-		APIEndpoint = fmt.Sprintf("http://%s:8080", *publicIP)
-		MessagingEndpoint = fmt.Sprintf("nats://%s:4222", *publicIP)
+		APIEndpoint = fmt.Sprintf("http://%s:%d", *publicIP, apiPort)
+		MessagingEndpoint = fmt.Sprintf("nats://%s:%d", *publicIP, messagingPort)
 	} else {
 		const runloopSleepInterval = 250 * time.Millisecond
 		const runloopTickInterval = 5000 * time.Millisecond
@@ -391,7 +391,7 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort *int) {
 					tunnelClient.AddTunnel(&gonnel.Tunnel{
 						Proto:        gonnel.HTTP,
 						Name:         fmt.Sprintf("%s-api", OrganizationID),
-						LocalAddress: "127.0.0.1:8080", // FIXME-- this port
+						LocalAddress: fmt.Sprintf("127.0.0.1:%d", apiPort),
 					})
 				}
 
@@ -399,7 +399,7 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort *int) {
 					tunnelClient.AddTunnel(&gonnel.Tunnel{
 						Proto:        gonnel.TCP,
 						Name:         fmt.Sprintf("%s-msg", OrganizationID),
-						LocalAddress: "127.0.0.1:4222", // FIXME-- this port
+						LocalAddress: fmt.Sprintf("127.0.0.1:%d", messagingPort),
 					})
 				}
 
