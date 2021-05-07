@@ -465,7 +465,7 @@ func runNATS(docker *client.Client) {
 		natsHostname,
 		natsContainerImage,
 		nil,
-		&[]string{"--auth", natsAuthToken, "--name", natsServerName, "--port", fmt.Sprintf("%d", natsPort), "-DVV"},
+		&[]string{"--auth", natsAuthToken, "--name", natsServerName, "--port", fmt.Sprintf("%d", natsContainerPort), "-DVV"},
 		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsContainerPort)},
 		[]portMapping{
 			{
