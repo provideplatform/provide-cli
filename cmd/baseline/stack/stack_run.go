@@ -301,7 +301,7 @@ func applyFlags() {
 	// HACK
 	if strings.HasSuffix(redisHostname, "-redis") {
 		redisHostname = fmt.Sprintf("%s-redis", name)
-		redisHosts = fmt.Sprintf("%s:%d", redisHostname, redisPort)
+		redisHosts = fmt.Sprintf("%s:%d", redisHostname, redisContainerPort)
 	}
 
 	// HACK
@@ -689,7 +689,7 @@ func init() {
 
 	runBaselineStackCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the local baseline redis container")
 	runBaselineStackCmd.Flags().IntVar(&redisPort, "redis-port", 6379, "host port on which to expose the local redis service")
-	runBaselineStackCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisPort), "list of clustered redis hosts in the local baseline stack")
+	runBaselineStackCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisContainerPort), "list of clustered redis hosts in the local baseline stack")
 
 	runBaselineStackCmd.Flags().BoolVar(&autoRemove, "autoremove", false, "when true, containers are automatically pruned upon exit")
 	runBaselineStackCmd.Flags().StringVar(&logLevel, "log-level", "DEBUG", "log level to set within the running local baseline stack")
