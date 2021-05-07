@@ -320,7 +320,7 @@ func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 
 // RequireOrganizationEndpoints fn is the function to call after the tunnel has been established,
 // prior to the runloop and signal handling is installed
-func RequireOrganizationEndpoints(fn func()) {
+func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort *int) {
 	if Tunnel {
 		ExposeAPITunnel = true
 		ExposeMessagingTunnel = true
