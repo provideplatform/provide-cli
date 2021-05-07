@@ -342,7 +342,7 @@ func containerEnvironmentFactory() []string {
 		fmt.Sprintf("NATS_CLIENT_PREFIX=%s", name),
 		fmt.Sprintf("NATS_STREAMING_URL=%s", fmt.Sprintf("nats://%s:%d", natsStreamingHostname, natsStreamingContainerPort)),
 		fmt.Sprintf("NATS_TOKEN=%s", natsAuthToken),
-		fmt.Sprintf("NATS_URL=%s", fmt.Sprintf("nats://%s:%d", natsHostname, natsPort)),
+		fmt.Sprintf("NATS_URL=%s", fmt.Sprintf("nats://%s:%d", natsHostname, natsContainerPort)),
 		fmt.Sprintf("NCHAIN_API_HOST=%s", nchainAPIHost),
 		fmt.Sprintf("NCHAIN_API_SCHEME=%s", nchainAPIScheme),
 		fmt.Sprintf("NCHAIN_BASELINE_NETWORK_ID=%s", nchainBaselineNetworkID),
