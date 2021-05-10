@@ -13,7 +13,8 @@ var WalletsCmd = &cobra.Command{
 
 More documentation forthcoming.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("wallets unimplemented")
+		fmt.Println("Wallet command run")
+		GeneralWalletPrompt(cmd, args, "empty")
 	},
 }
 

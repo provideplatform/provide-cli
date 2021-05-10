@@ -31,7 +31,7 @@ func CreateWallet(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	createManagedWallet()
+	createManagedWallet(cmd, args)
 }
 
 func createDecentralizedWallet() {
@@ -50,13 +50,13 @@ func createDecentralizedWallet() {
 	fmt.Print(result)
 }
 
-func createManagedWallet() {
+func createManagedWallet(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
 		"purpose": purpose,
 	}
-	if walletName != "" {
-		params["name"] = walletName
+	if walletName == "" {
+		initWalletPrompt(cmd, args)
 	}
 	wallet, err := provide.CreateWallet(token, params)
 	if err != nil {

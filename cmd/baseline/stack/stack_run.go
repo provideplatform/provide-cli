@@ -710,7 +710,7 @@ func init() {
 	runBaselineStackCmd.Flags().StringVar(&name, "name", "baseline-local", "name of the baseline stack instance")
 
 	runBaselineStackCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
-	runBaselineStackCmd.MarkFlagRequired("organization")
+	// runBaselineStackCmd.MarkFlagRequired("organization")
 
 	runBaselineStackCmd.Flags().StringVar(&common.APIEndpoint, "api-endpoint", "", "local baseline API endpoint for use by one or more authorized systems of record")
 	runBaselineStackCmd.Flags().StringVar(&common.MessagingEndpoint, "messaging-endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")

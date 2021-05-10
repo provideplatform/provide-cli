@@ -90,7 +90,21 @@ func AuthorizeApplicationContext() {
 	}
 }
 
+// func RequireOrganizationID() {
+// 	if OrganizationID == "" {
+// 		return
+// 	}
+
+// 	// Promptuii!
+// 	orgs, err := ident.ListOrganizations(RequireUserAuthToken(), map[string]interface{}{})
+// 	for _, org := range orgs {
+// 		//*org.Name
+// 	}
+// }
+
 func AuthorizeOrganizationContext() {
+	//RequireOrganizationID()
+
 	token, err := ident.CreateToken(RequireUserAuthToken(), map[string]interface{}{
 		"scope":           "offline_access",
 		"organization_id": OrganizationID,
