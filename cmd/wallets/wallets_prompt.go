@@ -10,7 +10,7 @@ import (
 )
 
 // General Endpoints
-func GeneralWalletPrompt(cmd *cobra.Command, args []string, currentStep string) {
+func generalWalletPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case "empty":
 		emptyWalletPrompt(cmd, args)
@@ -26,7 +26,7 @@ func GeneralWalletPrompt(cmd *cobra.Command, args []string, currentStep string) 
 }
 
 func emptyWalletPrompt(cmd *cobra.Command, args []string) {
-	var cmdArgs []string
+	var promptArgs []string
 	prompt := promptui.Select{
 		Label: "What would you like to do",
 		Items: []string{"Initialize", "List"},
@@ -39,13 +39,13 @@ func emptyWalletPrompt(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	cmdArgs = append(cmdArgs, result)
+	promptArgs = append(promptArgs, result)
 	if result == "List" {
 		listWalletPrompt(cmd, args)
 	}
 
 	if result == "Initialize" {
-		cmdArgs = append(cmdArgs, initWalletPrompt(cmd, args))
+		promptArgs = append(promptArgs, initWalletPrompt(cmd, args))
 	}
 
 	flagPrompt := promptui.Select{
@@ -61,10 +61,11 @@ func emptyWalletPrompt(cmd *cobra.Command, args []string) {
 	}
 
 	if flagResult == "Set Optional Flags" {
-		cmdArgs = append(cmdArgs, flagResult)
+		promptArgs = append(promptArgs, flagResult)
 		optionalFlagsInit()
 	}
-	summary(cmdArgs)
+
+	summary(cmd, args, promptArgs)
 }
 
 func optionalFlagsInit() {
@@ -80,10 +81,10 @@ func optionalFlagsInit() {
 	}
 }
 
-func summary(args []string) {
-	// Print summary here of what we just did.
-	if args[0] == "Initialize" {
-		fmt.Printf("Creating a %v wallet ", args[1])
+func summary(cmd *cobra.Command, args []string, promptArgs []string) {
+	fmt.Println(promptArgs[0])
+	if promptArgs[0] == "Initialize" {
+		fmt.Printf("Creating a %v wallet ", promptArgs[1])
 		if !nonCustodial && walletName == "" && purpose == 44 {
 			fmt.Printf("with no optional flags. Flags set to default values. \n")
 		} else {
@@ -98,6 +99,7 @@ func summary(args []string) {
 				fmt.Printf("\tPurpose: %v \n", purpose)
 			}
 		}
+		createManagedWallet(cmd, args)
 	}
 }
 
@@ -187,3 +189,5 @@ func listWalletPrompt(cmd *cobra.Command, args []string) {
 }
 
 // Optional Flag For List Wallet
+func optionalFlagsList() {
+}
