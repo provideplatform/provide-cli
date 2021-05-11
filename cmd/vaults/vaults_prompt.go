@@ -1,209 +1,206 @@
 package vaults
 
 import (
+	"fmt"
+
+	"github.com/manifoldco/promptui"
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 
-// var promptArgs []string
+var promptArgs []string
 
-// // General Endpoints
+// General Endpoints
 func generalWalletPrompt(cmd *cobra.Command, args []string, currentStep string) {
-	// 	switch step := currentStep; step {
-	// 	case "empty":
-	// 		emptyWalletPrompt(cmd, args)
-	// 	case "init":
-	// 		custodyWalletPrompt(cmd, args)
-	// 	case "custodial flag":
-	// 		custodialFlagWalletPrompt()
-	// 	case "list":
-	// 		emptyWalletPrompt(cmd, args)
-	// 	default:
-	// 		emptyWalletPrompt(cmd, args)
-	// 	}
+	switch step := currentStep; step {
+	case "empty":
+		emptyWalletPrompt(cmd, args)
+	case "init":
+		flagPrompt()
+	case "list":
+		flagPrompt()
+	default:
+		emptyWalletPrompt(cmd, args)
+	}
 }
 
-// func emptyWalletPrompt(cmd *cobra.Command, args []string) {
-// 	prompt := promptui.Select{
-// 		Label: "What would you like to do",
-// 		Items: []string{"Initialize", "List"},
-// 	}
+func emptyWalletPrompt(cmd *cobra.Command, args []string) {
+	prompt := promptui.Select{
+		Label: "What would you like to do",
+		Items: []string{"Initialize", "List"},
+	}
 
-// 	_, result, err := prompt.Run()
+	_, result, err := prompt.Run()
 
-// 	if err != nil {
-// 		fmt.Printf("Prompt failed %v\n", err)
-// 		return
-// 	}
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return
+	}
 
-// 	promptArgs = append(promptArgs, result)
+	promptArgs = append(promptArgs, result)
 
-// 	if result == "Initialize" {
-// 		promptArgs = append(promptArgs, custodyWalletPrompt(cmd, args))
-// 	}
+	flagPrompt()
 
-// 	flagPrompt()
+	summary(cmd, args, promptArgs)
+}
 
-// 	summary(cmd, args, promptArgs)
-// }
+func flagPrompt() {
+	flagPrompt := promptui.Select{
+		Label: "Would you like to set Optional Flags?",
+		Items: []string{"Set Optional Flags", "Dont Set Optional Flags"},
+	}
 
-// func flagPrompt() {
-// 	flagPrompt := promptui.Select{
-// 		Label: "Would you like to set Optional Flags?",
-// 		Items: []string{"Set Optional Flags", "Dont Set Optional Flags"},
-// 	}
+	_, flagResult, err := flagPrompt.Run()
 
-// 	_, flagResult, err := flagPrompt.Run()
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return
+	}
 
-// 	if err != nil {
-// 		fmt.Printf("Prompt failed %v\n", err)
-// 		return
-// 	}
+	if flagResult == "Set Optional Flags" {
+		promptArgs = append(promptArgs, flagResult)
+		if promptArgs[0] == "Initialize" {
+			optionalFlagsInit()
 
-// 	if flagResult == "Set Optional Flags" {
-// 		promptArgs = append(promptArgs, flagResult)
-// 		if promptArgs[0] == "Initialize" {
-// 			optionalFlagsInit()
+		}
+		if promptArgs[0] == "List" {
+			optionalFlagsList()
 
-// 		}
-// 		if promptArgs[0] == "List" {
-// 			optionalFlagsList()
+		}
+	}
+}
 
-// 		}
-// 	}
-// }
+func optionalFlagsInit() {
+	fmt.Println("Optional Flags:")
+	if description == "" {
+		descriptionFlagVaultPrompt()
+	}
+	if name == "" {
+		nameFlagVaultPrompt()
+	}
+	if common.ApplicationID == "" {
+		applicationidFlagVaultPrompt()
+	}
+	if common.OrganizationID == "" {
+		organizationidFlagPrompt()
+	}
 
-// func optionalFlagsInit() {
-// 	fmt.Println("Optional Flags:")
-// 	if !nonCustodial {
-// 		custodialFlagWalletPrompt()
-// 	}
-// 	if walletName == "" {
-// 		nameFlagWalletPrompt()
-// 	}
-// 	if purpose == 44 {
-// 		purposeFlagWalletPrompt()
-// 	}
-// }
+}
 
-// func optionalFlagsList() {
-// 	fmt.Println("Optional Flags:")
-// 	if common.ApplicationID == "" {
-// 		applicationidFlagPrompt()
-// 	}
-// }
+func optionalFlagsList() {
+	fmt.Println("Optional Flags:")
+	if common.ApplicationID == "" {
+		applicationidFlagVaultPrompt()
+	}
+	if common.OrganizationID == "" {
+		applicationidFlagVaultPrompt()
+	}
+}
 
-// func summary(cmd *cobra.Command, args []string, promptArgs []string) {
-// 	if promptArgs[0] == "Initialize" {
-// 		createManagedWallet(cmd, args)
-// 	}
-// 	if promptArgs[0] == "List" {
-// 		listWalletPrompt(cmd, args)
-// 	}
-// }
+func summary(cmd *cobra.Command, args []string, promptArgs []string) {
+	if promptArgs[0] == "Initialize" {
+		createVault(cmd, args)
+	}
+	if promptArgs[0] == "List" {
+		listVaults(cmd, args)
+	}
+}
 
-// // Init Wallet
-// func custodyWalletPrompt(cmd *cobra.Command, args []string) string {
-// 	prompt := promptui.Select{
-// 		Label: "What type of Wallet would you like to create",
-// 		Items: []string{"Managed", "Decentralised"},
-// 	}
+// Init Wallet
+func custodyWalletPrompt(cmd *cobra.Command, args []string) string {
+	prompt := promptui.Select{
+		Label: "What type of Wallet would you like to create",
+		Items: []string{"Managed", "Decentralised"},
+	}
 
-// 	_, result, err := prompt.Run()
+	_, result, err := prompt.Run()
 
-// 	if err != nil {
-// 		fmt.Printf("Prompt failed %v\n", err)
-// 		return "nil"
-// 	}
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return "nil"
+	}
 
-// 	return result
-// }
+	return result
+}
 
-// // Optional Flags For Init Wallet
-// func custodialFlagWalletPrompt() {
-// 	prompt := promptui.Select{
-// 		Label: "Would you like your wallet to be non-custodial",
-// 		Items: []string{"Custodial", "Non-custodial"},
-// 	}
+// Optional Flags For Init Wallet
+func nameFlagVaultPrompt() {
+	validate := func(input string) error {
+		return nil
+	}
 
-// 	_, result, err := prompt.Run()
+	prompt := promptui.Prompt{
+		Label:    "Vault Name",
+		Validate: validate,
+	}
 
-// 	nonCustodial = result != "Custodial"
+	result, err := prompt.Run()
 
-// 	if err != nil {
-// 		fmt.Printf("Prompt failed %v\n", err)
-// 		return
-// 	}
-// }
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return
+	}
 
-// func nameFlagWalletPrompt() {
-// 	validate := func(input string) error {
-// 		return nil
-// 	}
+	name = result
+}
 
-// 	prompt := promptui.Prompt{
-// 		Label:    "Wallet Name",
-// 		Validate: validate,
-// 	}
+func descriptionFlagVaultPrompt() {
+	validate := func(input string) error {
+		return nil
+	}
 
-// 	result, err := prompt.Run()
+	prompt := promptui.Prompt{
+		Label:    "Vault Description",
+		Validate: validate,
+	}
 
-// 	if err != nil {
-// 		fmt.Printf("Prompt failed %v\n", err)
-// 		return
-// 	}
+	result, err := prompt.Run()
 
-// 	walletName = result
-// }
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return
+	}
 
-// func purposeFlagWalletPrompt() {
-// 	validate := func(input string) error {
-// 		_, err := strconv.Atoi(input)
-// 		if err != nil {
-// 			return errors.New("invalid number")
-// 		}
-// 		return nil
-// 	}
+	description = result
+}
 
-// 	prompt := promptui.Prompt{
-// 		Label:    "Wallet Purpose",
-// 		Validate: validate,
-// 	}
+// Optional Flag For List Vaults
+func applicationidFlagVaultPrompt() {
+	validate := func(input string) error {
+		return nil
+	}
 
-// 	result, err := prompt.Run()
+	prompt := promptui.Prompt{
+		Label:    "Application ID",
+		Validate: validate,
+	}
 
-// 	// purpose, _ = strconv.ParseInt(result, 0, 64)
-// 	// TODO: get rid of this
-// 	purpose, _ = strconv.Atoi(result)
+	result, err := prompt.Run()
 
-// 	if err != nil {
-// 		fmt.Printf("Prompt failed %v\n", err)
-// 		return
-// 	}
-// }
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return
+	}
 
-// // List Wallets
-// func listWalletPrompt(cmd *cobra.Command, args []string) {
-// 	listWallets(cmd, args)
-// }
+	common.ApplicationID = result
+}
 
-// // Optional Flag For List Wallet
+func organizationidFlagPrompt() {
+	validate := func(input string) error {
+		return nil
+	}
 
-// func applicationidFlagPrompt() {
-// 	validate := func(input string) error {
-// 		return nil
-// 	}
+	prompt := promptui.Prompt{
+		Label:    "Organization ID",
+		Validate: validate,
+	}
 
-// 	prompt := promptui.Prompt{
-// 		Label:    "Application ID",
-// 		Validate: validate,
-// 	}
+	result, err := prompt.Run()
 
-// 	result, err := prompt.Run()
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return
+	}
 
-// 	if err != nil {
-// 		fmt.Printf("Prompt failed %v\n", err)
-// 		return
-// 	}
-
-// 	common.ApplicationID = result
-// }
+	common.OrganizationID = result
+}
