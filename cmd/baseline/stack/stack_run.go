@@ -32,7 +32,7 @@ const baselineContainerImage = "provide/baseline"
 const natsContainerImage = "provide/nats-server:2.2.3-beta.4-PRVD"
 const natsStreamingContainerImage = "provide/nats-streaming"
 const redisContainerImage = "redis"
-const defaultNatsServerName = "prvd"
+const defaultNatsServerName = "nats"
 
 const defaultJWTSignerPublicKey = `-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAullT/WoZnxecxKwQFlwE
@@ -511,7 +511,12 @@ func runNATSStreaming(docker *client.Client) {
 		natsStreamingHostname,
 		natsStreamingContainerImage,
 		nil,
-		&[]string{"-cid", defaultNATSStreamingClusterID, "--auth", natsAuthToken, "-SDV"},
+		&[]string{
+			"--cluster_id", defaultNATSStreamingClusterID,
+			"--auth", natsAuthToken,
+			"--nats-server", fmt.Sprintf("nats://%s:%d", natsHostname, natsContainerPort),
+			"-SDV"
+		},
 		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsStreamingContainerPort)},
 		map[string]string{},
 		[]portMapping{
