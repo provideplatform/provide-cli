@@ -22,7 +22,7 @@ func generalWalletPrompt(cmd *cobra.Command, args []string, currentStep string) 
 	case "custodial flag":
 		custodialFlagWalletPrompt()
 	case "list":
-		optionalFlagsList()
+		emptyWalletPrompt(cmd, args)
 	default:
 		emptyWalletPrompt(cmd, args)
 	}
@@ -47,6 +47,12 @@ func emptyWalletPrompt(cmd *cobra.Command, args []string) {
 		promptArgs = append(promptArgs, initWalletPrompt(cmd, args))
 	}
 
+	flagPrompt()
+
+	summary(cmd, args, promptArgs)
+}
+
+func flagPrompt() {
 	flagPrompt := promptui.Select{
 		Label: "Would you like to set Optional Flags?",
 		Items: []string{"Set Optional Flags", "Dont Set Optional Flags"},
@@ -70,8 +76,6 @@ func emptyWalletPrompt(cmd *cobra.Command, args []string) {
 
 		}
 	}
-
-	summary(cmd, args, promptArgs)
 }
 
 func optionalFlagsInit() {
