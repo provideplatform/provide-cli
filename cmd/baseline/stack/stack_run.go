@@ -514,7 +514,7 @@ func runNATSStreaming(docker *client.Client) {
 		&[]string{
 			"--cluster_id", defaultNATSStreamingClusterID,
 			"--auth", natsAuthToken,
-			"--nats-server", fmt.Sprintf("nats://%s:%d", natsHostname, natsContainerPort),
+			"--nats_server", fmt.Sprintf("nats://%s:%d", natsHostname, natsContainerPort),
 			"-SDV",
 		},
 		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsStreamingContainerPort)},
