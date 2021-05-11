@@ -18,14 +18,17 @@ func generalWalletPrompt(cmd *cobra.Command, args []string, currentStep string) 
 	case "empty":
 		emptyWalletPrompt(cmd, args)
 	case "init":
-		initWalletPrompt(cmd, args)
-	case "custodial flag":
-		custodialFlagWalletPrompt()
+		custodyWalletPrompt(cmd, args)
 	case "list":
-		emptyWalletPrompt(cmd, args)
+		flagPrompt()
+	case "custody":
+		flagPrompt()
 	default:
 		emptyWalletPrompt(cmd, args)
 	}
+	flagPrompt()
+
+	summary(cmd, args, promptArgs)
 }
 
 func emptyWalletPrompt(cmd *cobra.Command, args []string) {
@@ -44,12 +47,9 @@ func emptyWalletPrompt(cmd *cobra.Command, args []string) {
 	promptArgs = append(promptArgs, result)
 
 	if result == "Initialize" {
-		promptArgs = append(promptArgs, initWalletPrompt(cmd, args))
+		promptArgs = append(promptArgs, custodyWalletPrompt(cmd, args))
 	}
 
-	flagPrompt()
-
-	summary(cmd, args, promptArgs)
 }
 
 func flagPrompt() {
@@ -75,6 +75,8 @@ func flagPrompt() {
 			optionalFlagsList()
 
 		}
+	} else {
+		return
 	}
 }
 
@@ -108,7 +110,7 @@ func summary(cmd *cobra.Command, args []string, promptArgs []string) {
 }
 
 // Init Wallet
-func initWalletPrompt(cmd *cobra.Command, args []string) string {
+func custodyWalletPrompt(cmd *cobra.Command, args []string) string {
 	prompt := promptui.Select{
 		Label: "What type of Wallet would you like to create",
 		Items: []string{"Managed", "Decentralised"},

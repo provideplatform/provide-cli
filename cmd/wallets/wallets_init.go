@@ -55,9 +55,7 @@ func createManagedWallet(cmd *cobra.Command, args []string) {
 	params := map[string]interface{}{
 		"purpose": purpose,
 	}
-	if walletName == "" {
-		optionalFlagsInit()
-	}
+
 	wallet, err := provide.CreateWallet(token, params)
 	if err != nil {
 		log.Printf("Failed to genereate HD wallet; %s", err.Error())

@@ -21,8 +21,8 @@ var walletsListCmd = &cobra.Command{
 func listWallets(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{}
-	if common.ApplicationID == "" {
-		optionalFlagsList()
+	if common.ApplicationID != "" {
+		params["application_id"] = common.ApplicationID
 	}
 	resp, err := provide.ListWallets(token, params)
 	if err != nil {
