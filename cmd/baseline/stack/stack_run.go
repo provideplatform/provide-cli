@@ -525,7 +525,9 @@ func runNATSStreaming(docker *client.Client) {
 			"-SDV",
 		},
 		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsStreamingContainerPort)},
-		map[string]string{},
+		map[string]string{
+			"/tmp/nats-server.conf": "/etc/nats-server.conf",
+		},
 		[]portMapping{
 			{
 				hostPort:      natsStreamingPort,
