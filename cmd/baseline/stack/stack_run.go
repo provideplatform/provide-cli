@@ -15,6 +15,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
@@ -428,6 +429,7 @@ func runProxyAPI(docker *client.Client) {
 		&[]string{"./ops/run_api.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", apiHostname, apiContainerPort)},
+		map[string]string{},
 		[]portMapping{{
 			hostPort:      port,
 			containerPort: apiContainerPort,
@@ -449,6 +451,7 @@ func runProxyConsumer(docker *client.Client) {
 		&[]string{"./ops/run_consumer.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", apiHostname, port)},
+		map[string]string{},
 		[]portMapping{}...,
 	)
 
@@ -459,14 +462,30 @@ func runProxyConsumer(docker *client.Client) {
 }
 
 func runNATS(docker *client.Client) {
-	_, err := runContainer(
+	cfg := []byte("max_payload 100Mb\n")
+	err := ioutil.WriteFile("nats-server.conf", cfg, 0644)
+	if err != nil {
+		log.Printf("failed to write local nats-server.conf; %s", err.Error())
+		os.Exit(1)
+	}
+
+	_, err = runContainer(
 		docker,
 		fmt.Sprintf("%s-nats", strings.ReplaceAll(name, " ", "")),
 		natsHostname,
 		natsContainerImage,
 		nil,
-		&[]string{"--auth", natsAuthToken, "--name", natsServerName, "--port", fmt.Sprintf("%d", natsContainerPort), "-DVV"},
+		&[]string{
+			"--auth", natsAuthToken,
+			"--config", "/etc/nats-server.conf",
+			"--name", natsServerName,
+			"--port", fmt.Sprintf("%d", natsPort),
+			"-DVV",
+		},
 		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsContainerPort)},
+		map[string]string{
+			"nats-server.conf": "/etc/nats-server.conf",
+		},
 		[]portMapping{
 			{
 				hostPort:      natsPort,
@@ -494,6 +513,7 @@ func runNATSStreaming(docker *client.Client) {
 		nil,
 		&[]string{"-cid", defaultNATSStreamingClusterID, "--auth", natsAuthToken, "-SDV"},
 		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsStreamingContainerPort)},
+		map[string]string{},
 		[]portMapping{
 			{
 				hostPort:      natsStreamingPort,
@@ -517,6 +537,7 @@ func runRedis(docker *client.Client) {
 		nil,
 		nil,
 		&[]string{"CMD", "redis-cli", "ping"},
+		map[string]string{},
 		[]portMapping{{
 			hostPort:      redisPort,
 			containerPort: redisContainerPort,
@@ -552,6 +573,7 @@ func runContainer(
 	docker *client.Client,
 	name, hostname, image string,
 	entrypoint, cmd, healthcheck *[]string,
+	mounts map[string]string,
 	ports ...portMapping,
 ) (*container.ContainerCreateCreatedBody, error) {
 	log.Printf("running local baseline container image: %s", image)
@@ -588,11 +610,21 @@ func runContainer(
 		}
 	}
 
+	mountedVolumes := make([]mount.Mount, 0)
+	for source := range mounts { // mounts are mapped source => target...
+		mountedVolumes = append(mountedVolumes, mount.Mount{
+			Type:   mount.TypeBind,
+			Source: source,
+			Target: mounts[source],
+		})
+	}
+
 	container, err := docker.ContainerCreate(
 		context.Background(),
 		containerConfig,
 		&container.HostConfig{
 			AutoRemove:   autoRemove,
+			Mounts:       mountedVolumes,
 			NetworkMode:  "bridge",
 			PortBindings: portBinding,
 			RestartPolicy: container.RestartPolicy{

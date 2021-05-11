@@ -29,3 +29,5 @@ provide-cli
 
 .bin/
 vendor/
+
+nats-server.conf
