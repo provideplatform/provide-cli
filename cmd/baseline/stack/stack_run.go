@@ -484,7 +484,7 @@ func runNATS(docker *client.Client) {
 			"--auth", natsAuthToken,
 			"--config", "/etc/nats-server.conf",
 			"--name", natsServerName,
-			"--port", fmt.Sprintf("%d", natsPort),
+			"--port", fmt.Sprintf("%d", natsContainerPort),
 			"-DVV",
 		},
 		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsContainerPort)},
