@@ -6,8 +6,11 @@ import (
 	"strconv"
 
 	"github.com/manifoldco/promptui"
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
+
+var promptArgs []string
 
 // General Endpoints
 func generalWalletPrompt(cmd *cobra.Command, args []string, currentStep string) {
@@ -19,14 +22,13 @@ func generalWalletPrompt(cmd *cobra.Command, args []string, currentStep string) 
 	case "custodial flag":
 		custodialFlagWalletPrompt()
 	case "list":
-		fmt.Println("list")
+		optionalFlagsList()
 	default:
 		emptyWalletPrompt(cmd, args)
 	}
 }
 
 func emptyWalletPrompt(cmd *cobra.Command, args []string) {
-	var promptArgs []string
 	prompt := promptui.Select{
 		Label: "What would you like to do",
 		Items: []string{"Initialize", "List"},
@@ -40,9 +42,6 @@ func emptyWalletPrompt(cmd *cobra.Command, args []string) {
 	}
 
 	promptArgs = append(promptArgs, result)
-	if result == "List" {
-		listWalletPrompt(cmd, args)
-	}
 
 	if result == "Initialize" {
 		promptArgs = append(promptArgs, initWalletPrompt(cmd, args))
@@ -62,7 +61,14 @@ func emptyWalletPrompt(cmd *cobra.Command, args []string) {
 
 	if flagResult == "Set Optional Flags" {
 		promptArgs = append(promptArgs, flagResult)
-		optionalFlagsInit()
+		if promptArgs[0] == "Initialize" {
+			optionalFlagsInit()
+
+		}
+		if promptArgs[0] == "List" {
+			optionalFlagsList()
+
+		}
 	}
 
 	summary(cmd, args, promptArgs)
@@ -81,25 +87,19 @@ func optionalFlagsInit() {
 	}
 }
 
+func optionalFlagsList() {
+	fmt.Println("Optional Flags:")
+	if common.ApplicationID == "" {
+		applicationidFlagPrompt()
+	}
+}
+
 func summary(cmd *cobra.Command, args []string, promptArgs []string) {
-	fmt.Println(promptArgs[0])
 	if promptArgs[0] == "Initialize" {
-		fmt.Printf("Creating a %v wallet ", promptArgs[1])
-		if !nonCustodial && walletName == "" && purpose == 44 {
-			fmt.Printf("with no optional flags. Flags set to default values. \n")
-		} else {
-			fmt.Printf("with optional flags: \n")
-			if nonCustodial {
-				fmt.Printf("\tCustody: non-custodial\n")
-			}
-			if walletName != "" {
-				fmt.Printf("\tWallet Name: %v \n", walletName)
-			}
-			if purpose != 44 {
-				fmt.Printf("\tPurpose: %v \n", purpose)
-			}
-		}
 		createManagedWallet(cmd, args)
+	}
+	if promptArgs[0] == "List" {
+		listWalletPrompt(cmd, args)
 	}
 }
 
@@ -189,5 +189,23 @@ func listWalletPrompt(cmd *cobra.Command, args []string) {
 }
 
 // Optional Flag For List Wallet
-func optionalFlagsList() {
+
+func applicationidFlagPrompt() {
+	validate := func(input string) error {
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    "Application ID",
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return
+	}
+
+	common.ApplicationID = result
 }
