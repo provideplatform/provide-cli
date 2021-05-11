@@ -474,7 +474,7 @@ func writeNATSConfig() {
 func runNATS(docker *client.Client) {
 	writeNATSConfig()
 
-	_, err = runContainer(
+	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-nats", strings.ReplaceAll(name, " ", "")),
 		natsHostname,
