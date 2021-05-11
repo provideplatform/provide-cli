@@ -32,7 +32,7 @@ const baselineContainerImage = "provide/baseline"
 const natsContainerImage = "provide/nats-server:2.2.3-beta.4-PRVD"
 const natsStreamingContainerImage = "provide/nats-streaming"
 const redisContainerImage = "redis"
-const defaultNatsServerName = "nats"
+const defaultNatsServerName = "prvd"
 
 const defaultJWTSignerPublicKey = `-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAullT/WoZnxecxKwQFlwE
