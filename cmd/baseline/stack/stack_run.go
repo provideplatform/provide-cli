@@ -462,7 +462,7 @@ func runProxyConsumer(docker *client.Client) {
 }
 
 func runNATS(docker *client.Client) {
-	cfg := []byte("max_payload 100Mb\n")
+	cfg := []byte("max_payload: 100Mb\n")
 	err := ioutil.WriteFile("/tmp/nats-server.conf", cfg, 0644)
 	if err != nil {
 		log.Printf("failed to write local nats-server.conf; %s", err.Error())
