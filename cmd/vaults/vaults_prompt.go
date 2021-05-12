@@ -14,17 +14,17 @@ var promptArgs []string
 func generalWalletPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case "empty":
-		emptyWalletPrompt(cmd, args)
+		emptyVaultsPrompt(cmd, args)
 	case "init":
 		flagPrompt()
 	case "list":
 		flagPrompt()
 	default:
-		emptyWalletPrompt(cmd, args)
+		emptyVaultsPrompt(cmd, args)
 	}
 }
 
-func emptyWalletPrompt(cmd *cobra.Command, args []string) {
+func emptyVaultsPrompt(cmd *cobra.Command, args []string) {
 	prompt := promptui.Select{
 		Label: "What would you like to do",
 		Items: []string{"Initialize", "List"},
@@ -105,24 +105,7 @@ func summary(cmd *cobra.Command, args []string, promptArgs []string) {
 	}
 }
 
-// Init Wallet
-func custodyWalletPrompt(cmd *cobra.Command, args []string) string {
-	prompt := promptui.Select{
-		Label: "What type of Wallet would you like to create",
-		Items: []string{"Managed", "Decentralised"},
-	}
-
-	_, result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		return "nil"
-	}
-
-	return result
-}
-
-// Optional Flags For Init Wallet
+// Optional Flags For Init Vault
 func nameFlagVaultPrompt() {
 	validate := func(input string) error {
 		return nil

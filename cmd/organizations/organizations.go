@@ -1,8 +1,6 @@
 package organizations
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	provide "github.com/provideservices/provide-go/api/ident"
@@ -20,7 +18,7 @@ var OrganizationsCmd = &cobra.Command{
 	- Tokens
 	- Vaults`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("organizations unimplemented")
+		generalOrganizationPrompt(cmd, args, "empty")
 	},
 }
 

@@ -11,7 +11,6 @@ import (
 )
 
 var organizationName string
-var organizationType string
 
 var organizationsInitCmd = &cobra.Command{
 	Use:   "init --name 'Acme Inc.'",
@@ -25,10 +24,6 @@ func organizationConfigFactory() map[string]interface{} {
 		"network_id": common.NetworkID,
 	}
 
-	if organizationType != "" {
-		cfg["type"] = organizationType
-	}
-
 	return cfg
 }
 
@@ -36,7 +31,6 @@ func createOrganization(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
 		"name":   organizationName,
-		"type":   organizationType,
 		"config": organizationConfigFactory(),
 	}
 	organization, err := provide.CreateOrganization(token, params)
