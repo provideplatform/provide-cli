@@ -3,6 +3,7 @@ package users
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -21,7 +22,8 @@ func emailPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 
@@ -31,7 +33,7 @@ func emailPrompt() {
 func passwordPrompt() {
 	validate := func(input string) error {
 		if len(input) < 6 {
-			return errors.New("Password must have more than 6 characters")
+			return errors.New("password must have more than 6 characters")
 		}
 		return nil
 	}
@@ -45,7 +47,8 @@ func passwordPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 
@@ -65,6 +68,8 @@ func authenticatePrompt(cmd *cobra.Command, args []string) {
 	}
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
+		return
 	}
 }

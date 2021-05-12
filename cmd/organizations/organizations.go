@@ -1,12 +1,13 @@
 package organizations
 
 import (
-	"github.com/spf13/cobra"
+	"fmt"
+	"os"
 
-	provide "github.com/provideservices/provide-go/api/ident"
+	"github.com/spf13/cobra"
 )
 
-var organization provide.Organization
+// var organization provide.Organization
 
 var OrganizationsCmd = &cobra.Command{
 	Use:   "organizations",
@@ -18,7 +19,14 @@ var OrganizationsCmd = &cobra.Command{
 	- Tokens
 	- Vaults`,
 	Run: func(cmd *cobra.Command, args []string) {
-		generalPrompt(cmd, args, "empty")
+		generalPrompt(cmd, args, "")
+
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Printf("Prompt Exit\n")
+				os.Exit(1)
+			}
+		}()
 	},
 }
 

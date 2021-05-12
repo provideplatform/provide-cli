@@ -3,6 +3,7 @@ package organizations
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-cli/cmd/common"
@@ -11,20 +12,24 @@ import (
 
 var promptArgs []string
 
+const promptStepDetails = "Details"
+const promptStepInit = "Initialize"
+const promptStepList = "List"
+
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
-	case "Empty":
-		emptyPrompt(cmd, args)
-	case "Initialize":
-		mandatoryFlagsInit()
-	case "List":
+	case promptStepInit:
+		nameFlagPrompt()
+	case promptStepList:
 		summary(cmd, args, promptArgs)
-	case "Details":
-		mandatoryFlagsDetails()
+	case promptStepDetails:
+		organizationidFlagPrompt()
 	default:
 		emptyPrompt(cmd, args)
 	}
+
+	summary(cmd, args, promptArgs)
 }
 
 func emptyPrompt(cmd *cobra.Command, args []string) {
@@ -35,24 +40,15 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 
 	_, result, err := prompt.Run()
 
-	generalPrompt(cmd, args, result)
+	promptArgs = append(promptArgs, result)
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 
-	promptArgs = append(promptArgs, result)
-
-	summary(cmd, args, promptArgs)
-}
-
-func mandatoryFlagsInit() {
-	nameFlagPrompt()
-}
-
-func mandatoryFlagsDetails() {
-	organizationidFlagPrompt()
+	generalPrompt(cmd, args, result)
 }
 
 func summary(cmd *cobra.Command, args []string, promptArgs []string) {
@@ -84,7 +80,8 @@ func nameFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 
@@ -108,7 +105,8 @@ func organizationidFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 

@@ -3,6 +3,7 @@ package wallets
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/manifoldco/promptui"
@@ -12,18 +13,20 @@ import (
 
 var promptArgs []string
 
+const promptStepCustody = "Custody"
+const promptStepInit = "Initialize"
+const promptStepList = "List"
+
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
-	case "Empty":
-		emptyPrompt(cmd, args)
-	case "Initialize":
+	case promptStepInit:
 		custodyPrompt(cmd, args)
-	case "Custody":
+	case promptStepCustody:
 		if flagPrompt() {
 			optionalFlagsInit()
 		}
-	case "List":
+	case promptStepList:
 		if flagPrompt() {
 			optionalFlagsList()
 		}
@@ -43,7 +46,8 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 	_, result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 
@@ -61,7 +65,8 @@ func flagPrompt() bool {
 	_, flagResult, err := flagPrompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return false
 	}
 
@@ -84,7 +89,7 @@ func optionalFlagsInit() {
 func optionalFlagsList() {
 	fmt.Println("Optional Flags:")
 	if common.ApplicationID == "" {
-		applicationidFlagPrompt()
+		applicationIDFlagPrompt()
 	}
 }
 
@@ -93,7 +98,7 @@ func summary(cmd *cobra.Command, args []string, promptArgs []string) {
 		createManagedWallet(cmd, args)
 	}
 	if promptArgs[0] == "List" {
-		listPrompt(cmd, args)
+		listWallets(cmd, args)
 	}
 }
 
@@ -109,7 +114,9 @@ func custodyPrompt(cmd *cobra.Command, args []string) {
 	promptArgs = append(promptArgs, result)
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
+		return
 	}
 
 	generalPrompt(cmd, args, "Custody")
@@ -128,7 +135,8 @@ func custodialFlagPrompt() {
 	nonCustodial = result != "Custodial"
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 }
@@ -146,7 +154,8 @@ func nameFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 
@@ -174,18 +183,14 @@ func purposeFlagPrompt() {
 	purpose, _ = strconv.Atoi(result)
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 }
 
-// List Wallets
-func listPrompt(cmd *cobra.Command, args []string) {
-	listWallets(cmd, args)
-}
-
 // Optional Flag For List Wallet
-func applicationidFlagPrompt() {
+func applicationIDFlagPrompt() {
 	validate := func(input string) error {
 		return nil
 	}
@@ -198,7 +203,8 @@ func applicationidFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 

@@ -123,15 +123,15 @@ func CreateNode(cmd *cobra.Command, args []string) {
 
 func init() {
 	nodesInitCmd.Flags().StringVar(&common.NetworkID, "network", "", "target network id")
-	nodesInitCmd.MarkFlagRequired("network")
+	//nodesInitCmd.MarkFlagRequired("network")
 
 	nodesInitCmd.Flags().BoolVar(&isP2P, "p2p", true, "when true, genesis state and peer resolution are enforced during initialization")
 
 	nodesInitCmd.Flags().StringVar(&common.Image, "common.Image", "", "docker common.Image; can be an official common.Image name or fully-qualified repo")
-	nodesInitCmd.MarkFlagRequired("common.Image")
+	//nodesInitCmd.MarkFlagRequired("common.Image")
 
 	nodesInitCmd.Flags().StringVar(&role, "role", "", "role for the node, i.e., peer, validator, nats")
-	nodesInitCmd.MarkFlagRequired("role")
+	//nodesInitCmd.MarkFlagRequired("role")
 
 	common.RequireInfrastructureFlags(nodesInitCmd, false)
 

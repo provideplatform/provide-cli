@@ -2,6 +2,7 @@ package vaults
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-cli/cmd/common"
@@ -10,16 +11,17 @@ import (
 
 var promptArgs []string
 
+const promptStepInit = "Initialize"
+const promptStepList = "List"
+
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
-	case "Empty":
-		emptyPrompt(cmd, args)
-	case "Initialize":
+	case promptStepInit:
 		if flagPrompt() {
 			optionalFlagsInit()
 		}
-	case "List":
+	case promptStepList:
 		if flagPrompt() {
 			optionalFlagsList()
 		}
@@ -39,7 +41,8 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 	_, result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 
@@ -57,7 +60,8 @@ func flagPrompt() bool {
 	_, flagResult, err := flagPrompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return false
 	}
 
@@ -114,7 +118,8 @@ func nameFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 
@@ -134,7 +139,8 @@ func descriptionFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 
@@ -155,7 +161,8 @@ func applicationidFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 
@@ -175,7 +182,8 @@ func organizationidFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
 		return
 	}
 
