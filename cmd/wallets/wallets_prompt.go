@@ -71,13 +71,13 @@ func flagPrompt() bool {
 func optionalFlagsInit() {
 	fmt.Println("Optional Flags:")
 	if !nonCustodial {
-		custodialFlagWalletPrompt()
+		custodialFlagPrompt()
 	}
 	if walletName == "" {
-		nameFlagWalletPrompt()
+		nameFlagPrompt()
 	}
 	if purpose == 44 {
-		purposeFlagWalletPrompt()
+		purposeFlagPrompt()
 	}
 }
 
@@ -93,7 +93,7 @@ func summary(cmd *cobra.Command, args []string, promptArgs []string) {
 		createManagedWallet(cmd, args)
 	}
 	if promptArgs[0] == "List" {
-		listWalletPrompt(cmd, args)
+		listPrompt(cmd, args)
 	}
 }
 
@@ -116,7 +116,8 @@ func custodyPrompt(cmd *cobra.Command, args []string) {
 }
 
 // Optional Flags For Init Wallet
-func custodialFlagWalletPrompt() {
+//TODO: This is not custody theres has to be a better name
+func custodialFlagPrompt() {
 	prompt := promptui.Select{
 		Label: "Would you like your wallet to be non-custodial",
 		Items: []string{"Custodial", "Non-custodial"},
@@ -132,7 +133,7 @@ func custodialFlagWalletPrompt() {
 	}
 }
 
-func nameFlagWalletPrompt() {
+func nameFlagPrompt() {
 	validate := func(input string) error {
 		return nil
 	}
@@ -152,7 +153,7 @@ func nameFlagWalletPrompt() {
 	walletName = result
 }
 
-func purposeFlagWalletPrompt() {
+func purposeFlagPrompt() {
 	validate := func(input string) error {
 		_, err := strconv.Atoi(input)
 		if err != nil {
@@ -179,7 +180,7 @@ func purposeFlagWalletPrompt() {
 }
 
 // List Wallets
-func listWalletPrompt(cmd *cobra.Command, args []string) {
+func listPrompt(cmd *cobra.Command, args []string) {
 	listWallets(cmd, args)
 }
 
