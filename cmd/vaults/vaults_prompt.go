@@ -11,20 +11,26 @@ import (
 var promptArgs []string
 
 // General Endpoints
-func generalWalletPrompt(cmd *cobra.Command, args []string, currentStep string) {
+func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
-	case "empty":
-		emptyVaultsPrompt(cmd, args)
-	case "init":
-		flagPrompt()
-	case "list":
-		flagPrompt()
+	case "Empty":
+		emptyPrompt(cmd, args)
+	case "Initialize":
+		if flagPrompt() {
+			optionalFlagsInit()
+		}
+	case "List":
+		if flagPrompt() {
+			optionalFlagsList()
+		}
 	default:
-		emptyVaultsPrompt(cmd, args)
+		emptyPrompt(cmd, args)
 	}
+
+	summary(cmd, args, promptArgs)
 }
 
-func emptyVaultsPrompt(cmd *cobra.Command, args []string) {
+func emptyPrompt(cmd *cobra.Command, args []string) {
 	prompt := promptui.Select{
 		Label: "What would you like to do",
 		Items: []string{"Initialize", "List"},
@@ -39,46 +45,35 @@ func emptyVaultsPrompt(cmd *cobra.Command, args []string) {
 
 	promptArgs = append(promptArgs, result)
 
-	flagPrompt()
-
-	summary(cmd, args, promptArgs)
+	generalPrompt(cmd, args, result)
 }
 
-func flagPrompt() {
+func flagPrompt() bool {
 	flagPrompt := promptui.Select{
 		Label: "Would you like to set Optional Flags?",
-		Items: []string{"Set Optional Flags", "Dont Set Optional Flags"},
+		Items: []string{"No", "Yes"},
 	}
 
 	_, flagResult, err := flagPrompt.Run()
 
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
-		return
+		return false
 	}
 
-	if flagResult == "Set Optional Flags" {
-		promptArgs = append(promptArgs, flagResult)
-		if promptArgs[0] == "Initialize" {
-			optionalFlagsInit()
-
-		}
-		if promptArgs[0] == "List" {
-			optionalFlagsList()
-		}
-	}
+	return flagResult == "Yes"
 }
 
 func optionalFlagsInit() {
 	fmt.Println("Optional Flags:")
 	if description == "" {
-		descriptionFlagVaultPrompt()
+		descriptionFlagPrompt()
 	}
 	if name == "" {
-		nameFlagVaultPrompt()
+		nameFlagPrompt()
 	}
 	if common.ApplicationID == "" {
-		applicationidFlagVaultPrompt()
+		applicationidFlagPrompt()
 	}
 	if common.OrganizationID == "" {
 		organizationidFlagPrompt()
@@ -89,10 +84,10 @@ func optionalFlagsInit() {
 func optionalFlagsList() {
 	fmt.Println("Optional Flags:")
 	if common.ApplicationID == "" {
-		applicationidFlagVaultPrompt()
+		applicationidFlagPrompt()
 	}
 	if common.OrganizationID == "" {
-		applicationidFlagVaultPrompt()
+		applicationidFlagPrompt()
 	}
 }
 
@@ -106,7 +101,7 @@ func summary(cmd *cobra.Command, args []string, promptArgs []string) {
 }
 
 // Optional Flags For Init Vault
-func nameFlagVaultPrompt() {
+func nameFlagPrompt() {
 	validate := func(input string) error {
 		return nil
 	}
@@ -126,7 +121,7 @@ func nameFlagVaultPrompt() {
 	name = result
 }
 
-func descriptionFlagVaultPrompt() {
+func descriptionFlagPrompt() {
 	validate := func(input string) error {
 		return nil
 	}
@@ -147,7 +142,7 @@ func descriptionFlagVaultPrompt() {
 }
 
 // Optional Flag For List Vaults
-func applicationidFlagVaultPrompt() {
+func applicationidFlagPrompt() {
 	validate := func(input string) error {
 		return nil
 	}

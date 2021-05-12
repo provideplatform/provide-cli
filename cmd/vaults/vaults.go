@@ -14,7 +14,7 @@ var VaultsCmd = &cobra.Command{
 Supports encrypt/decrypt and sign/verify operations for select key specs.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Vaults command run")
-		generalWalletPrompt(cmd, args, "empty")
+		generalPrompt(cmd, args, "empty")
 	},
 }
 
