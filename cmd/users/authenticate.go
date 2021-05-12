@@ -1,18 +1,14 @@
 package users
 
 import (
-	"bufio"
-	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/provideservices/provide-cli/cmd/common"
 	provide "github.com/provideservices/provide-go/api/ident"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 // authenticateCmd represents the authenticate command
@@ -24,9 +20,12 @@ valid API token which can be used to access the networks and application APIs.`,
 	Run: authenticate,
 }
 
+var email string
+var passwd string
+
 func authenticate(cmd *cobra.Command, args []string) {
-	email := doEmailPrompt()
-	passwd := doPasswordPrompt()
+	emailPrompt()
+	passwordPrompt()
 
 	resp, err := provide.Authenticate(email, passwd)
 	if err != nil {
@@ -40,36 +39,6 @@ func authenticate(cmd *cobra.Command, args []string) {
 
 	cacheAPIToken(*resp.Token.Token)
 	log.Printf("Authentication successful")
-}
-
-func doEmailPrompt() string {
-	fmt.Print("Email: ")
-	reader := bufio.NewReader(os.Stdin)
-	email, err := reader.ReadString('\n')
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-	if email == "" {
-		log.Println("Failed to read email from stdin")
-		os.Exit(1)
-	}
-	return strings.Trim(strings.Trim(email, "\n"), "\r")
-}
-
-func doPasswordPrompt() string {
-	fmt.Print("Password: ")
-	password, err := terminal.ReadPassword(int(os.Stdin.Fd()))
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-	passwd := string(password[:])
-	if passwd == "" {
-		log.Println("Failed to read password from stdin")
-		os.Exit(1)
-	}
-	return strings.Trim(strings.Trim(passwd, "\n"), "\r")
 }
 
 func cacheAPIToken(token string) {

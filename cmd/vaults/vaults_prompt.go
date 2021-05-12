@@ -65,7 +65,6 @@ func flagPrompt() {
 		}
 		if promptArgs[0] == "List" {
 			optionalFlagsList()
-
 		}
 	}
 }
