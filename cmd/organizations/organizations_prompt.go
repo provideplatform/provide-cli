@@ -1,6 +1,7 @@
 package organizations
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/manifoldco/promptui"
@@ -11,25 +12,22 @@ import (
 var promptArgs []string
 
 // General Endpoints
-func generalOrganizationPrompt(cmd *cobra.Command, args []string, currentStep string) {
+func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case "Empty":
-		emptyOrganizationPrompt(cmd, args)
+		emptyPrompt(cmd, args)
 	case "Initialize":
-		promptArgs = append(promptArgs, "Initialize")
 		mandatoryFlagsInit()
 	case "List":
-		promptArgs = append(promptArgs, "List")
 		summary(cmd, args, promptArgs)
 	case "Details":
-		promptArgs = append(promptArgs, "Details")
 		mandatoryFlagsDetails()
 	default:
-		emptyOrganizationPrompt(cmd, args)
+		emptyPrompt(cmd, args)
 	}
 }
 
-func emptyOrganizationPrompt(cmd *cobra.Command, args []string) {
+func emptyPrompt(cmd *cobra.Command, args []string) {
 	prompt := promptui.Select{
 		Label: "What would you like to do",
 		Items: []string{"Initialize", "List", "Details"},
@@ -37,7 +35,7 @@ func emptyOrganizationPrompt(cmd *cobra.Command, args []string) {
 
 	_, result, err := prompt.Run()
 
-	generalOrganizationPrompt(cmd, args, result)
+	generalPrompt(cmd, args, result)
 
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
@@ -50,7 +48,7 @@ func emptyOrganizationPrompt(cmd *cobra.Command, args []string) {
 }
 
 func mandatoryFlagsInit() {
-	nameFlagOrganizationPrompt()
+	nameFlagPrompt()
 }
 
 func mandatoryFlagsDetails() {
@@ -70,8 +68,11 @@ func summary(cmd *cobra.Command, args []string, promptArgs []string) {
 }
 
 // Mandatory Flags For Init Wallet
-func nameFlagOrganizationPrompt() {
+func nameFlagPrompt() {
 	validate := func(input string) error {
+		if len(input) < 1 {
+			return errors.New("name cant be nil")
+		}
 		return nil
 	}
 
@@ -93,6 +94,9 @@ func nameFlagOrganizationPrompt() {
 // Mandatory Flag For detail Organizations
 func organizationidFlagPrompt() {
 	validate := func(input string) error {
+		if len(input) < 1 {
+			return errors.New("organization id cant be nil")
+		}
 		return nil
 	}
 

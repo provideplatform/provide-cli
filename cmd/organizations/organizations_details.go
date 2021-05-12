@@ -19,6 +19,9 @@ var organizationsDetailsCmd = &cobra.Command{
 }
 
 func fetchOrganizationDetails(cmd *cobra.Command, args []string) {
+	if common.OrganizationID == "" {
+		generalPrompt(cmd, args, "Details")
+	}
 	token := common.RequireUserAuthToken()
 	params := map[string]interface{}{}
 	organization, err := provide.GetOrganizationDetails(token, common.OrganizationID, params)
@@ -36,5 +39,5 @@ func fetchOrganizationDetails(cmd *cobra.Command, args []string) {
 
 func init() {
 	organizationsDetailsCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "id of the organization")
-	organizationsDetailsCmd.MarkFlagRequired("organization")
+	// organizationsDetailsCmd.MarkFlagRequired("organization")
 }

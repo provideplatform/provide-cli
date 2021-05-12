@@ -28,6 +28,9 @@ func organizationConfigFactory() map[string]interface{} {
 }
 
 func createOrganization(cmd *cobra.Command, args []string) {
+	if organizationName == "" {
+		generalPrompt(cmd, args, "Initialize")
+	}
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
 		"name":   organizationName,
@@ -38,10 +41,11 @@ func createOrganization(cmd *cobra.Command, args []string) {
 		log.Printf("Failed to initialize organization; %s", err.Error())
 		os.Exit(1)
 	}
+
 	common.OrganizationID = organization.ID.String()
 }
 
 func init() {
 	organizationsInitCmd.Flags().StringVar(&organizationName, "name", "", "name of the organization")
-	organizationsInitCmd.MarkFlagRequired("name")
+	// organizationsInitCmd.MarkFlagRequired("name")
 }

@@ -18,7 +18,7 @@ var OrganizationsCmd = &cobra.Command{
 	- Tokens
 	- Vaults`,
 	Run: func(cmd *cobra.Command, args []string) {
-		generalOrganizationPrompt(cmd, args, "empty")
+		generalPrompt(cmd, args, "empty")
 	},
 }
 
