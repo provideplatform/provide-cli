@@ -16,8 +16,15 @@ var ConnectorsCmd = &cobra.Command{
 	Short: "Manage application connectors",
 	Long:  `Provision load balanced infrastructure for your application, such as a public or private IPFS cluster`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("connectors unimplemented")
-	},
+		generalPrompt(cmd, args, "")
+
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Printf("Prompt Exit\n")
+				os.Exit(1)
+			}
+		}()
+	},	},
 }
 
 func init() {

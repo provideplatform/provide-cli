@@ -20,6 +20,8 @@ var connectorsListCmd = &cobra.Command{
 }
 
 func listConnectors(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "List")
+
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{}
 	if common.ApplicationID != "" {

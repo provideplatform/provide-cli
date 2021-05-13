@@ -19,6 +19,8 @@ var connectorsDeleteCmd = &cobra.Command{
 }
 
 func deleteConnector(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Delete")
+
 	token := common.RequireAPIToken()
 	err := provide.DeleteConnector(token, common.ConnectorID)
 	if err != nil {

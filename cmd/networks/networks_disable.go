@@ -19,6 +19,8 @@ var networksDisableCmd = &cobra.Command{
 }
 
 func disableNetwork(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Disable")
+
 	token := common.RequireAPIToken()
 	err := provide.UpdateNetwork(token, common.NetworkID, map[string]interface{}{
 		"enabled": false,

@@ -74,6 +74,8 @@ func connectorConfigFactory() map[string]interface{} {
 }
 
 func createConnector(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Initialize")
+
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
 		"name":       connectorName,

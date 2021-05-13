@@ -20,6 +20,8 @@ var connectorsDetailsCmd = &cobra.Command{
 }
 
 func fetchConnectorDetails(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Details")
+
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{}
 	connector, err := provide.GetConnectorDetails(token, common.ConnectorID, params)

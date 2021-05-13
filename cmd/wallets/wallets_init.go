@@ -26,6 +26,8 @@ var walletsInitCmd = &cobra.Command{
 }
 
 func CreateWallet(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Initialize")
+
 	if nonCustodial {
 		createDecentralizedWallet()
 		return
@@ -51,6 +53,8 @@ func createDecentralizedWallet() {
 }
 
 func createManagedWallet(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Custody")
+
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
 		"purpose": purpose,

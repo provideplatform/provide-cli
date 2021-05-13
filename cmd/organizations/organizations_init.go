@@ -28,6 +28,7 @@ func organizationConfigFactory() map[string]interface{} {
 }
 
 func createOrganization(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Initialize")
 	if organizationName == "" {
 		generalPrompt(cmd, args, "Initialize")
 	}

@@ -15,6 +15,8 @@ var nodesDeleteCmd = &cobra.Command{
 }
 
 func deleteNode(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Delete")
+
 	// FIXME!!!
 
 	// token := common.RequireAPIToken()

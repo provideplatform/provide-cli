@@ -18,6 +18,8 @@ var nodesLogsCmd = &cobra.Command{
 }
 
 func nodeLogs(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Logs")
+
 	// FIXME
 	// token := common.RequireAPIToken()
 	// resp, err := provide.GetNetworkNodeLogs(token, common.NetworkID, common.NodeID, map[string]interface{}{

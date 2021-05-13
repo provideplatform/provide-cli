@@ -24,6 +24,8 @@ var contractsExecuteCmd = &cobra.Command{
 }
 
 func executeContract(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Execute")
+
 	if common.AccountID == "" && common.WalletID == "" {
 		fmt.Println("Cannot execute a contract without a specified signer.")
 		os.Exit(1)

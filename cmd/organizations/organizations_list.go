@@ -19,6 +19,8 @@ var organizationsListCmd = &cobra.Command{
 }
 
 func listOrganizations(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "List")
+
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{}
 	organizations, err := provide.ListOrganizations(token, params)
