@@ -2,6 +2,7 @@ package networks
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -22,7 +23,7 @@ var NetworksCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}()
-	},	},
+	},
 }
 
 func init() {
