@@ -2,6 +2,7 @@ package nodes
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -15,7 +16,15 @@ var NodesCmd = &cobra.Command{
 	Short: "Manage nodes",
 	Long:  `Manage and provision elastic distributed nodes`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("nodes init")
+		fmt.Println("Nodes command run")
+		generalPrompt(cmd, args, "")
+
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Printf("Prompt Exit\n")
+				os.Exit(1)
+			}
+		}()
 	},
 }
 

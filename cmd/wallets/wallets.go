@@ -14,7 +14,6 @@ var WalletsCmd = &cobra.Command{
 
 More documentation forthcoming.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Wallet command run")
 		generalPrompt(cmd, args, "")
 
 		defer func() {

@@ -35,7 +35,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 func emptyPrompt(cmd *cobra.Command, args []string) {
 	prompt := promptui.Select{
 		Label: "What would you like to do",
-		Items: []string{"Initialize", "List", "Details"},
+		Items: []string{promptStepInit, promptStepList, promptStepDetails},
 	}
 
 	_, result, err := prompt.Run()
@@ -52,13 +52,13 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 }
 
 func summary(cmd *cobra.Command, args []string, promptArgs []string) {
-	if promptArgs[0] == "Initialize" {
+	if promptArgs[0] == promptStepInit {
 		createOrganization(cmd, args)
 	}
-	if promptArgs[0] == "List" {
+	if promptArgs[0] == promptStepList {
 		listOrganizations(cmd, args)
 	}
-	if promptArgs[0] == "Details" {
+	if promptArgs[0] == promptStepDetails {
 		fetchOrganizationDetails(cmd, args)
 	}
 }

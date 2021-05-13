@@ -40,7 +40,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 func emptyPrompt(cmd *cobra.Command, args []string) {
 	prompt := promptui.Select{
 		Label: "What would you like to do",
-		Items: []string{"Initialize", "List"},
+		Items: []string{promptStepInit, promptStepList},
 	}
 
 	_, result, err := prompt.Run()
@@ -94,10 +94,10 @@ func optionalFlagsList() {
 }
 
 func summary(cmd *cobra.Command, args []string, promptArgs []string) {
-	if promptArgs[0] == "Initialize" {
+	if promptArgs[0] == promptStepInit {
 		createManagedWallet(cmd, args)
 	}
-	if promptArgs[0] == "List" {
+	if promptArgs[0] == promptStepList {
 		listWallets(cmd, args)
 	}
 }
@@ -119,7 +119,7 @@ func custodyPrompt(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	generalPrompt(cmd, args, "Custody")
+	generalPrompt(cmd, args, promptStepCustody)
 }
 
 // Optional Flags For Init Wallet
@@ -178,8 +178,6 @@ func purposeFlagPrompt() {
 
 	result, err := prompt.Run()
 
-	// purpose, _ = strconv.ParseInt(result, 0, 64)
-	// TODO: get rid of this
 	purpose, _ = strconv.Atoi(result)
 
 	if err != nil {
