@@ -42,5 +42,5 @@ func fetchConnectorDetails(cmd *cobra.Command, args []string) {
 
 func init() {
 	connectorsDetailsCmd.Flags().StringVar(&common.ConnectorID, "connector", "", "id of the connector")
-	connectorsDetailsCmd.MarkFlagRequired("connector")
+	// connectorsDetailsCmd.MarkFlagRequired("connector")
 }

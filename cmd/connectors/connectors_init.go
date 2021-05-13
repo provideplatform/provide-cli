@@ -92,16 +92,16 @@ func createConnector(cmd *cobra.Command, args []string) {
 
 func init() {
 	connectorsInitCmd.Flags().StringVar(&connectorName, "name", "", "name of the connector")
-	connectorsInitCmd.MarkFlagRequired("name")
+	//connectorsInitCmd.MarkFlagRequired("name")
 
 	connectorsInitCmd.Flags().StringVar(&connectorType, "type", "", "type of the connector")
-	connectorsInitCmd.MarkFlagRequired("type")
+	// connectorsInitCmd.MarkFlagRequired("type")
 
 	connectorsInitCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application id")
-	connectorsInitCmd.MarkFlagRequired("application")
+	// connectorsInitCmd.MarkFlagRequired("application")
 
 	connectorsInitCmd.Flags().StringVar(&common.NetworkID, "network", "", "target network id")
-	connectorsInitCmd.MarkFlagRequired("network")
+	// connectorsInitCmd.MarkFlagRequired("network")
 
 	common.RequireInfrastructureFlags(connectorsInitCmd, true)
 

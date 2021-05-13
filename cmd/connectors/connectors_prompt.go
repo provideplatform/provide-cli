@@ -1,4 +1,4 @@
-package contracts
+package connectors
 
 import (
 	"errors"
@@ -13,21 +13,27 @@ import (
 
 var promptArgs []string
 
-const promptStepExecute = "Execute"
+const promptStepInit = "Init"
 const promptStepList = "List"
+const promptStepDetails = "Details"
+const promptStepDelete = "Delete"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
-	case promptStepExecute:
-		mandatoryExecuteFlags()
+	case promptStepInit:
+		mandatoryInitFlags()
 		if flagPrompt() {
-			optionalExecuteFlags()
+			optionalInitFlags()
 		}
 	case promptStepList:
 		if flagPrompt() {
-			optionalListFlags()
+			applicationIDFlagPrompt()
 		}
+	case promptStepDetails:
+		mandatoryDetailFlags()
+	case promptStepDelete:
+		mandatoryDeleteFlags()
 	default:
 		emptyPrompt(cmd, args)
 	}
@@ -38,7 +44,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 func emptyPrompt(cmd *cobra.Command, args []string) {
 	prompt := promptui.Select{
 		Label: "What would you like to do",
-		Items: []string{promptStepExecute, promptStepList},
+		Items: []string{promptStepInit, promptStepList, promptStepDetails, promptStepDelete},
 	}
 
 	_, result, _ := prompt.Run()
@@ -65,69 +71,66 @@ func flagPrompt() bool {
 	return flagResult == "Yes"
 }
 func summary(cmd *cobra.Command, args []string, promptArgs []string) {
-	if promptArgs[0] == promptStepExecute {
-		executeContract(cmd, args)
+	if promptArgs[0] == promptStepInit {
+		createConnector(cmd, args)
 	}
 	if promptArgs[0] == promptStepList {
-		listContracts(cmd, args)
+		listConnectors(cmd, args)
+	}
+	if promptArgs[0] == promptStepDetails {
+		fetchConnectorDetails(cmd, args)
+	}
+	if promptArgs[0] == promptStepDelete {
+		deleteConnector(cmd, args)
 	}
 }
 
-func mandatoryExecuteFlags() {
-	if contractExecMethod == "" {
-		methodFlagPrompt()
+func mandatoryInitFlags() {
+	if connectorName == "" {
+		connectorNameFlagPrompt()
 	}
-	if common.ContractID == "" {
-		contractIDFlagPrompt()
+	if connectorType == "" {
+		connectorTypeFlagPrompt()
 	}
-}
-
-func optionalExecuteFlags() {
-	if contractExecValue == 0 {
-		methodFlagPrompt()
+	if common.ApplicationID == "" {
+		applicationIDFlagPrompt()
 	}
-	if common.AccountID == "" {
-		accountIDFlagPrompt()
-	}
-	if common.WalletID == "" {
-		walletIDFlagPrompt()
+	if common.NetworkID == "" {
+		networkIDFlagPrompt()
 	}
 }
 
-func optionalListFlags() {
+func mandatoryDeleteFlags() {
+	if common.ConnectorID == "" {
+		connectorIDFlagPrompt()
+	}
 	if common.ApplicationID == "" {
 		applicationIDFlagPrompt()
 	}
 }
 
-func methodFlagPrompt() {
-	validate := func(input string) error {
-		return nil
+func mandatoryDetailFlags() {
+	if common.ConnectorID == "" {
+		connectorIDFlagPrompt()
 	}
-
-	prompt := promptui.Prompt{
-		Label:    "Application ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	contractExecMethod = result
 }
 
-func contractIDFlagPrompt() {
+func optionalInitFlags() {
+	if ipfsAPIPort == 5001 {
+		connectorNameFlagPrompt()
+	}
+	if ipfsGatewayPort == 8080 {
+		connectorTypeFlagPrompt()
+	}
+}
+
+func connectorNameFlagPrompt() {
 	validate := func(input string) error {
 		return nil
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Application ID",
+		Label:    "Connector Name",
 		Validate: validate,
 	}
 
@@ -139,7 +142,28 @@ func contractIDFlagPrompt() {
 		return
 	}
 
-	common.ContractID = result
+	connectorName = result
+}
+
+func connectorTypeFlagPrompt() {
+	validate := func(input string) error {
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    "Connector Type",
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
+		return
+	}
+
+	connectorType = result
 }
 
 func applicationIDFlagPrompt() {
@@ -163,7 +187,7 @@ func applicationIDFlagPrompt() {
 	common.ApplicationID = result
 }
 
-func walletIDFlagPrompt() {
+func networkIDFlagPrompt() {
 	validate := func(input string) error {
 		return nil
 	}
@@ -181,10 +205,10 @@ func walletIDFlagPrompt() {
 		return
 	}
 
-	common.WalletID = result
+	common.NetworkID = result
 }
 
-func accountIDFlagPrompt() {
+func connectorIDFlagPrompt() {
 	validate := func(input string) error {
 		return nil
 	}
@@ -202,10 +226,10 @@ func accountIDFlagPrompt() {
 		return
 	}
 
-	common.WalletID = result
+	common.ConnectorID = result
 }
 
-func valueFlagPrompt() {
+func ipfsAPIPortFlagPrompt() {
 	validate := func(input string) error {
 		_, err := strconv.Atoi(input)
 		if err != nil {
@@ -215,17 +239,44 @@ func valueFlagPrompt() {
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Wallet Purpose",
+		Label:    "IPFS API Port",
 		Validate: validate,
 	}
 
 	result, err := prompt.Run()
-	// Same issue as in networks
-	contractExecValue, _ = strconv.Atoi(result)
 
 	if err != nil {
 		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
+
+	// turn to a uint somehow
+	ipfsAPIPort = result
+}
+
+func ipfsGatewayPortFlagPrompt() {
+	validate := func(input string) error {
+		_, err := strconv.Atoi(input)
+		if err != nil {
+			return errors.New("invalid number")
+		}
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    "IPFS Gateway Port",
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
+		return
+	}
+
+	// turn to a uint somehow
+	ipfsGatewayPort = result
 }

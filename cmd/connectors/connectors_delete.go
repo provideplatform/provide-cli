@@ -34,8 +34,8 @@ func deleteConnector(cmd *cobra.Command, args []string) {
 
 func init() {
 	connectorsDeleteCmd.Flags().StringVar(&common.ConnectorID, "connector", "", "id of the connector")
-	connectorsDeleteCmd.MarkFlagRequired("connector")
+	// connectorsDeleteCmd.MarkFlagRequired("connector")
 
 	connectorsDeleteCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application id")
-	connectorsDeleteCmd.MarkFlagRequired("application")
+	// connectorsDeleteCmd.MarkFlagRequired("application")
 }
