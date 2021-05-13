@@ -353,5 +353,4 @@ func rppFlagPrompt() {
 		return
 	}
 	rpp, _ = strconv.ParseUint(result, 10, 64)
-
 }

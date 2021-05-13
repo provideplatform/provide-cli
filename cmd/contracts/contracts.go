@@ -2,6 +2,7 @@ package contracts
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -17,7 +18,14 @@ var ContractsCmd = &cobra.Command{
 	Short: "Manage smart contracts",
 	Long:  `Compile and deploy smart contracts locally from source or execute previously-deployed contracts`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("contracts unimplemented")
+		generalPrompt(cmd, args, "")
+
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Printf("Prompt Exit\n")
+				os.Exit(1)
+			}
+		}()
 	},
 }
 

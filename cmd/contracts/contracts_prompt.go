@@ -1,8 +1,10 @@
-package vaults
+package contracts
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-cli/cmd/common"
@@ -11,19 +13,20 @@ import (
 
 var promptArgs []string
 
-const promptStepInit = "Initialize"
+const promptStepExecute = "Execute"
 const promptStepList = "List"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
-	case promptStepInit:
+	case promptStepExecute:
+		mandatoryExecuteFlags()
 		if flagPrompt() {
-			optionalFlagsInit()
+			optionalExecuteFlags()
 		}
 	case promptStepList:
 		if flagPrompt() {
-			optionalFlagsList()
+			optionalListFlags()
 		}
 	default:
 		emptyPrompt(cmd, args)
@@ -35,16 +38,10 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 func emptyPrompt(cmd *cobra.Command, args []string) {
 	prompt := promptui.Select{
 		Label: "What would you like to do",
-		Items: []string{promptStepInit, promptStepList},
+		Items: []string{promptStepExecute, promptStepList},
 	}
 
-	_, result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
+	_, result, _ := prompt.Run()
 
 	promptArgs = append(promptArgs, result)
 
@@ -67,51 +64,49 @@ func flagPrompt() bool {
 
 	return flagResult == "Yes"
 }
-
-func optionalFlagsInit() {
-	fmt.Println("Optional Flags:")
-	if description == "" {
-		descriptionFlagPrompt()
-	}
-	if name == "" {
-		nameFlagPrompt()
-	}
-	if common.ApplicationID == "" {
-		applicationIDFlagPrompt()
-	}
-	if common.OrganizationID == "" {
-		organizationidFlagPrompt()
-	}
-
-}
-
-func optionalFlagsList() {
-	fmt.Println("Optional Flags:")
-	if common.ApplicationID == "" {
-		applicationIDFlagPrompt()
-	}
-	if common.OrganizationID == "" {
-		applicationIDFlagPrompt()
-	}
-}
-
 func summary(cmd *cobra.Command, args []string, promptArgs []string) {
-	if promptArgs[0] == promptStepInit {
-		createVault(cmd, args)
+	if promptArgs[0] == promptStepExecute {
+		executeContract(cmd, args)
 	}
 	if promptArgs[0] == promptStepList {
-		listVaults(cmd, args)
+		listContracts(cmd, args)
 	}
 }
 
-// Optional Flags For Init Vault
-func nameFlagPrompt() {
+func mandatoryExecuteFlags() {
+	if contractExecMethod == "" {
+		methodFlagPrompt()
+	}
+	if common.ContractID == "" {
+		contractIDFlagPrompt()
+	}
+}
+
+func optionalExecuteFlags() {
+	if contractExecValue == 0 {
+		methodFlagPrompt()
+	}
+	if common.AccountID == "" {
+		accountIDFlagPrompt()
+	}
+	if common.WalletID == "" {
+		walletIDFlagPrompt()
+	}
+}
+
+func optionalListFlags() {
+	if common.ApplicationID == "" {
+		applicationIDFlagPrompt()
+	}
+}
+
+func methodFlagPrompt() {
 	validate := func(input string) error {
 		return nil
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Vault Name",
+		Label:    "Application ID",
 		Validate: validate,
 	}
 
@@ -123,16 +118,16 @@ func nameFlagPrompt() {
 		return
 	}
 
-	name = result
+	contractExecMethod = result
 }
 
-func descriptionFlagPrompt() {
+func contractIDFlagPrompt() {
 	validate := func(input string) error {
 		return nil
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Vault Description",
+		Label:    "Application ID",
 		Validate: validate,
 	}
 
@@ -144,10 +139,9 @@ func descriptionFlagPrompt() {
 		return
 	}
 
-	description = result
+	common.ContractID = result
 }
 
-// Optional Flag For List Vaults
 func applicationIDFlagPrompt() {
 	validate := func(input string) error {
 		return nil
@@ -169,13 +163,13 @@ func applicationIDFlagPrompt() {
 	common.ApplicationID = result
 }
 
-func organizationidFlagPrompt() {
+func walletIDFlagPrompt() {
 	validate := func(input string) error {
 		return nil
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Organization ID",
+		Label:    "Application ID",
 		Validate: validate,
 	}
 
@@ -187,5 +181,51 @@ func organizationidFlagPrompt() {
 		return
 	}
 
-	common.OrganizationID = result
+	common.WalletID = result
+}
+
+func accountIDFlagPrompt() {
+	validate := func(input string) error {
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    "Application ID",
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
+		return
+	}
+
+	common.WalletID = result
+}
+
+func valueFlagPrompt() {
+	validate := func(input string) error {
+		_, err := strconv.Atoi(input)
+		if err != nil {
+			return errors.New("invalid number")
+		}
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    "Wallet Purpose",
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	contractExecValue, _ = strconv.Atoi(result)
+
+	if err != nil {
+		fmt.Printf("Prompt Exit\n")
+		os.Exit(1)
+		return
+	}
 }
