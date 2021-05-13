@@ -40,6 +40,7 @@ func applicationConfigFactory() map[string]interface{} {
 }
 
 func createApplication(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Initialize")
 	if withoutAPIToken && !withoutWallet {
 		fmt.Println("Cannot create an application that has a wallet but no API token.")
 		os.Exit(1)
@@ -85,15 +86,15 @@ func createApplication(cmd *cobra.Command, args []string) {
 
 func init() {
 	applicationsInitCmd.Flags().StringVar(&applicationName, "name", "", "name of the application")
-	applicationsInitCmd.MarkFlagRequired("name")
+	// applicationsInitCmd.MarkFlagRequired("name")
 
 	applicationsInitCmd.Flags().StringVar(&applicationType, "type", "", "application type")
 
 	applicationsInitCmd.Flags().StringVar(&common.NetworkID, "network", "", "target network id")
-	applicationsInitCmd.MarkFlagRequired("network")
+	// applicationsInitCmd.MarkFlagRequired("network")
 
 	applicationsInitCmd.Flags().BoolVar(&baseline, "baseline", false, "setup a baseline workgroup")
 
-	applicationsInitCmd.Flags().BoolVar(&withoutWallet, "without-account", false, "do not create a new account (signing identity) for this application")
+	applicationsInitCmd.Flags().BoolVar(&withoutAccount, "without-account", false, "do not create a new account (signing identity) for this application")
 	applicationsInitCmd.Flags().BoolVar(&withoutWallet, "without-wallet", false, "do not create a new HD wallet for this application")
 }

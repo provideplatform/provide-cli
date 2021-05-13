@@ -193,7 +193,7 @@ func networkIDFlagPrompt() {
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Application ID",
+		Label:    "Network ID",
 		Validate: validate,
 	}
 
@@ -214,7 +214,7 @@ func connectorIDFlagPrompt() {
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Application ID",
+		Label:    "Connector ID",
 		Validate: validate,
 	}
 
