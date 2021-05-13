@@ -78,10 +78,10 @@ func summary(cmd *cobra.Command, args []string, promptArgs []string) {
 }
 
 func mandatoryInitFlags() {
-	if *&common.NetworkID == "" {
+	if common.NetworkID == "" {
 		networkIDFlagPrompt()
 	}
-	if *&common.Image == "" {
+	if common.Image == "" {
 		imageFlagPrompt()
 	}
 	if role == "" {
@@ -90,10 +90,10 @@ func mandatoryInitFlags() {
 }
 
 func mandatoryLogFlags() {
-	if *&common.NetworkID == "" {
+	if common.NetworkID == "" {
 		networkIDFlagPrompt()
 	}
-	if *&common.NodeID == "" {
+	if common.NodeID == "" {
 		nodeIDFlagPrompt()
 	}
 	if page == 1 {
@@ -105,26 +105,26 @@ func mandatoryLogFlags() {
 }
 
 func mandatoryDeleteFlags() {
-	if *&common.NetworkID == "" {
+	if common.NetworkID == "" {
 		networkIDFlagPrompt()
 	}
-	if *&common.NodeID == "" {
+	if common.NodeID == "" {
 		nodeIDFlagPrompt()
 	}
 }
 
 func optionalFlagsInit() {
 	fmt.Println("Optional Flags:")
-	if *&common.HealthCheckPath == "" {
+	if common.HealthCheckPath == "" {
 		healthCheckPathFlagPrompt()
 	}
-	if *&common.TCPIngressPorts == "" {
+	if common.TCPIngressPorts == "" {
 		TCPIngressPortsFlagPrompt()
 	}
-	if *&common.UDPIngressPorts == "" {
+	if common.UDPIngressPorts == "" {
 		UDPIngressPortsFlagPrompt()
 	}
-	if *&common.TaskRole == "" {
+	if common.TaskRole == "" {
 		taskRoleFlagPrompt()
 	}
 }
@@ -151,7 +151,7 @@ func networkIDFlagPrompt() {
 		return
 	}
 
-	*&common.NetworkID = result
+	common.NetworkID = result
 }
 
 func imageFlagPrompt() {
@@ -175,7 +175,7 @@ func imageFlagPrompt() {
 		return
 	}
 
-	*&common.Image = result
+	common.Image = result
 }
 
 func roleFlagPrompt() {
@@ -220,7 +220,7 @@ func healthCheckPathFlagPrompt() {
 		return
 	}
 
-	*&common.HealthCheckPath = result
+	common.HealthCheckPath = result
 }
 
 func TCPIngressPortsFlagPrompt() {
@@ -241,7 +241,7 @@ func TCPIngressPortsFlagPrompt() {
 		return
 	}
 
-	*&common.TCPIngressPorts = result
+	common.TCPIngressPorts = result
 }
 
 func UDPIngressPortsFlagPrompt() {
@@ -262,7 +262,7 @@ func UDPIngressPortsFlagPrompt() {
 		return
 	}
 
-	*&common.UDPIngressPorts = result
+	common.UDPIngressPorts = result
 }
 
 func taskRoleFlagPrompt() {
@@ -283,7 +283,7 @@ func taskRoleFlagPrompt() {
 		return
 	}
 
-	*&common.UDPIngressPorts = result
+	common.UDPIngressPorts = result
 }
 
 func nodeIDFlagPrompt() {
@@ -304,7 +304,7 @@ func nodeIDFlagPrompt() {
 		return
 	}
 
-	*&common.NodeID = result
+	common.NodeID = result
 }
 
 func pageFlagPrompt() {

@@ -257,5 +257,5 @@ func networkIDFlagPrompt() {
 		return
 	}
 
-	*&common.NetworkID = result
+	common.NetworkID = result
 }
