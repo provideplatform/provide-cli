@@ -14,8 +14,15 @@ var NetworksCmd = &cobra.Command{
 	Short: "Manage networks",
 	Long:  `Manage and provision elastic distributed networks and other infrastructure`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("networks unimplemented")
-	},
+		generalPrompt(cmd, args, "")
+
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Printf("Prompt Exit\n")
+				os.Exit(1)
+			}
+		}()
+	},	},
 }
 
 func init() {

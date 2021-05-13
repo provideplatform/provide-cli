@@ -16,7 +16,6 @@ var NodesCmd = &cobra.Command{
 	Short: "Manage nodes",
 	Long:  `Manage and provision elastic distributed nodes`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Nodes command run")
 		generalPrompt(cmd, args, "")
 
 		defer func() {

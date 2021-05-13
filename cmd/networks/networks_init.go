@@ -15,8 +15,8 @@ var chain string
 var nativeCurrency string
 var platform string
 var protocolID string
-
 var networkName string
+
 var networksInitCmd = &cobra.Command{
 	Use:   "init --name 'whiteblock testnet",
 	Short: "Initialize a new network",
