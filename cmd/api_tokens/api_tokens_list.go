@@ -19,6 +19,7 @@ var apiTokensListCmd = &cobra.Command{
 }
 
 func listAPITokens(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "List")
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{}
 	if common.ApplicationID != "" {

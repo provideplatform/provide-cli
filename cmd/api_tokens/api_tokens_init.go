@@ -26,6 +26,8 @@ var apiTokensInitCmd = &cobra.Command{
 
 // createAPIToken triggers the generation of an API token for the given network.
 func createAPIToken(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Initialize")
+
 	userToken := common.RequireUserAuthToken()
 	params := map[string]interface{}{}
 
