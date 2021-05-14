@@ -1,8 +1,6 @@
 package accounts
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +16,7 @@ For convenience, it is also possible to generate keypairs with this utility whic
 is then responsible for securing. You should securely store any keys generated using this API. If you are
 looking for hierarchical deterministic support, check out the wallets API.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("accounts unimplemented")
+		generalPrompt(cmd, args, "")
 	},
 }
 

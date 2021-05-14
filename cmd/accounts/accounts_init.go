@@ -25,6 +25,8 @@ var accountsInitCmd = &cobra.Command{
 }
 
 func CreateAccount(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Initialize")
+
 	if nonCustodial {
 		createDecentralizedAccount()
 		return
@@ -49,7 +51,9 @@ func createDecentralizedAccount() {
 	fmt.Print(result)
 }
 
-func createManagedAccount() {
+func createManagedAccount(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, "Custody")
+
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
 		"network_id": common.NetworkID,
@@ -84,7 +88,7 @@ func init() {
 	accountsInitCmd.Flags().BoolVarP(&nonCustodial, "non-custodial", "", false, "if the generated keypair is non-custodial")
 	accountsInitCmd.Flags().StringVarP(&accountName, "name", "n", "", "human-readable name to associate with the generated keypair")
 
-	accountsInitCmd.Flags().StringVar(&common.ApplicationID, "network", "", "network id")
+	accountsInitCmd.Flags().StringVar(&common.NetworkID, "network", "", "network id")
 	accountsInitCmd.MarkFlagRequired("network")
 
 	accountsInitCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application id")
