@@ -8,12 +8,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const shellExitMessage = "Bye!"
+const shellTitle = "prvd"
+const shellPrefix = ">>> "
+const shellOptionInputTextColor = prompt.Green
+
 var ShellCmd = &cobra.Command{
 	Use:   "shell",
-	Short: "Provide CLI run in a shell environment",
+	Short: "Interactive shell",
 	Long: fmt.Sprintf(`%s
 
-The Provide CLI exposes low-code tools to manage network, application and organization resources.
+The Provide shell allows you to attach to a specific version of the Provide stack.
 
 Run with the --help flag to see available options`, common.ASCIIBanner),
 	Run: shell,
@@ -26,14 +31,15 @@ func shell(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	defer fmt.Println("Bye!")
+	defer fmt.Println(shellExitMessage)
+
 	p := prompt.New(
 		func(selected string) {
 		},
 		completer,
-		prompt.OptionTitle("prvd-prompt: interactive provide client"),
-		prompt.OptionPrefix(">>> "),
-		prompt.OptionInputTextColor(prompt.Yellow),
+		prompt.OptionTitle(shellTitle),
+		prompt.OptionPrefix(shellPrefix),
+		prompt.OptionInputTextColor(shellOptionInputTextColor),
 	)
 	p.Run()
 }
