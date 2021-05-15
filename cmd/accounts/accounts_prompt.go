@@ -167,67 +167,14 @@ func nameFlagPrompt() {
 	accountName = result
 }
 
-// Optional Flag For List Wallet
 func applicationIDFlagPrompt() {
-	validate := func(input string) error {
-		return nil
-	}
-
-	prompt := promptui.Prompt{
-		Label:    "Application ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.ApplicationID = result
+	common.RequireApplication()
 }
 
-// Optional Flag For List Wallet
 func networkIDFlagPrompt() {
-	validate := func(input string) error {
-		return nil
-	}
-
-	prompt := promptui.Prompt{
-		Label:    "Application ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.ApplicationID = result
+	common.RequireNetwork()
 }
 
 func organizationIDFlagPrompt() {
-	validate := func(input string) error {
-		return nil
-	}
-
-	prompt := promptui.Prompt{
-		Label:    "Application ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.ApplicationID = result
+	common.RequireOrganization()
 }

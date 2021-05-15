@@ -145,67 +145,20 @@ func contractIDFlagPrompt() {
 	common.ContractID = result
 }
 
+func accountIDFlagPrompt() {
+	common.RequireAccount(map[string]interface{}{})
+}
+
 func applicationIDFlagPrompt() {
-	validate := func(input string) error {
-		return nil
-	}
+	common.RequireApplication()
+}
 
-	prompt := promptui.Prompt{
-		Label:    "Application ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.ApplicationID = result
+func networkIDFlagPrompt() {
+	common.RequireNetwork()
 }
 
 func walletIDFlagPrompt() {
-	validate := func(input string) error {
-		return nil
-	}
-
-	prompt := promptui.Prompt{
-		Label:    "Application ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.WalletID = result
-}
-
-func accountIDFlagPrompt() {
-	validate := func(input string) error {
-		return nil
-	}
-
-	prompt := promptui.Prompt{
-		Label:    "Application ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.WalletID = result
+	common.RequireWallet()
 }
 
 func valueFlagPrompt() {

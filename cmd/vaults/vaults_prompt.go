@@ -149,43 +149,9 @@ func descriptionFlagPrompt() {
 
 // Optional Flag For List Vaults
 func applicationIDFlagPrompt() {
-	validate := func(input string) error {
-		return nil
-	}
-
-	prompt := promptui.Prompt{
-		Label:    "Application ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.ApplicationID = result
+	common.RequireApplication()
 }
 
 func organizationidFlagPrompt() {
-	validate := func(input string) error {
-		return nil
-	}
-
-	prompt := promptui.Prompt{
-		Label:    "Organization ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.OrganizationID = result
+	common.RequireOrganization()
 }

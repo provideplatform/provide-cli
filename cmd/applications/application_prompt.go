@@ -106,6 +106,7 @@ func optionalFlagsInit() {
 		withoutWalletFlagPrompt()
 	}
 }
+
 func optionalFlagsDetails() {
 	if common.ApplicationID == "" {
 		applicationIDFlagPrompt()
@@ -133,25 +134,9 @@ func applicationNameFlagPrompt() {
 	applicationName = result
 }
 
+// NetworkIDFlagPrompt -- should we just use the common.RequireNetwork() convention instead of wrapping like this?
 func NetworkIDFlagPrompt() {
-	validate := func(input string) error {
-		return nil
-	}
-
-	prompt := promptui.Prompt{
-		Label:    "Network ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.NetworkID = result
+	common.RequireNetwork()
 }
 
 func applicationTypeFlagPrompt() {
@@ -227,22 +212,5 @@ func withoutAccountFlagPrompt() {
 }
 
 func applicationIDFlagPrompt() {
-	validate := func(input string) error {
-		return nil
-	}
-
-	prompt := promptui.Prompt{
-		Label:    "Application ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.ApplicationID = result
+	common.RequireApplication()
 }

@@ -25,7 +25,7 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 		listOrganizations(cmd, args)
 		return // FIXME
 	case promptStepDetails:
-		common.RequireOrganization()
+		organizationIDFlagPrompt()
 	default:
 		emptyPrompt(cmd, args)
 		return // FIXME
@@ -86,4 +86,9 @@ func nameFlagPrompt() {
 	}
 
 	organizationName = result
+}
+
+// require organization...
+func organizationIDFlagPrompt() {
+	common.RequireOrganization()
 }

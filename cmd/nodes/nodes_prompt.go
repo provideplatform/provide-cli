@@ -129,29 +129,8 @@ func optionalFlagsInit() {
 	}
 }
 
-// Flags
 func networkIDFlagPrompt() {
-	validate := func(input string) error {
-		if len(input) < 1 {
-			return errors.New("name cant be nil")
-		}
-		return nil
-	}
-
-	prompt := promptui.Prompt{
-		Label:    "Network ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.NetworkID = result
+	common.RequireNetwork()
 }
 
 func imageFlagPrompt() {

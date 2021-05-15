@@ -167,66 +167,19 @@ func connectorTypeFlagPrompt() {
 }
 
 func applicationIDFlagPrompt() {
-	validate := func(input string) error {
-		return nil
-	}
-
-	prompt := promptui.Prompt{
-		Label:    "Application ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.ApplicationID = result
+	common.RequireApplication()
 }
 
 func networkIDFlagPrompt() {
-	validate := func(input string) error {
-		return nil
-	}
+	common.RequireNetwork()
+}
 
-	prompt := promptui.Prompt{
-		Label:    "Network ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.NetworkID = result
+func organizationIDFlagPrompt() {
+	common.RequireOrganization()
 }
 
 func connectorIDFlagPrompt() {
-	validate := func(input string) error {
-		return nil
-	}
-
-	prompt := promptui.Prompt{
-		Label:    "Connector ID",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
-	}
-
-	common.ConnectorID = result
+	common.RequireConnector(map[string]interface{}{})
 }
 
 func ipfsAPIPortFlagPrompt() {
