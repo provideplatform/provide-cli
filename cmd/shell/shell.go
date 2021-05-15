@@ -99,11 +99,13 @@ func promptSuggestionFactory(cmd *cobra.Command, d prompt.Document) []prompt.Sug
 
 	switch input {
 	case sanitizedPromptInputMatchRoot:
-		for _, cmd := range cmd.Parent().Commands() {
-			results = append(results, prompt.Suggest{
-				Text:        cmd.Use,
-				Description: cmd.Short,
-			})
+		for _, child := range cmd.Parent().Commands() {
+			if child != cmd {
+				results = append(results, prompt.Suggest{
+					Text:        child.Use,
+					Description: child.Short,
+				})
+			}
 		}
 	}
 
