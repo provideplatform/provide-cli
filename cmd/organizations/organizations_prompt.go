@@ -7,6 +7,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-cli/cmd/common"
+	"github.com/provideservices/provide-go/api/ident"
 	"github.com/spf13/cobra"
 )
 
@@ -90,25 +91,25 @@ func nameFlagPrompt() {
 
 // Mandatory Flag For detail Organizations
 func organizationidFlagPrompt() {
-	validate := func(input string) error {
-		if len(input) < 1 {
-			return errors.New("organization id cant be nil")
-		}
-		return nil
+	orgs, _ := ident.ListOrganizations(common.RequireUserAuthToken(), map[string]interface{}{})
+	// for _, org := range orgs {
+	// 	orgNames = append(orgNames, *org.Name)
+	// 	orgIDs = append(orgIDs, org.ID.String())
+	// }
+
+	prompt := promptui.Select{
+		Label: "What would you like to do",
+		Items: orgs,
 	}
 
-	prompt := promptui.Prompt{
-		Label:    "Organization ID",
-		Validate: validate,
-	}
+	i, result, err := prompt.Run()
 
-	result, err := prompt.Run()
-
+	fmt.Printf("Result: %v at index: %v", result, orgs[i].ID.String())
 	if err != nil {
 		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
 
-	common.OrganizationID = result
+	common.OrganizationID = orgs[i].ID.String()
 }
