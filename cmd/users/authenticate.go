@@ -14,9 +14,9 @@ import (
 // authenticateCmd represents the authenticate command
 var AuthenticateCmd = &cobra.Command{
 	Use:   "authenticate",
-	Short: "Authenticate using your developer credentials and receive a valid API token",
+	Short: "Authenticate using your developer credentials",
 	Long: `Authenticate using user credentials retrieved from provide.services and receive a
-valid API token which can be used to access the networks and application APIs.`,
+valid API token which can be used to access various APIs.`,
 	Run: authenticate,
 }
 
