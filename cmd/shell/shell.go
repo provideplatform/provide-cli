@@ -12,8 +12,20 @@ import (
 
 const shellExitMessage = "Bye!"
 const shellTitle = "prvd"
-const shellPrefix = ">>> "
-const shellOptionInputTextColor = prompt.Green
+const shellPrefix = "➜  prvd: ✗ "
+
+const shellOptionDefaultInputTextColor = prompt.DefaultColor
+const shellOptionDefaultPrefixTextColor = prompt.Green
+const shellOptionDescriptionBGColor = prompt.White
+const shellOptionDescriptionTextColor = prompt.Black
+const shellOptionSelectedDescriptionBGColor = prompt.LightGray
+const shellOptionSelectedDescriptionTextColor = prompt.Black
+const shellOptionScrollBGColor = prompt.LightGray
+const shellOptionScrollColor = prompt.DarkGray
+const shellOptionSelectedSuggestionBGColor = prompt.LightGray
+const shellOptionSelectedSuggestionTextColor = prompt.Black
+const shellOptionSuggestionBGColor = prompt.White
+const shellOptionSuggestionTextColor = prompt.Black
 
 const sanitizedPromptInputMatchExit = "exit"
 const sanitizedPromptInputMatchQuit = "quit" // FIXME-- combine exit and quit into regex i.e. ^(exit|quit)$
@@ -49,9 +61,24 @@ func shell(cmd *cobra.Command, args []string) {
 			return promptSuggestionFactory(cmd, d)
 		},
 
-		prompt.OptionTitle(shellTitle),
+		prompt.OptionDescriptionBGColor(shellOptionDescriptionBGColor),
+		prompt.OptionDescriptionTextColor(shellOptionDescriptionTextColor),
+		prompt.OptionInputTextColor(shellOptionDefaultInputTextColor),
+		prompt.OptionLivePrefix(func() (string, bool) {
+			return shellPrefix, true
+		}),
 		prompt.OptionPrefix(shellPrefix),
-		prompt.OptionInputTextColor(shellOptionInputTextColor),
+		prompt.OptionPrefixTextColor(shellOptionDefaultPrefixTextColor),
+		prompt.OptionScrollbarBGColor(shellOptionScrollBGColor),
+		prompt.OptionScrollbarThumbColor(shellOptionScrollColor),
+		prompt.OptionSelectedDescriptionBGColor(shellOptionSelectedDescriptionBGColor),
+		prompt.OptionSelectedDescriptionTextColor(shellOptionSelectedDescriptionTextColor),
+		prompt.OptionSelectedSuggestionBGColor(shellOptionSelectedSuggestionBGColor),
+		prompt.OptionSelectedSuggestionTextColor(shellOptionSelectedSuggestionTextColor),
+		// prompt.OptionSetExitCheckerOnInput(),
+		prompt.OptionSuggestionBGColor(shellOptionSuggestionBGColor),
+		prompt.OptionSuggestionTextColor(shellOptionSuggestionTextColor),
+		prompt.OptionTitle(shellTitle),
 	)
 
 	p.Run()
