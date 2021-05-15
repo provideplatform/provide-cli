@@ -7,7 +7,6 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-cli/cmd/common"
-	"github.com/provideservices/provide-go/api/ident"
 	"github.com/spf13/cobra"
 )
 
@@ -18,15 +17,15 @@ const promptStepInit = "Initialize"
 const promptStepList = "List"
 
 // General Endpoints
-func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
-	switch step := currentStep; step {
+func generalPrompt(cmd *cobra.Command, args []string, step string) {
+	switch step {
 	case promptStepInit:
 		nameFlagPrompt()
 	case promptStepList:
 		listOrganizations(cmd, args)
 		return // FIXME
 	case promptStepDetails:
-		organizationFlagPrompt()
+		common.RequireOrganization()
 	default:
 		emptyPrompt(cmd, args)
 		return // FIXME
@@ -37,16 +36,14 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 
 func emptyPrompt(cmd *cobra.Command, args []string) {
 	prompt := promptui.Select{
-		Label: "What would you like to do",
+		Label: "What would you like to do?",
 		Items: []string{promptStepInit, promptStepList, promptStepDetails},
 	}
 
 	_, result, err := prompt.Run()
-
 	promptArgs = append(promptArgs, result)
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -89,26 +86,4 @@ func nameFlagPrompt() {
 	}
 
 	organizationName = result
-}
-
-// flag, equivalent to --organization
-func organizationFlagPrompt() {
-	opts := make([]string, 0)
-	orgs, _ := ident.ListOrganizations(common.RequireUserAuthToken(), map[string]interface{}{})
-	for _, org := range orgs {
-		opts = append(opts, *org.Name)
-	}
-
-	prompt := promptui.Select{
-		Label: "Select an organization:",
-		Items: opts,
-	}
-
-	i, _, err := prompt.Run()
-	if err != nil {
-		panic(err) // this will be recovered and we will exit...
-	}
-
-	fmt.Printf("selected %s at index: %v", *orgs[i].Name, i)
-	common.OrganizationID = orgs[i].ID.String()
 }
