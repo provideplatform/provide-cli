@@ -31,7 +31,7 @@ func listWallets(cmd *cobra.Command, args []string) {
 	}
 	for i := range resp {
 		wallet := resp[i]
-		result := fmt.Sprintf("%s\t%s\n", wallet.ID.String(), *wallet.Path)
+		result := fmt.Sprintf("%s\t%s\n", wallet.ID.String(), *wallet.PublicKey)
 		// FIXME-- when wallet.Name exists... result = fmt.Sprintf("Wallet %s\t%s - %s\n", wallet.Name, wallet.ID.String(), *wallet.Address)
 		fmt.Print(result)
 	}
