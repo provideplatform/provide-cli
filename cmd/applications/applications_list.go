@@ -19,8 +19,6 @@ var applicationsListCmd = &cobra.Command{
 }
 
 func listApplications(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "List")
-
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{}
 	applications, err := provide.ListApplications(token, params)

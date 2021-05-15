@@ -40,7 +40,6 @@ func applicationConfigFactory() map[string]interface{} {
 }
 
 func createApplication(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "Initialize")
 	if withoutAPIToken && !withoutWallet {
 		fmt.Println("Cannot create an application that has a wallet but no API token.")
 		os.Exit(1)
