@@ -8,13 +8,13 @@ import (
 	"github.com/provideservices/provide-go/api/nchain"
 )
 
-const requireAccountSelectLabel = "Select an account:"
-const requireApplicationSelectLabel = "Select an application:"
-const requireConnectorSelectLabel = "Select a connector:"
-const requireNetworkSelectLabel = "Select a network:"
-const requireOrganizationSelectLabel = "Select an organization:"
-const requireWalletSelectLabel = "Select a wallet:"
-const requireWorkgroupSelectLabel = "Select a workgroup:"
+const requireAccountSelectLabel = "Select an account"
+const requireApplicationSelectLabel = "Select an application"
+const requireConnectorSelectLabel = "Select a connector"
+const requireNetworkSelectLabel = "Select a network"
+const requireOrganizationSelectLabel = "Select an organization"
+const requireWalletSelectLabel = "Select a wallet"
+const requireWorkgroupSelectLabel = "Select a workgroup"
 
 // RequireApplication is equivalent to a required --application flag
 func RequireApplication() error {
