@@ -23,14 +23,16 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	case promptStepInit:
 		nameFlagPrompt()
 	case promptStepList:
-		summary(cmd, args, promptArgs)
+		listOrganizations(cmd, args)
+		return // FIXME
 	case promptStepDetails:
-		organizationidFlagPrompt()
+		organizationFlagPrompt()
 	default:
 		emptyPrompt(cmd, args)
+		return // FIXME
 	}
 
-	summary(cmd, args, promptArgs)
+	summary(cmd, args, promptArgs) // FIXME?
 }
 
 func emptyPrompt(cmd *cobra.Command, args []string) {
@@ -89,27 +91,24 @@ func nameFlagPrompt() {
 	organizationName = result
 }
 
-// Mandatory Flag For detail Organizations
-func organizationidFlagPrompt() {
+// flag, equivalent to --organization
+func organizationFlagPrompt() {
+	opts := make([]string, 0)
 	orgs, _ := ident.ListOrganizations(common.RequireUserAuthToken(), map[string]interface{}{})
-	// for _, org := range orgs {
-	// 	orgNames = append(orgNames, *org.Name)
-	// 	orgIDs = append(orgIDs, org.ID.String())
-	// }
+	for _, org := range orgs {
+		opts = append(opts, *org.Name)
+	}
 
 	prompt := promptui.Select{
-		Label: "What would you like to do",
-		Items: orgs,
+		Label: "Select an organization:",
+		Items: opts,
 	}
 
-	i, result, err := prompt.Run()
-
-	fmt.Printf("Result: %v at index: %v", result, orgs[i].ID.String())
+	i, _, err := prompt.Run()
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
-		os.Exit(1)
-		return
+		panic(err) // this will be recovered and we will exit...
 	}
 
+	fmt.Printf("selected %s at index: %v", *orgs[i].Name, i)
 	common.OrganizationID = orgs[i].ID.String()
 }
