@@ -32,7 +32,7 @@ func CreateAccount(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	createManagedAccount()
+	createManagedAccount(cmd, args)
 }
 
 func createDecentralizedAccount() {
@@ -52,8 +52,6 @@ func createDecentralizedAccount() {
 }
 
 func createManagedAccount(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "Custody")
-
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
 		"network_id": common.NetworkID,

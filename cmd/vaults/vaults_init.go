@@ -22,7 +22,6 @@ var vaultsInitCmd = &cobra.Command{
 }
 
 func createVault(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "Initialize")
 
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{

@@ -27,8 +27,6 @@ var networksInitCmd = &cobra.Command{
 // CreateNetwork configures a new peer-to-peer network;
 // see https://docs.provide.services/microservices/goldmine/#create-a-network
 func CreateNetwork(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "Initialize")
-
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
 		"name":   networkName,

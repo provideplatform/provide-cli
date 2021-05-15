@@ -117,10 +117,10 @@ func mandatoryDetailFlags() {
 
 func optionalInitFlags() {
 	if ipfsAPIPort == 5001 {
-		connectorNameFlagPrompt()
+		ipfsGatewayPortFlagPrompt()
 	}
 	if ipfsGatewayPort == 8080 {
-		connectorTypeFlagPrompt()
+		ipfsAPIPortFlagPrompt()
 	}
 }
 
@@ -252,7 +252,7 @@ func ipfsAPIPortFlagPrompt() {
 	}
 
 	// turn to a uint somehow
-	ipfsAPIPort = result
+	ipfsAPIPort, _ = strconv.ParseUint(result, 10, 10)
 }
 
 func ipfsGatewayPortFlagPrompt() {
@@ -277,6 +277,5 @@ func ipfsGatewayPortFlagPrompt() {
 		return
 	}
 
-	// turn to a uint somehow
-	ipfsGatewayPort = result
+	ipfsGatewayPort, _ = strconv.ParseUint(result, 10, 10)
 }

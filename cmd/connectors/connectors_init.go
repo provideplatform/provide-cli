@@ -14,8 +14,8 @@ import (
 var connectorName string
 var connectorType string
 
-var ipfsAPIPort uint
-var ipfsGatewayPort uint
+var ipfsAPIPort uint64
+var ipfsGatewayPort uint64
 
 var connectorsInitCmd = &cobra.Command{
 	Use:   "init --name 'my storage connector' --type ipfs --network 024ff1ef-7369-4dee-969c-1918c6edb5d4",
@@ -33,7 +33,7 @@ func securityConfigFactory() map[string]interface{} {
 			"egress": "*",
 			"ingress": map[string]interface{}{
 				"0.0.0.0/0": map[string]interface{}{
-					"tcp": []uint{ipfsAPIPort, ipfsGatewayPort},
+					"tcp": []uint64{ipfsAPIPort, ipfsGatewayPort},
 					"udp": []uint{},
 				},
 			},
@@ -74,8 +74,6 @@ func connectorConfigFactory() map[string]interface{} {
 }
 
 func createConnector(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "Initialize")
-
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
 		"name":       connectorName,
@@ -107,6 +105,6 @@ func init() {
 
 	common.RequireInfrastructureFlags(connectorsInitCmd, true)
 
-	connectorsInitCmd.Flags().UintVar(&ipfsAPIPort, "ipfs-api-port", 5001, "tcp listen port for the ipfs api")
-	connectorsInitCmd.Flags().UintVar(&ipfsGatewayPort, "ipfs-gateway-port", 8080, "tcp listen port for the ipfs gateway")
+	connectorsInitCmd.Flags().Uint64Var(&ipfsAPIPort, "ipfs-api-port", 5001, "tcp listen port for the ipfs api")
+	connectorsInitCmd.Flags().Uint64Var(&ipfsGatewayPort, "ipfs-gateway-port", 8080, "tcp listen port for the ipfs gateway")
 }

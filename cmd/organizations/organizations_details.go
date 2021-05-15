@@ -19,8 +19,6 @@ var organizationsDetailsCmd = &cobra.Command{
 }
 
 func fetchOrganizationDetails(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "Details")
-
 	if common.OrganizationID == "" {
 		generalPrompt(cmd, args, "Details")
 	}

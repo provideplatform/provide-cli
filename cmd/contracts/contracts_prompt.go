@@ -83,7 +83,7 @@ func mandatoryExecuteFlags() {
 }
 
 func optionalExecuteFlags() {
-	if contractExecValue == 0 {
+	if contractExecMethod == "" {
 		methodFlagPrompt()
 	}
 	if common.AccountID == "" {
@@ -91,6 +91,9 @@ func optionalExecuteFlags() {
 	}
 	if common.WalletID == "" {
 		walletIDFlagPrompt()
+	}
+	if contractExecValue == 0 {
+		valueFlagPrompt()
 	}
 }
 
@@ -221,7 +224,7 @@ func valueFlagPrompt() {
 
 	result, err := prompt.Run()
 	// Same issue as in networks
-	contractExecValue, _ = strconv.Atoi(result)
+	contractExecValue, _ = strconv.ParseUint(result, 10, 64)
 
 	if err != nil {
 		fmt.Printf("Prompt Exit\n")

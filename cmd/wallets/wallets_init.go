@@ -53,8 +53,6 @@ func createDecentralizedWallet() {
 }
 
 func createManagedWallet(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "Custody")
-
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
 		"purpose": purpose,

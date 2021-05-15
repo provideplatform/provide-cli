@@ -88,7 +88,7 @@ func mandatoryInitFlag() {
 		applicationNameFlagPrompt()
 	}
 	if common.NetworkID == "" {
-		applicationNameFlagPrompt()
+		NetworkIDFlagPrompt()
 	}
 }
 
@@ -96,13 +96,13 @@ func optionalFlagsInit() {
 	if applicationType == "" {
 		applicationTypeFlagPrompt()
 	}
-	if baseline == false {
+	if !baseline {
 		baselineFlagPrompt()
 	}
-	if withoutAccount == false {
+	if !withoutAccount {
 		withoutAccountFlagPrompt()
 	}
-	if withoutWallet == false {
+	if !withoutWallet {
 		withoutWalletFlagPrompt()
 	}
 }

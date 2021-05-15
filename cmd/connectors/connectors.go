@@ -2,6 +2,7 @@ package connectors
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -24,7 +25,7 @@ var ConnectorsCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}()
-	},	},
+	},
 }
 
 func init() {

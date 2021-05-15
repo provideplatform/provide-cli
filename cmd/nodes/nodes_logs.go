@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var page uint
-var rpp uint
+var page uint64
+var rpp uint64
 
 var nodesLogsCmd = &cobra.Command{
 	Use:   "logs",
@@ -18,8 +18,6 @@ var nodesLogsCmd = &cobra.Command{
 }
 
 func nodeLogs(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "Logs")
-
 	// FIXME
 	// token := common.RequireAPIToken()
 	// resp, err := provide.GetNetworkNodeLogs(token, common.NetworkID, common.NodeID, map[string]interface{}{
@@ -52,9 +50,9 @@ func init() {
 	nodesLogsCmd.Flags().StringVar(&common.NodeID, "node", "", "id of the node")
 	nodesLogsCmd.MarkFlagRequired("node")
 
-	nodesLogsCmd.Flags().UintVar(&page, "page", 1, "page number to retrieve")
+	nodesLogsCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
 	nodesLogsCmd.MarkFlagRequired("page")
 
-	nodesLogsCmd.Flags().UintVar(&rpp, "rpp", 100, "number of log events to retrieve per page")
+	nodesLogsCmd.Flags().Uint64Var(&rpp, "rpp", 100, "number of log events to retrieve per page")
 	nodesLogsCmd.MarkFlagRequired("rpp")
 }

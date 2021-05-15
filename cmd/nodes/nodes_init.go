@@ -106,8 +106,6 @@ func nodeConfigFactory() map[string]interface{} {
 // CreateNode deploys a node to an existing peer-to-peer network;
 // see https://docs.provide.services/microservices/goldmine/#deploy-network-node
 func CreateNode(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "Initialize")
-
 	// FIXME
 	// token := common.RequireAPIToken()
 	// params := map[string]interface{}{

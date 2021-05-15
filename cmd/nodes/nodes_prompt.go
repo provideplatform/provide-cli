@@ -100,7 +100,7 @@ func mandatoryLogFlags() {
 		pageFlagPrompt()
 	}
 	if rpp == 100 {
-		roleFlagPrompt()
+		rppFlagPrompt()
 	}
 }
 
@@ -328,7 +328,7 @@ func pageFlagPrompt() {
 		os.Exit(1)
 		return
 	}
-	page, _ = strconv.Atoi(result)
+	page, _ = strconv.ParseUint(result, 10, 64)
 }
 
 func rppFlagPrompt() {

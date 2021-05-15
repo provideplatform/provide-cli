@@ -19,8 +19,6 @@ var vaultsListCmd = &cobra.Command{
 }
 
 func listVaults(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "List")
-
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{}
 	if common.ApplicationID != "" {

@@ -13,7 +13,7 @@ import (
 )
 
 var contractExecMethod string
-var contractExecValue uint
+var contractExecValue uint64
 var contractExecParams []interface{}
 
 var contractsExecuteCmd = &cobra.Command{
@@ -24,8 +24,6 @@ var contractsExecuteCmd = &cobra.Command{
 }
 
 func executeContract(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "Execute")
-
 	if common.AccountID == "" && common.WalletID == "" {
 		fmt.Println("Cannot execute a contract without a specified signer.")
 		os.Exit(1)
@@ -74,7 +72,7 @@ func init() {
 	contractsExecuteCmd.Flags().StringVar(&contractExecMethod, "method", "", "ABI method to invoke on the contract")
 	contractsExecuteCmd.MarkFlagRequired("method")
 
-	contractsExecuteCmd.Flags().UintVar(&contractExecValue, "value", 0, "value to send with transaction, specific in the smallest denonination of currency for the network (i.e., wei)")
+	contractsExecuteCmd.Flags().Uint64Var(&contractExecValue, "value", 0, "value to send with transaction, specific in the smallest denonination of currency for the network (i.e., wei)")
 
 	contractsExecuteCmd.Flags().StringVar(&common.AccountID, "account", "", "signing account id with which to sign the tx")
 	contractsExecuteCmd.Flags().StringVar(&common.WalletID, "wallet", "", "HD wallet id with which to sign the tx")
