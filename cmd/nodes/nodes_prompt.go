@@ -149,7 +149,6 @@ func imageFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -173,7 +172,6 @@ func roleFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -194,7 +192,6 @@ func healthCheckPathFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -215,7 +212,6 @@ func TCPIngressPortsFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -236,7 +232,6 @@ func UDPIngressPortsFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -257,7 +252,6 @@ func taskRoleFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -278,7 +272,6 @@ func nodeIDFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -303,7 +296,6 @@ func pageFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -327,7 +319,6 @@ func rppFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}

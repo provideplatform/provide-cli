@@ -2,7 +2,6 @@ package users
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/manifoldco/promptui"
@@ -22,7 +21,6 @@ func emailPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -47,7 +45,6 @@ func passwordPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -68,7 +65,6 @@ func authenticatePrompt(cmd *cobra.Command, args []string) {
 	}
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}

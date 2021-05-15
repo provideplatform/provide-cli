@@ -2,7 +2,6 @@ package contracts
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strconv"
 
@@ -57,7 +56,6 @@ func flagPrompt() bool {
 	_, flagResult, err := flagPrompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return false
 	}
@@ -116,7 +114,6 @@ func methodFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -137,7 +134,6 @@ func contractIDFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -180,7 +176,6 @@ func valueFlagPrompt() {
 	contractExecValue, _ = strconv.ParseUint(result, 10, 64)
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}

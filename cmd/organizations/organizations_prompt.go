@@ -2,7 +2,6 @@ package organizations
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/manifoldco/promptui"
@@ -80,7 +79,6 @@ func nameFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}

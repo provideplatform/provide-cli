@@ -2,7 +2,6 @@ package connectors
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strconv"
 
@@ -63,7 +62,6 @@ func flagPrompt() bool {
 	_, flagResult, err := flagPrompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return false
 	}
@@ -137,7 +135,6 @@ func connectorNameFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -158,7 +155,6 @@ func connectorTypeFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -199,7 +195,6 @@ func ipfsAPIPortFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -225,7 +220,6 @@ func ipfsGatewayPortFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}

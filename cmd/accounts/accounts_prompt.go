@@ -45,7 +45,6 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 	_, result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -64,7 +63,6 @@ func flagPrompt() bool {
 	_, flagResult, err := flagPrompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return false
 	}
@@ -119,7 +117,6 @@ func custodyPrompt(cmd *cobra.Command, args []string) {
 	promptArgs = append(promptArgs, result)
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -140,7 +137,6 @@ func custodialFlagPrompt() {
 	nonCustodial = result != "Custodial"
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}
@@ -159,7 +155,6 @@ func nameFlagPrompt() {
 	result, err := prompt.Run()
 
 	if err != nil {
-		fmt.Printf("Prompt Exit\n")
 		os.Exit(1)
 		return
 	}

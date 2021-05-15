@@ -1,7 +1,6 @@
 package accounts
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -23,7 +22,6 @@ looking for hierarchical deterministic support, check out the wallets API.`,
 
 		defer func() {
 			if r := recover(); r != nil {
-				fmt.Printf("Prompt Exit\n")
 				os.Exit(1)
 			}
 		}()

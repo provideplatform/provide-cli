@@ -1,7 +1,6 @@
 package nodes
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -20,7 +19,6 @@ var NodesCmd = &cobra.Command{
 
 		defer func() {
 			if r := recover(); r != nil {
-				fmt.Printf("Prompt Exit\n")
 				os.Exit(1)
 			}
 		}()

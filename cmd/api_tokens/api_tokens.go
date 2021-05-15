@@ -1,7 +1,6 @@
 package api_tokens
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -16,7 +15,6 @@ var APITokensCmd = &cobra.Command{
 
 		defer func() {
 			if r := recover(); r != nil {
-				fmt.Printf("Prompt Exit\n")
 				os.Exit(1)
 			}
 		}()

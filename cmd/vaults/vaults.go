@@ -19,7 +19,6 @@ Supports encrypt/decrypt and sign/verify operations for select key specs.`,
 
 		defer func() {
 			if r := recover(); r != nil {
-				fmt.Printf("Prompt Exit\n")
 				os.Exit(1)
 			}
 		}()
