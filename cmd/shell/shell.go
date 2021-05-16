@@ -31,6 +31,8 @@ const sanitizedPromptInputMatchExit = "exit"
 const sanitizedPromptInputMatchQuit = "quit" // FIXME-- combine exit and quit into regex i.e. ^(exit|quit)$
 const sanitizedPromptInputMatchRoot = "prvd"
 
+var writer prompt.ConsoleWriter
+
 var ShellCmd = &cobra.Command{
 	Use:   "shell",
 	Short: "Interactive shell",
@@ -45,11 +47,15 @@ Run with the --help flag to see available options`, common.ASCIIBanner),
 func shell(cmd *cobra.Command, args []string) {
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Printf("Caught error exception: %v", r)
+			fmt.Printf("WARNING: recovered from panic; %s", r)
 		}
 	}()
-
 	defer fmt.Println(shellExitMessage)
+
+	writer = prompt.NewStdoutWriter()
+	writer.WriteRawStr("\033[H\033[2J")
+	writer.WriteStr(common.ASCIIBanner)
+	writer.WriteStr("\n\n")
 
 	var p *prompt.Prompt
 	p = prompt.New(
@@ -79,6 +85,7 @@ func shell(cmd *cobra.Command, args []string) {
 		prompt.OptionSuggestionBGColor(shellOptionSuggestionBGColor),
 		prompt.OptionSuggestionTextColor(shellOptionSuggestionTextColor),
 		prompt.OptionTitle(shellTitle),
+		prompt.OptionWriter(writer),
 	)
 
 	p.Run()
