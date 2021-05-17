@@ -20,9 +20,6 @@ valid API token which can be used to access various APIs.`,
 	Run: authenticate,
 }
 
-var email string
-var passwd string
-
 func authenticate(cmd *cobra.Command, args []string) {
 	emailPrompt()
 	passwordPrompt()

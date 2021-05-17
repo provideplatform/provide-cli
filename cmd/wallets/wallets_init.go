@@ -64,13 +64,22 @@ func createManagedWallet(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 	common.WalletID = wallet.ID.String()
-	result := fmt.Sprintf("Wallet %s\n", wallet.ID.String())
-	// FIXME-- when wallet.Name exists... result = fmt.Sprintf("Wallet %s\t%s - %s\n", wallet.Name, wallet.ID.String(), *wallet.Address)
-	appWalletKey := common.BuildConfigKeyWithApp(common.WalletConfigKeyPartial, common.ApplicationID)
-	if !viper.IsSet(appWalletKey) {
-		viper.Set(appWalletKey, wallet.ID.String())
-		viper.WriteConfig()
+	result := fmt.Sprintf("Wallet %s\t%s\n", wallet.ID.String(), *wallet.PublicKey)
+
+	if common.ApplicationID != "" {
+		appWalletKey := common.BuildConfigKeyWithApp(common.WalletConfigKeyPartial, common.ApplicationID)
+		if !viper.IsSet(appWalletKey) {
+			viper.Set(appWalletKey, wallet.ID.String())
+			viper.WriteConfig()
+		}
+	} else if common.OrganizationID != "" {
+		orgWalletKey := common.BuildConfigKeyWithOrg(common.WalletConfigKeyPartial, common.OrganizationID)
+		if !viper.IsSet(orgWalletKey) {
+			viper.Set(orgWalletKey, wallet.ID.String())
+			viper.WriteConfig()
+		}
 	}
+
 	fmt.Print(result)
 }
 
