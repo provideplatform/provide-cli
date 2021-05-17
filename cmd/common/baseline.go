@@ -247,8 +247,8 @@ func ResolveCapabilities() (map[string]interface{}, error) {
 	}
 	_, capabilities, err := capabilitiesClient.Get("provide-capabilities-manifest.json", map[string]interface{}{})
 	if err != nil {
-		log.Printf("WARNING: failed to fetch capabilities; %s", err.Error())
-		return nil, err
+		// FIXME-- this is very naive... it needs a simple backoff at least.
+		return ResolveCapabilities()
 	}
 
 	return capabilities.(map[string]interface{}), nil
