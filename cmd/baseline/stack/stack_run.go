@@ -216,10 +216,10 @@ func configureNetwork(docker *client.Client) {
 }
 
 func authorizeContext() {
-	log.Printf("authorizing workgroup context")
+	// log.Printf("authorizing workgroup context")
 	authorizeWorkgroupContext()
 
-	log.Printf("authorizing organization context")
+	// log.Printf("authorizing organization context")
 	common.AuthorizeOrganizationContext()
 
 	if organizationRefreshToken == "" {

@@ -16,6 +16,10 @@ const requireWorkgroupSelectLabel = "Select a workgroup"
 
 // RequireApplication is equivalent to a required --application flag
 func RequireApplication() error {
+	if ApplicationID != "" {
+		return nil
+	}
+
 	opts := make([]string, 0)
 	apps, _ := ident.ListApplications(RequireUserAuthToken(), map[string]interface{}{})
 	for _, app := range apps {
@@ -39,6 +43,10 @@ func RequireApplication() error {
 // RequireWorkgroup is equivalent to a required --workgroup flag
 // (yes, this is identical to RequireApplication() with exception to the Printf content...)
 func RequireWorkgroup() error {
+	if ApplicationID != "" {
+		return nil
+	}
+
 	opts := make([]string, 0)
 	apps, _ := ident.ListApplications(RequireUserAuthToken(), map[string]interface{}{})
 	for _, app := range apps {
@@ -61,6 +69,10 @@ func RequireWorkgroup() error {
 
 // RequireConnector is equivalent to a required --connector flag
 func RequireConnector(params map[string]interface{}) error {
+	if ConnectorID != "" {
+		return nil
+	}
+
 	opts := make([]string, 0)
 	connectors, _ := nchain.ListConnectors(RequireAPIToken(), params)
 	for _, connector := range connectors {
@@ -83,6 +95,10 @@ func RequireConnector(params map[string]interface{}) error {
 
 // RequireNetwork is equivalent to a required --network flag
 func RequireNetwork() error {
+	if NetworkID != "" {
+		return nil
+	}
+
 	opts := make([]string, 0)
 	networks, _ := nchain.ListNetworks(RequireAPIToken(), map[string]interface{}{})
 	for _, network := range networks {
@@ -105,6 +121,10 @@ func RequireNetwork() error {
 
 // RequireOrganization is equivalent to a required --organization flag
 func RequireOrganization() error {
+	if OrganizationID != "" {
+		return nil
+	}
+
 	opts := make([]string, 0)
 	orgs, _ := ident.ListOrganizations(RequireUserAuthToken(), map[string]interface{}{})
 	for _, org := range orgs {
@@ -127,6 +147,10 @@ func RequireOrganization() error {
 
 // RequireAccount is equivalent to a required --account flag
 func RequireAccount(params map[string]interface{}) error {
+	if AccountID != "" {
+		return nil
+	}
+
 	opts := make([]string, 0)
 	accounts, _ := nchain.ListAccounts(RequireAPIToken(), params)
 	for _, acct := range accounts {
@@ -149,6 +173,10 @@ func RequireAccount(params map[string]interface{}) error {
 
 // RequireWallet is equivalent to a required --wallet flag
 func RequireWallet() error {
+	if WalletID != "" {
+		return nil
+	}
+
 	opts := make([]string, 0)
 	wallets, _ := nchain.ListWallets(RequireAPIToken(), map[string]interface{}{})
 	for _, wallet := range wallets {

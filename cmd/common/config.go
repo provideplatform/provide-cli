@@ -158,3 +158,15 @@ func BuildConfigKeyWithOrg(keyPartial, orgID string) string {
 	}
 	return fmt.Sprintf("%s.%s", orgID, keyPartial)
 }
+
+// BuildConfigKeyWithUser combines the given key partial and user ID according to a consistent convention.
+// Returns an empty string if the given userID is empty.
+// Viper's getters likewise return empty strings when passed an empty string.
+func BuildConfigKeyWithUser(keyPartial, userID string) string {
+	if userID == "" {
+		// Development-time debugging.
+		log.Println("A user identifier is required for this operation")
+		return ""
+	}
+	return fmt.Sprintf("%s.%s", userID, keyPartial)
+}

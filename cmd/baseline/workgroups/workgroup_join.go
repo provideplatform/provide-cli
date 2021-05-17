@@ -1,19 +1,14 @@
 package workgroups
 
 import (
-	"errors"
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/kthomas/go-pgputil"
+	"github.com/provideservices/provide-cli/cmd/api_tokens"
 	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/provideservices/provide-go/api/baseline"
-	ident "github.com/provideservices/provide-go/api/ident"
-	"github.com/provideservices/provide-go/common/util"
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/ssh"
 )
 
 // InviteClaims represent JWT invitation claims
@@ -30,7 +25,6 @@ type BaselineClaims struct {
 }
 
 var inviteJWT string
-var jwtKeypairs map[string]*util.JWTKeypair
 
 var joinBaselineWorkgroupCmd = &cobra.Command{
 	Use:   "join",
@@ -40,7 +34,7 @@ var joinBaselineWorkgroupCmd = &cobra.Command{
 }
 
 func joinWorkgroup(cmd *cobra.Command, args []string) {
-	requirePublicJWTVerifiers() // FIXME...
+	api_tokens.RequirePublicJWTVerifiers() // FIXME...
 	claims := parseJWT(inviteJWT)
 	log.Printf("resolved baseline claims containing invitation for workgroup: %s", *claims.Baseline.WorkgroupID)
 
@@ -70,35 +64,7 @@ func parseJWT(token string) *InviteClaims {
 
 	// FIXME-- use the unverified key material to lookup the signer's public key for verification below...
 	if false {
-		jwtToken, err = jwt.Parse(token, func(_jwtToken *jwt.Token) (interface{}, error) {
-			if _, ok := _jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
-				return nil, fmt.Errorf("failed to resolve a valid JWT signing key; unsupported signing alg specified in header: %s", _jwtToken.Method.Alg())
-			}
-
-			var keypair *util.JWTKeypair
-
-			var kid *string
-			if kidhdr, ok := _jwtToken.Header["kid"].(string); ok {
-				kid = &kidhdr
-			}
-
-			if kid != nil {
-				keypair = jwtKeypairs[*kid]
-			}
-
-			if keypair == nil {
-				for kid := range jwtKeypairs {
-					keypair = jwtKeypairs[kid] // picks the last keypair...
-				}
-			}
-
-			if keypair != nil {
-				log.Printf("resolved keypair...")
-				return &keypair.PublicKey, nil
-			}
-
-			return nil, errors.New("failed to resolve a valid JWT verification key")
-		})
+		jwtToken, err = api_tokens.ParseJWT(token)
 		if err != nil {
 			log.Printf("failed to parse JWT; %s", err.Error())
 			os.Exit(1)
@@ -121,36 +87,6 @@ func configureBaselineStack(jwt string, claims *InviteClaims) {
 		os.Exit(1)
 	}
 	log.Printf("configured baseline workgroup on local stack: %s", *claims.Baseline.WorkgroupID)
-}
-
-func requirePublicJWTVerifiers() {
-	jwtKeypairs = map[string]*util.JWTKeypair{}
-
-	keys, err := ident.GetJWKs()
-	if err != nil {
-		log.Printf("failed to resolve ident jwt keys; %s", err.Error())
-	} else {
-		for _, key := range keys {
-			publicKey, err := pgputil.DecodeRSAPublicKeyFromPEM([]byte(key.PublicKey))
-			if err != nil {
-				log.Printf("failed to parse ident JWT public key; %s", err.Error())
-			}
-
-			sshPublicKey, err := ssh.NewPublicKey(publicKey)
-			if err != nil {
-				log.Printf("failed to resolve JWT public key fingerprint; %s", err.Error())
-			}
-			fingerprint := ssh.FingerprintLegacyMD5(sshPublicKey)
-
-			jwtKeypairs[fingerprint] = &util.JWTKeypair{
-				Fingerprint:  fingerprint,
-				PublicKey:    *publicKey,
-				PublicKeyPEM: &key.PublicKey,
-			}
-
-			log.Printf("ident jwt public key configured for verification; fingerprint: %s", fingerprint)
-		}
-	}
 }
 
 func init() {
