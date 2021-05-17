@@ -21,6 +21,7 @@ const shellPrefixPrompt = " > "
 const shellOptionDefaultFGColor = prompt.DefaultColor
 const shellOptionDefaultBGColor = prompt.DefaultColor
 const shellOptionDefaultInputTextColor = prompt.DefaultColor
+const shellOptionDefaultMaxSuggestions = uint16(8)
 const shellOptionDefaultPrefixTextColor = prompt.Green
 const shellOptionDescriptionBGColor = prompt.White
 const shellOptionDescriptionTextColor = prompt.Black
@@ -142,6 +143,7 @@ func refresh(cmd *cobra.Command, msg []byte) {
 		prompt.OptionLivePrefix(func() (string, bool) {
 			return prefix, true
 		}),
+		prompt.OptionMaxSuggestion(shellOptionDefaultMaxSuggestions),
 		prompt.OptionParser(parser),
 		prompt.OptionPrefix(prefix),
 		prompt.OptionPrefixTextColor(shellOptionDefaultPrefixTextColor),
@@ -178,14 +180,10 @@ func shellOut(argv []string) error {
 		return nil
 	}
 
-	if len(argv) == 0 {
-		argv = append(argv, "")
-	}
-
 	shellOutPending = true
 
 	buf := &bytes.Buffer{}
-	cmd := exec.Command("prvd", argv[1:]...)
+	cmd := exec.Command("prvd", argv...)
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = nil
 	cmd.Stdout = buf
