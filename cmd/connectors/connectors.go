@@ -13,8 +13,10 @@ var connectors []interface{}
 
 var ConnectorsCmd = &cobra.Command{
 	Use:   "connectors",
-	Short: "Manage application connectors",
-	Long:  `Provision load balanced infrastructure for your application, such as a public or private IPFS cluster`,
+	Short: "Manage arbitrary external infrastructure",
+	Long: `Connectors are adapters that connect external arbitrary infrastructure with Provide.
+
+This API allows you to provision load balanced, cloud-agnostic infrastructure for your distributed system.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		generalPrompt(cmd, args, "")
 
