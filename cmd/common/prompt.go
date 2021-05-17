@@ -119,6 +119,34 @@ func RequireNetwork() error {
 	return nil
 }
 
+// RequirePublicNetwork is equivalent to a required --network flag; but list options filtered to show only public networks
+func RequirePublicNetwork() error {
+	if NetworkID != "" {
+		return nil
+	}
+
+	opts := make([]string, 0)
+	networks, _ := nchain.ListNetworks(RequireAPIToken(), map[string]interface{}{
+		"public": "true",
+	})
+	for _, network := range networks {
+		opts = append(opts, *network.Name)
+	}
+
+	prompt := promptui.Select{
+		Label: requireNetworkSelectLabel,
+		Items: opts,
+	}
+
+	i, _, err := prompt.Run()
+	if err != nil {
+		return err
+	}
+
+	NetworkID = networks[i].ID.String()
+	return nil
+}
+
 // RequireOrganization is equivalent to a required --organization flag
 func RequireOrganization() error {
 	if OrganizationID != "" {

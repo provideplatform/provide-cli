@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-cli/cmd/common"
 	ident "github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
@@ -42,7 +43,12 @@ func authorizeApplicationContext() {
 }
 
 func initWorkgroup(cmd *cobra.Command, args []string) {
-	common.NetworkID = networkID
+	if name == "" {
+		namePrompt()
+	}
+	if common.NetworkID == "" {
+		common.RequirePublicNetwork()
+	}
 	common.AuthorizeOrganizationContext()
 
 	token := common.RequireUserAuthToken()
@@ -98,14 +104,23 @@ func requireOrganizationKeys() {
 	}
 }
 
+func namePrompt() {
+	prompt := promptui.Prompt{
+		Label: "Workgroup Name",
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	name = result
+}
+
 func init() {
 	initBaselineWorkgroupCmd.Flags().StringVar(&name, "name", "", "name of the baseline workgroup")
-	initBaselineWorkgroupCmd.MarkFlagRequired("name")
-
-	initBaselineWorkgroupCmd.Flags().StringVar(&networkID, "network", defaultNChainBaselineNetworkID, "nchain network id of the baseline mainnet to use for this workgroup")
-
+	initBaselineWorkgroupCmd.Flags().StringVar(&common.NetworkID, "network", "", "nchain network id of the baseline mainnet to use for this workgroup")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
-	initBaselineWorkgroupCmd.MarkFlagRequired("organization")
-
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.MessagingEndpoint, "endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
 }
