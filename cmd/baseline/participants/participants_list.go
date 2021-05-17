@@ -10,50 +10,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var applicationAccessToken string
-var organizationAccessToken string
-
 var listBaselineWorkgroupParticipantsCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List baseline workgroup participants",
+	Short: "List workgroup participants",
 	Long:  `List the participating and invited parties in a baseline workgroup`,
 	Run:   listParticipants,
 }
 
-func authorizeApplicationContext() {
-	token, err := ident.CreateToken(common.RequireUserAuthToken(), map[string]interface{}{
-		"scope":          "offline_access",
-		"application_id": common.ApplicationID,
-	})
-	if err != nil {
-		log.Printf("failed to authorize API access token on behalf of application %s; %s", common.ApplicationID, err.Error())
-		os.Exit(1)
-	}
-
-	if token.AccessToken != nil {
-		applicationAccessToken = *token.AccessToken
-	}
-}
-
-func authorizeOrganizationContext() {
-	token, err := ident.CreateToken(common.RequireUserAuthToken(), map[string]interface{}{
-		"scope":           "offline_access",
-		"organization_id": common.OrganizationID,
-	})
-	if err != nil {
-		log.Printf("failed to authorize API access token on behalf of organization %s; %s", common.OrganizationID, err.Error())
-		os.Exit(1)
-	}
-
-	if token.AccessToken != nil {
-		organizationAccessToken = *token.AccessToken
-	}
-}
-
 func listParticipants(cmd *cobra.Command, args []string) {
-	authorizeApplicationContext()
+	common.AuthorizeApplicationContext()
 
-	participants, err := ident.ListApplicationOrganizations(applicationAccessToken, common.ApplicationID, map[string]interface{}{
+	participants, err := ident.ListApplicationOrganizations(common.ApplicationAccessToken, common.ApplicationID, map[string]interface{}{
 		"type": "baseline",
 	})
 	if err != nil {
@@ -61,7 +28,7 @@ func listParticipants(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	invitations, err := ident.ListApplicationInvitations(applicationAccessToken, common.ApplicationID, map[string]interface{}{})
+	invitations, err := ident.ListApplicationInvitations(common.ApplicationAccessToken, common.ApplicationID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("failed to retrieve invited baseline workgroup participants; %s", err.Error())
 		os.Exit(1)
@@ -100,5 +67,4 @@ func listParticipants(cmd *cobra.Command, args []string) {
 
 func init() {
 	listBaselineWorkgroupParticipantsCmd.Flags().StringVar(&common.ApplicationID, "workgroup", "", "workgroup identifier")
-	listBaselineWorkgroupParticipantsCmd.MarkFlagRequired("workgroup")
 }

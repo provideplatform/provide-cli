@@ -11,6 +11,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kthomas/go-pgputil"
+	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-cli/cmd/common"
 	ident "github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
@@ -36,10 +37,16 @@ A verifiable credential is issued which can then be distributed to the invited p
 }
 
 func inviteParticipant(cmd *cobra.Command, args []string) {
-	authorizeApplicationContext()
-	authorizeOrganizationContext()
+	if name == "" {
+		namePrompt()
+	}
+	if email == "" {
+		emailPrompt()
+	}
+	common.AuthorizeApplicationContext()
+	common.AuthorizeOrganizationContext()
 
-	vaults, err := vault.ListVaults(organizationAccessToken, map[string]interface{}{
+	vaults, err := vault.ListVaults(common.OrganizationAccessToken, map[string]interface{}{
 		"organization_id": common.OrganizationID,
 	})
 	if err != nil {
@@ -47,7 +54,7 @@ func inviteParticipant(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	keys, err := vault.ListKeys(organizationAccessToken, vaults[0].ID.String(), map[string]interface{}{
+	keys, err := vault.ListKeys(common.OrganizationAccessToken, vaults[0].ID.String(), map[string]interface{}{
 		"spec": "secp256k1",
 	})
 	if err != nil {
@@ -55,7 +62,7 @@ func inviteParticipant(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	contracts, _ := nchain.ListContracts(applicationAccessToken, map[string]interface{}{
+	contracts, _ := nchain.ListContracts(common.ApplicationAccessToken, map[string]interface{}{
 		"type": "organization-registry",
 	})
 	if err != nil {
@@ -88,7 +95,7 @@ func inviteParticipant(cmd *cobra.Command, args []string) {
 	}
 
 	// FIXME-- authorize the organization to act on behalf of this application when sending an invite
-	err = ident.CreateInvitation(applicationAccessToken, map[string]interface{}{
+	err = ident.CreateInvitation(common.ApplicationAccessToken, map[string]interface{}{
 		"application_id": common.ApplicationID,
 		"email":          email,
 		"params":         params,
@@ -102,7 +109,7 @@ func inviteParticipant(cmd *cobra.Command, args []string) {
 }
 
 func vendJWT(vaultID string, params map[string]interface{}) string {
-	keys, err := vault.ListKeys(organizationAccessToken, vaultID, map[string]interface{}{
+	keys, err := vault.ListKeys(common.OrganizationAccessToken, vaultID, map[string]interface{}{
 		"spec": "RSA-4096",
 	})
 	if err != nil {
@@ -115,7 +122,7 @@ func vendJWT(vaultID string, params map[string]interface{}) string {
 	}
 	key := keys[0]
 
-	org, err := ident.GetOrganizationDetails(organizationAccessToken, common.OrganizationID, map[string]interface{}{})
+	org, err := ident.GetOrganizationDetails(common.OrganizationAccessToken, common.OrganizationID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("failed to vend JWT; %s", err.Error())
 		os.Exit(1)
@@ -168,7 +175,7 @@ func vendJWT(vaultID string, params map[string]interface{}) string {
 	}
 
 	resp, err := vault.SignMessage(
-		organizationAccessToken,
+		common.OrganizationAccessToken,
 		key.VaultID.String(),
 		key.ID.String(),
 		hex.EncodeToString([]byte(strToSign)),
@@ -259,16 +266,39 @@ func encodeJWTNatsClaims() (map[string]interface{}, error) {
 	return natsClaims, nil
 }
 
+func namePrompt() {
+	prompt := promptui.Prompt{
+		Label: "Invitee Name",
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	name = result
+}
+
+func emailPrompt() {
+	prompt := promptui.Prompt{
+		Label: "Invitee Email",
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	email = result
+}
+
 func init() {
 	inviteBaselineWorkgroupParticipantCmd.Flags().StringVar(&common.ApplicationID, "workgroup", "", "workgroup identifier")
-	inviteBaselineWorkgroupParticipantCmd.MarkFlagRequired("workgroup")
-
 	inviteBaselineWorkgroupParticipantCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier")
-	inviteBaselineWorkgroupParticipantCmd.MarkFlagRequired("organization")
-
-	inviteBaselineWorkgroupParticipantCmd.Flags().StringVar(&email, "email", "", "email address for the invited participant")
-	inviteBaselineWorkgroupParticipantCmd.MarkFlagRequired("email")
-
+	inviteBaselineWorkgroupParticipantCmd.Flags().StringVar(&name, "name", "", "name of the invited participant")
+	inviteBaselineWorkgroupParticipantCmd.Flags().StringVar(&email, "email", "", "email address of the invited participant")
 	inviteBaselineWorkgroupParticipantCmd.Flags().BoolVar(&managedTenant, "managed-tenant", false, "if set, the invited participant is authorized to leverage operator-provided infrastructure")
 	inviteBaselineWorkgroupParticipantCmd.Flags().IntVar(&permissions, "permissions", 0, "permissions for invited participant")
 }

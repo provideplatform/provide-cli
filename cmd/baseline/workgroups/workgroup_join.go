@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-cli/cmd/api_tokens"
 	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/provideservices/provide-go/api/baseline"
@@ -34,6 +35,10 @@ var joinBaselineWorkgroupCmd = &cobra.Command{
 }
 
 func joinWorkgroup(cmd *cobra.Command, args []string) {
+	if inviteJWT == "" {
+		jwtPrompt()
+	}
+
 	api_tokens.RequirePublicJWTVerifiers() // FIXME...
 	claims := parseJWT(inviteJWT)
 	log.Printf("resolved baseline claims containing invitation for workgroup: %s", *claims.Baseline.WorkgroupID)
@@ -89,10 +94,21 @@ func configureBaselineStack(jwt string, claims *InviteClaims) {
 	log.Printf("configured baseline workgroup on local stack: %s", *claims.Baseline.WorkgroupID)
 }
 
+func jwtPrompt() {
+	prompt := promptui.Prompt{
+		Label: "Verifiable Credential (Invite JWT)",
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	inviteJWT = result
+}
+
 func init() {
 	joinBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
-	joinBaselineWorkgroupCmd.MarkFlagRequired("organization")
-
 	joinBaselineWorkgroupCmd.Flags().StringVar(&inviteJWT, "jwt", "", "JWT invitation token received from the inviting counterparty")
-	joinBaselineWorkgroupCmd.MarkFlagRequired("jwt")
 }
