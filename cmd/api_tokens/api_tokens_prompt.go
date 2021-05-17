@@ -1,14 +1,13 @@
 package api_tokens
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
-
-var promptArgs []string
 
 const promptStepInit = "Initialize"
 const promptStepList = "List"
@@ -20,15 +19,15 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		if flagPrompt() {
 			optionalFlagsInit()
 		}
+		createAPIToken(cmd, args)
 	case promptStepList:
 		if flagPrompt() {
 			optionalFlagsList()
 		}
-	default:
+		listAPITokens(cmd, args)
+	case "":
 		emptyPrompt(cmd, args)
 	}
-
-	summary(cmd, args, promptArgs)
 }
 
 func emptyPrompt(cmd *cobra.Command, args []string) {
@@ -43,8 +42,6 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 		return
 	}
-
-	promptArgs = append(promptArgs, result)
 
 	generalPrompt(cmd, args, result)
 }
@@ -65,15 +62,6 @@ func flagPrompt() bool {
 	return flagResult == "Yes"
 }
 
-func summary(cmd *cobra.Command, args []string, promptArgs []string) {
-	if promptArgs[0] == promptStepInit {
-		createAPIToken(cmd, args)
-	}
-	if promptArgs[0] == promptStepList {
-		listAPITokens(cmd, args)
-	}
-}
-
 func optionalFlagsInit() {
 	if common.ApplicationID == "" {
 		applicationIDFlagPrompt()
@@ -81,11 +69,14 @@ func optionalFlagsInit() {
 	if common.OrganizationID == "" {
 		organizationIDFlagPrompt()
 	}
+	if !refreshToken {
+		refreshTokenFlagPrompt()
+	}
 	if !offlineAccess {
 		offlineAccessFlagPrompt()
 	}
-	if !refreshToken {
-		refreshTokenFlagPrompt()
+	if refreshToken && offlineAccess {
+		fmt.Println("⚠️  WARNING: You currently have both refresh and offline token set, Refresh token will take precedence")
 	}
 }
 
@@ -97,7 +88,7 @@ func optionalFlagsList() {
 
 func refreshTokenFlagPrompt() {
 	flagPrompt := promptui.Select{
-		Label: "Would you like to set Optional Flags?",
+		Label: "Would you like to refresh your access token?",
 		Items: []string{"No", "Yes"},
 	}
 
@@ -113,7 +104,7 @@ func refreshTokenFlagPrompt() {
 
 func offlineAccessFlagPrompt() {
 	flagPrompt := promptui.Select{
-		Label: "Would you like to set Optional Flags?",
+		Label: "Would you like to vend an access/refresh token pair?",
 		Items: []string{"No", "Yes"},
 	}
 

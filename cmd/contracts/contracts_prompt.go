@@ -2,6 +2,7 @@ package contracts
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 
@@ -14,21 +15,27 @@ var promptArgs []string
 
 const promptStepExecute = "Execute"
 const promptStepList = "List"
+const promptStepSummary = "Summary"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepExecute:
 		mandatoryExecuteFlags()
-		if flagPrompt() {
-			optionalExecuteFlags()
+		if flagPrompt(cmd, args) {
+			optionalExecuteFlags(cmd, args)
 		}
+		return
 	case promptStepList:
-		if flagPrompt() {
-			optionalListFlags()
+		if flagPrompt(cmd, args) {
+			optionalListFlags(cmd, args)
 		}
-	default:
+	case promptStepSummary:
+		summary(cmd, args, promptArgs)
+	case "":
 		emptyPrompt(cmd, args)
+	default:
+		fmt.Println("no-ops")
 	}
 
 	summary(cmd, args, promptArgs)
@@ -47,7 +54,7 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 	generalPrompt(cmd, args, result)
 }
 
-func flagPrompt() bool {
+func flagPrompt(cmd *cobra.Command, args []string) bool {
 	flagPrompt := promptui.Select{
 		Label: "Would you like to set Optional Flags?",
 		Items: []string{"No", "Yes"},
@@ -60,7 +67,12 @@ func flagPrompt() bool {
 		return false
 	}
 
-	return flagResult == "Yes"
+	if flagResult == "Yes" {
+		return true
+	} else {
+		generalPrompt(cmd, args, promptStepSummary)
+		return false
+	}
 }
 func summary(cmd *cobra.Command, args []string, promptArgs []string) {
 	if promptArgs[0] == promptStepExecute {
@@ -80,7 +92,7 @@ func mandatoryExecuteFlags() {
 	}
 }
 
-func optionalExecuteFlags() {
+func optionalExecuteFlags(cmd *cobra.Command, args []string) {
 	if contractExecMethod == "" {
 		methodFlagPrompt()
 	}
@@ -93,12 +105,14 @@ func optionalExecuteFlags() {
 	if contractExecValue == 0 {
 		valueFlagPrompt()
 	}
+	summary(cmd, args, promptArgs)
 }
 
-func optionalListFlags() {
+func optionalListFlags(cmd *cobra.Command, args []string) {
 	if common.ApplicationID == "" {
 		applicationIDFlagPrompt()
 	}
+	summary(cmd, args, promptArgs)
 }
 
 func methodFlagPrompt() {
@@ -107,7 +121,7 @@ func methodFlagPrompt() {
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Application ID",
+		Label:    "Method",
 		Validate: validate,
 	}
 
@@ -127,7 +141,7 @@ func contractIDFlagPrompt() {
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Application ID",
+		Label:    "Contract ID",
 		Validate: validate,
 	}
 

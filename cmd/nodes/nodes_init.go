@@ -22,6 +22,9 @@ var nodesInitCmd = &cobra.Command{
 	Run:   CreateNode,
 }
 
+func CreateNode(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, promptStepInit)
+}
 func nodeEnvConfigFactory() map[string]interface{} {
 	return map[string]interface{}{}
 }
@@ -105,7 +108,7 @@ func nodeConfigFactory() map[string]interface{} {
 
 // CreateNode deploys a node to an existing peer-to-peer network;
 // see https://docs.provide.services/microservices/goldmine/#deploy-network-node
-func CreateNode(cmd *cobra.Command, args []string) {
+func CreateNodeRun(cmd *cobra.Command, args []string) {
 	// FIXME
 	// token := common.RequireAPIToken()
 	// params := map[string]interface{}{

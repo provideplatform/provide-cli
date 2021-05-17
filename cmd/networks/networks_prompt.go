@@ -15,23 +15,28 @@ var promptArgs []string
 const promptStepInit = "Initialize"
 const promptStepList = "List"
 const promptStepDisable = "Disable"
+const promptStepSummary = "Summary"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepInit:
 		mandatoryFlagsInit()
+		summary(cmd, args, promptArgs)
 	case promptStepList:
-		if flagPrompt() {
-			publicFlagPrompt()
+		if flagPrompt(cmd, args) {
+			publicFlagPrompt(cmd, args)
 		}
 	case promptStepDisable:
 		networkIDFlagPrompt()
-	default:
+		summary(cmd, args, promptArgs)
+	case promptStepSummary:
+		summary(cmd, args, promptArgs)
+	case "":
 		emptyPrompt(cmd, args)
+	default:
+		fmt.Println("no-ops")
 	}
-
-	summary(cmd, args, promptArgs)
 }
 
 func emptyPrompt(cmd *cobra.Command, args []string) {
@@ -52,7 +57,7 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 	generalPrompt(cmd, args, result)
 }
 
-func flagPrompt() bool {
+func flagPrompt(cmd *cobra.Command, args []string) bool {
 	flagPrompt := promptui.Select{
 		Label: "Would you like to set Optional Flags?",
 		Items: []string{"No", "Yes"},
@@ -65,7 +70,12 @@ func flagPrompt() bool {
 		return false
 	}
 
-	return flagResult == "Yes"
+	if flagResult == "Yes" {
+		return true
+	} else {
+		generalPrompt(cmd, args, promptStepSummary)
+		return false
+	}
 }
 
 func mandatoryFlagsInit() {
@@ -94,7 +104,7 @@ func summary(cmd *cobra.Command, args []string, promptArgs []string) {
 		listNetworks(cmd, args)
 	}
 	if promptArgs[0] == promptStepDisable {
-		//listWallets(cmd, args)
+		disableNetwork(cmd, args)
 	}
 }
 
@@ -213,7 +223,7 @@ func networkNameFlagPrompt() {
 	networkName = result
 }
 
-func publicFlagPrompt() {
+func publicFlagPrompt(cmd *cobra.Command, args []string) {
 	prompt := promptui.Select{
 		Label: "Would you like the network to be public",
 		Items: []string{"No", "Yes"},

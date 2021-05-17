@@ -26,13 +26,14 @@ var walletsInitCmd = &cobra.Command{
 }
 
 func CreateWallet(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "Initialize")
+	generalPrompt(cmd, args, promptStepInit)
+}
 
+func CreateWalletRun(cmd *cobra.Command, args []string) {
 	if nonCustodial {
 		createDecentralizedWallet()
 		return
 	}
-
 	createManagedWallet(cmd, args)
 }
 

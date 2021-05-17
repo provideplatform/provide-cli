@@ -22,18 +22,19 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepInit:
 		mandatoryInitFlags()
-		if flagPrompt() {
-			optionalFlagsInit()
+		if flagPrompt(cmd, args) {
+			optionalFlagsInit(cmd, args)
 		}
+		CreateNodeRun(cmd, args)
 	case promptStepDelete:
 		mandatoryDeleteFlags()
+		deleteNodeRun(cmd, args)
 	case promptStepLogs:
 		mandatoryLogFlags()
-	default:
+		nodeLogsRun(cmd, args)
+	case "":
 		emptyPrompt(cmd, args)
 	}
-
-	summary(cmd, args, promptArgs)
 }
 
 func emptyPrompt(cmd *cobra.Command, args []string) {
@@ -49,7 +50,7 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 	generalPrompt(cmd, args, result)
 }
 
-func flagPrompt() bool {
+func flagPrompt(cmd *cobra.Command, args []string) bool {
 	flagPrompt := promptui.Select{
 		Label: "Would you like to set Optional Flags?",
 		Items: []string{"No", "Yes"},
@@ -63,18 +64,6 @@ func flagPrompt() bool {
 	}
 
 	return flagResult == "Yes"
-}
-
-func summary(cmd *cobra.Command, args []string, promptArgs []string) {
-	if promptArgs[0] == promptStepInit {
-		CreateNode(cmd, args)
-	}
-	if promptArgs[0] == promptStepLogs {
-		nodeLogs(cmd, args)
-	}
-	if promptArgs[0] == promptStepDelete {
-		deleteNode(cmd, args)
-	}
 }
 
 func mandatoryInitFlags() {
@@ -113,7 +102,7 @@ func mandatoryDeleteFlags() {
 	}
 }
 
-func optionalFlagsInit() {
+func optionalFlagsInit(cmd *cobra.Command, args []string) {
 	fmt.Println("Optional Flags:")
 	if common.HealthCheckPath == "" {
 		healthCheckPathFlagPrompt()
@@ -130,7 +119,7 @@ func optionalFlagsInit() {
 }
 
 func networkIDFlagPrompt() {
-	common.RequireNetwork()
+	common.RequirePublicNetwork()
 }
 
 func imageFlagPrompt() {
@@ -289,7 +278,7 @@ func pageFlagPrompt() {
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Node ID",
+		Label:    "Page",
 		Validate: validate,
 	}
 
@@ -312,7 +301,7 @@ func rppFlagPrompt() {
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Node ID",
+		Label:    "RPP",
 		Validate: validate,
 	}
 

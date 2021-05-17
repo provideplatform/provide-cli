@@ -23,18 +23,18 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	case promptStepInit:
 		custodyPrompt(cmd, args)
 	case promptStepCustody:
-		if flagPrompt() {
-			optionalFlagsInit()
+		if flagPrompt(cmd, args) {
+			optionalFlagsInit(cmd, args)
 		}
+		CreateWalletRun(cmd, args)
 	case promptStepList:
-		if flagPrompt() {
-			optionalFlagsList()
+		if flagPrompt(cmd, args) {
+			optionalFlagsList(cmd, args)
 		}
-	default:
+		listWalletsRun(cmd, args)
+	case "":
 		emptyPrompt(cmd, args)
 	}
-
-	summary(cmd, args, promptArgs)
 }
 
 func emptyPrompt(cmd *cobra.Command, args []string) {
@@ -55,7 +55,7 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 	generalPrompt(cmd, args, result)
 }
 
-func flagPrompt() bool {
+func flagPrompt(cmd *cobra.Command, args []string) bool {
 	flagPrompt := promptui.Select{
 		Label: "Would you like to set Optional Flags?",
 		Items: []string{"No", "Yes"},
@@ -67,11 +67,10 @@ func flagPrompt() bool {
 		os.Exit(1)
 		return false
 	}
-
 	return flagResult == "Yes"
 }
 
-func optionalFlagsInit() {
+func optionalFlagsInit(cmd *cobra.Command, args []string) {
 	fmt.Println("Optional Flags:")
 	if !nonCustodial {
 		custodialFlagPrompt()
@@ -84,19 +83,10 @@ func optionalFlagsInit() {
 	}
 }
 
-func optionalFlagsList() {
+func optionalFlagsList(cmd *cobra.Command, args []string) {
 	fmt.Println("Optional Flags:")
 	if common.ApplicationID == "" {
 		applicationIDFlagPrompt()
-	}
-}
-
-func summary(cmd *cobra.Command, args []string, promptArgs []string) {
-	if promptArgs[0] == promptStepInit {
-		createManagedWallet(cmd, args)
-	}
-	if promptArgs[0] == promptStepList {
-		listWallets(cmd, args)
 	}
 }
 
@@ -120,7 +110,6 @@ func custodyPrompt(cmd *cobra.Command, args []string) {
 }
 
 // Optional Flags For Init Wallet
-//TODO: This is not custody theres has to be a better name
 func custodialFlagPrompt() {
 	prompt := promptui.Select{
 		Label: "Would you like your wallet to be non-custodial",

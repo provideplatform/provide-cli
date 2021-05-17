@@ -2,6 +2,7 @@ package connectors
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 
@@ -16,28 +17,34 @@ const promptStepInit = "Init"
 const promptStepList = "List"
 const promptStepDetails = "Details"
 const promptStepDelete = "Delete"
+const promptStepSummary = "Summary"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepInit:
 		mandatoryInitFlags()
-		if flagPrompt() {
-			optionalInitFlags()
+		if flagPrompt(cmd, args) {
+			optionalInitFlags(cmd, args)
 		}
 	case promptStepList:
-		if flagPrompt() {
+		if flagPrompt(cmd, args) {
 			applicationIDFlagPrompt()
 		}
+		summary(cmd, args, promptArgs)
 	case promptStepDetails:
 		mandatoryDetailFlags()
+		summary(cmd, args, promptArgs)
 	case promptStepDelete:
 		mandatoryDeleteFlags()
-	default:
+		summary(cmd, args, promptArgs)
+	case promptStepSummary:
+		summary(cmd, args, promptArgs)
+	case "":
 		emptyPrompt(cmd, args)
+	default:
+		fmt.Println("no-ops")
 	}
-
-	summary(cmd, args, promptArgs)
 }
 
 func emptyPrompt(cmd *cobra.Command, args []string) {
@@ -53,7 +60,7 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 	generalPrompt(cmd, args, result)
 }
 
-func flagPrompt() bool {
+func flagPrompt(cmd *cobra.Command, args []string) bool {
 	flagPrompt := promptui.Select{
 		Label: "Would you like to set Optional Flags?",
 		Items: []string{"No", "Yes"},
@@ -66,8 +73,14 @@ func flagPrompt() bool {
 		return false
 	}
 
-	return flagResult == "Yes"
+	if flagResult == "Yes" {
+		return true
+	} else {
+		generalPrompt(cmd, args, promptStepSummary)
+		return false
+	}
 }
+
 func summary(cmd *cobra.Command, args []string, promptArgs []string) {
 	if promptArgs[0] == promptStepInit {
 		createConnector(cmd, args)
@@ -113,13 +126,14 @@ func mandatoryDetailFlags() {
 	}
 }
 
-func optionalInitFlags() {
+func optionalInitFlags(cmd *cobra.Command, args []string) {
 	if ipfsAPIPort == 5001 {
 		ipfsGatewayPortFlagPrompt()
 	}
 	if ipfsGatewayPort == 8080 {
 		ipfsAPIPortFlagPrompt()
 	}
+	generalPrompt(cmd, args, promptStepSummary)
 }
 
 func connectorNameFlagPrompt() {
@@ -167,7 +181,7 @@ func applicationIDFlagPrompt() {
 }
 
 func networkIDFlagPrompt() {
-	common.RequireNetwork()
+	common.RequirePublicNetwork()
 }
 
 func organizationIDFlagPrompt() {

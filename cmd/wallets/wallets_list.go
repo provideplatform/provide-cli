@@ -19,6 +19,10 @@ var walletsListCmd = &cobra.Command{
 }
 
 func listWallets(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, promptStepList)
+}
+
+func listWalletsRun(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{}
 	if common.ApplicationID != "" {

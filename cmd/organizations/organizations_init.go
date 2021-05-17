@@ -26,11 +26,11 @@ func organizationConfigFactory() map[string]interface{} {
 
 	return cfg
 }
-
 func createOrganization(cmd *cobra.Command, args []string) {
-	if organizationName == "" {
-		generalPrompt(cmd, args, "Initialize")
-	}
+	generalPrompt(cmd, args, promptStepInit)
+}
+
+func createOrganizationRun(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
 		"name":   organizationName,

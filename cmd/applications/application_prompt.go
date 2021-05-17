@@ -1,6 +1,7 @@
 package applications
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/manifoldco/promptui"
@@ -13,25 +14,29 @@ var promptArgs []string
 const promptStepDetails = "Details"
 const promptStepInit = "Initialize"
 const promptStepList = "List"
+const promptStepSummary = "Summary"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	switch step {
 	case promptStepInit:
 		mandatoryInitFlag()
-		if flagPrompt() {
-			optionalFlagsInit()
+		if flagPrompt(cmd, args) {
+			optionalFlagsInit(cmd, args)
 		}
 	case promptStepDetails:
-		if flagPrompt() {
-			optionalFlagsDetails()
+		if flagPrompt(cmd, args) {
+			optionalFlagsDetails(cmd, args)
 		}
 	case promptStepList:
-	default:
+		summary(cmd, args, promptArgs)
+	case promptStepSummary:
+		summary(cmd, args, promptArgs)
+	case "":
 		emptyPrompt(cmd, args)
+	default:
+		fmt.Println("no-ops")
 	}
-
-	summary(cmd, args, promptArgs)
 }
 
 func emptyPrompt(cmd *cobra.Command, args []string) {
@@ -52,7 +57,7 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 	generalPrompt(cmd, args, result)
 }
 
-func flagPrompt() bool {
+func flagPrompt(cmd *cobra.Command, args []string) bool {
 	flagPrompt := promptui.Select{
 		Label: "Would you like to set Optional Flags?",
 		Items: []string{"No", "Yes"},
@@ -65,7 +70,12 @@ func flagPrompt() bool {
 		return false
 	}
 
-	return flagResult == "Yes"
+	if flagResult == "Yes" {
+		return true
+	} else {
+		generalPrompt(cmd, args, promptStepSummary)
+		return false
+	}
 }
 
 func summary(cmd *cobra.Command, args []string, promptArgs []string) {
@@ -89,7 +99,7 @@ func mandatoryInitFlag() {
 	}
 }
 
-func optionalFlagsInit() {
+func optionalFlagsInit(cmd *cobra.Command, args []string) {
 	if applicationType == "" {
 		applicationTypeFlagPrompt()
 	}
@@ -102,12 +112,16 @@ func optionalFlagsInit() {
 	if !withoutWallet {
 		withoutWalletFlagPrompt()
 	}
+	generalPrompt(cmd, args, promptStepSummary)
+
 }
 
-func optionalFlagsDetails() {
+func optionalFlagsDetails(cmd *cobra.Command, args []string) {
 	if common.ApplicationID == "" {
 		applicationIDFlagPrompt()
 	}
+	generalPrompt(cmd, args, promptStepSummary)
+
 }
 
 func applicationNameFlagPrompt() {

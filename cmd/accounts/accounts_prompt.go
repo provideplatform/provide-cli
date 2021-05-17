@@ -14,6 +14,7 @@ var promptArgs []string
 const promptStepCustody = "Custody"
 const promptStepInit = "Initialize"
 const promptStepList = "List"
+const promptStepSummary = "Summary"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
@@ -21,19 +22,20 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	case promptStepInit:
 		custodyPrompt(cmd, args)
 	case promptStepCustody:
-		mandatoryCustodyFlag()
-		if flagPrompt() {
-			optionalFlagsCustody()
+		if flagPrompt(cmd, args) {
+			optionalFlagsCustody(cmd, args)
 		}
 	case promptStepList:
-		if flagPrompt() {
-			optionalFlagsList()
+		if flagPrompt(cmd, args) {
+			optionalFlagsList(cmd, args)
 		}
-	default:
+	case promptStepSummary:
+		summary(cmd, args, promptArgs)
+	case "":
 		emptyPrompt(cmd, args)
+	default:
+		fmt.Println("no-ops")
 	}
-
-	summary(cmd, args, promptArgs)
 }
 
 func emptyPrompt(cmd *cobra.Command, args []string) {
@@ -54,7 +56,7 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 	generalPrompt(cmd, args, result)
 }
 
-func flagPrompt() bool {
+func flagPrompt(cmd *cobra.Command, args []string) bool {
 	flagPrompt := promptui.Select{
 		Label: "Would you like to set Optional Flags?",
 		Items: []string{"No", "Yes"},
@@ -67,13 +69,15 @@ func flagPrompt() bool {
 		return false
 	}
 
-	return flagResult == "Yes"
+	if flagResult == "Yes" {
+		return true
+	} else {
+		generalPrompt(cmd, args, promptStepSummary)
+		return false
+	}
 }
-func mandatoryCustodyFlag() {
 
-}
-
-func optionalFlagsCustody() {
+func optionalFlagsCustody(cmd *cobra.Command, args []string) {
 	fmt.Println("Optional Flags:")
 	if !nonCustodial {
 		custodialFlagPrompt()
@@ -87,13 +91,15 @@ func optionalFlagsCustody() {
 	if common.OrganizationID == "" {
 		organizationIDFlagPrompt()
 	}
+	generalPrompt(cmd, args, promptStepSummary)
 }
 
-func optionalFlagsList() {
+func optionalFlagsList(cmd *cobra.Command, args []string) {
 	fmt.Println("Optional Flags:")
 	if common.ApplicationID == "" {
 		applicationIDFlagPrompt()
 	}
+	generalPrompt(cmd, args, promptStepSummary)
 }
 
 func summary(cmd *cobra.Command, args []string, promptArgs []string) {
