@@ -14,3 +14,11 @@ var (
 
 	Verbose bool
 )
+
+// type Shellout struct {
+// 	*bufio.Writer
+// }
+
+// func (so *Shellout) Close() error {
+// 	return nil
+// }
