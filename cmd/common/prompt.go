@@ -48,7 +48,9 @@ func RequireWorkgroup() error {
 	}
 
 	opts := make([]string, 0)
-	apps, _ := ident.ListApplications(RequireUserAuthToken(), map[string]interface{}{})
+	apps, _ := ident.ListApplications(RequireUserAuthToken(), map[string]interface{}{
+		"type": "baseline",
+	})
 	for _, app := range apps {
 		opts = append(opts, *app.Name)
 	}
