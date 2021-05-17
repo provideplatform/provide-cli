@@ -14,6 +14,7 @@ require (
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/kthomas/go-pgputil v0.0.0-20200602073402-784e96083943
+	github.com/kthomas/go.uuid v1.2.1-0.20190324131420-28d1fa77e9a4
 	github.com/kthomas/gonnel v0.0.0-20210414063124-930208f711e1
 	github.com/manifoldco/promptui v0.8.0
 	github.com/mattn/go-colorable v0.1.8 // indirect
@@ -21,6 +22,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
+	github.com/ory/viper v1.7.5
 	github.com/provideservices/provide-go v0.0.0-20210419062033-3293d9091eeb
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect

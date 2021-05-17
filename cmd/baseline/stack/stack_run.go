@@ -19,6 +19,8 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+	uuid "github.com/kthomas/go.uuid"
+	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
@@ -219,7 +221,7 @@ func authorizeContext() {
 	authorizeWorkgroupContext()
 
 	// log.Printf("authorizing organization context")
-	common.AuthorizeOrganizationContext()
+	common.AuthorizeOrganizationContext(false)
 
 	if organizationRefreshToken == "" {
 		refreshTokenKey := common.BuildConfigKeyWithOrg(common.APIRefreshTokenConfigKeyPartial, common.OrganizationID)
@@ -230,6 +232,7 @@ func authorizeContext() {
 				vaultRefreshToken = organizationRefreshToken
 			}
 		} else {
+			organizationAuthPrompt()
 			log.Printf("failed to resolve refresh token for organization: %s\n", common.OrganizationID)
 			os.Exit(1)
 		}
@@ -259,7 +262,7 @@ func authorizeWorkgroupContext() {
 		workgroupAccessToken = *token.AccessToken
 	}
 
-	_, err = ident.GetApplicationDetails(workgroupAccessToken, baselineWorkgroupID, map[string]interface{}{})
+	workgroup, err := ident.GetApplicationDetails(workgroupAccessToken, baselineWorkgroupID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("failed to resolve workgroup: %s; %s", baselineWorkgroupID, err.Error())
 		os.Exit(1)
@@ -274,12 +277,16 @@ func authorizeWorkgroupContext() {
 	}
 
 	if nchainBaselineNetworkID == "" {
-		err := common.RequirePublicNetwork()
-		if err != nil {
-			log.Printf("failed to require network id; %s", err.Error())
-			os.Exit(1)
+		if workgroup.NetworkID != uuid.Nil {
+			nchainBaselineNetworkID = workgroup.NetworkID.String()
+		} else {
+			err := common.RequirePublicNetwork()
+			if err != nil {
+				log.Printf("failed to require network id; %s", err.Error())
+				os.Exit(1)
+			}
+			nchainBaselineNetworkID = common.NetworkID
 		}
-		nchainBaselineNetworkID = common.NetworkID
 	}
 
 	orgRegistryContract := contracts[0]
@@ -721,6 +728,27 @@ func listContainers(docker *client.Client) []types.Container {
 	}
 
 	return containers
+}
+
+func organizationAuthPrompt() {
+	if common.Organization == nil {
+		return
+	}
+
+	prompt := promptui.Prompt{
+		IsConfirm: true,
+		Label:     fmt.Sprintf("Authorize access/refresh token for %s?", *common.Organization.Name),
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	if result == "Y" {
+		common.AuthorizeOrganizationContext(true)
+	}
 }
 
 func init() {

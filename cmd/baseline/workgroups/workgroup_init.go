@@ -1,6 +1,7 @@
 package workgroups
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -49,7 +50,7 @@ func initWorkgroup(cmd *cobra.Command, args []string) {
 	if common.NetworkID == "" {
 		common.RequirePublicNetwork()
 	}
-	common.AuthorizeOrganizationContext()
+	common.AuthorizeOrganizationContext(true)
 
 	token := common.RequireUserAuthToken()
 	application, err := ident.CreateApplication(token, map[string]interface{}{
@@ -116,6 +117,23 @@ func namePrompt() {
 	}
 
 	name = result
+}
+
+func organizationAuthPrompt(target string) {
+	prompt := promptui.Prompt{
+		IsConfirm: true,
+		Label:     fmt.Sprintf("Authorize access/refresh token for %s?", target),
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	if result == "Y" {
+		common.AuthorizeOrganizationContext(true)
+	}
 }
 
 func init() {

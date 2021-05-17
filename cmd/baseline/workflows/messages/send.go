@@ -30,7 +30,7 @@ var sendBaselineMessageCmd = &cobra.Command{
 
 func sendMessage(cmd *cobra.Command, args []string) {
 	common.AuthorizeApplicationContext()
-	common.AuthorizeOrganizationContext()
+	common.AuthorizeOrganizationContext(false)
 
 	var payload map[string]interface{}
 	err := json.Unmarshal([]byte(data), &payload)

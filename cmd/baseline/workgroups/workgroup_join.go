@@ -44,7 +44,7 @@ func joinWorkgroup(cmd *cobra.Command, args []string) {
 	log.Printf("resolved baseline claims containing invitation for workgroup: %s", *claims.Baseline.WorkgroupID)
 
 	common.ApplicationID = *claims.Baseline.WorkgroupID
-	common.AuthorizeOrganizationContext()
+	common.AuthorizeOrganizationContext(true)
 	authorizeApplicationContext()
 
 	// initWorkgroupContract()

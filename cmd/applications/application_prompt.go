@@ -15,8 +15,8 @@ const promptStepInit = "Initialize"
 const promptStepList = "List"
 
 // General Endpoints
-func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
-	switch step := currentStep; step {
+func generalPrompt(cmd *cobra.Command, args []string, step string) {
+	switch step {
 	case promptStepInit:
 		mandatoryInitFlag()
 		if flagPrompt() {

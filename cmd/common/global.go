@@ -1,9 +1,18 @@
 package common
 
+import (
+	"github.com/provideservices/provide-go/api/ident"
+)
+
 var (
-	ApplicationID  string
+	Application   *ident.Application
+	ApplicationID string
+
 	OrganizationID string
-	UserID         string
+	Organization   *ident.Organization
+
+	UserID string
+	User   *ident.User
 
 	AccountID   string
 	ConnectorID string
@@ -14,11 +23,3 @@ var (
 
 	Verbose bool
 )
-
-// type Shellout struct {
-// 	*bufio.Writer
-// }
-
-// func (so *Shellout) Close() error {
-// 	return nil
-// }

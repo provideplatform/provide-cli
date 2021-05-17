@@ -20,17 +20,16 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	switch step {
 	case promptStepInit:
 		nameFlagPrompt()
+		createOrganization(cmd, args)
 	case promptStepList:
 		listOrganizations(cmd, args)
-		return // FIXME
 	case promptStepDetails:
 		organizationIDFlagPrompt()
+		fetchOrganizationDetails(cmd, args)
 	default:
 		emptyPrompt(cmd, args)
 		return // FIXME
 	}
-
-	summary(cmd, args, promptArgs) // FIXME?
 }
 
 func emptyPrompt(cmd *cobra.Command, args []string) {
@@ -40,30 +39,21 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 	}
 
 	_, result, err := prompt.Run()
-	promptArgs = append(promptArgs, result)
-
 	if err != nil {
 		os.Exit(1)
 		return
 	}
 
+	promptArgs = append(promptArgs, result)
 	generalPrompt(cmd, args, result)
-}
-
-func summary(cmd *cobra.Command, args []string, promptArgs []string) {
-	if promptArgs[0] == promptStepInit {
-		createOrganization(cmd, args)
-	}
-	if promptArgs[0] == promptStepList {
-		listOrganizations(cmd, args)
-	}
-	if promptArgs[0] == promptStepDetails {
-		fetchOrganizationDetails(cmd, args)
-	}
 }
 
 // Mandatory Flags For Init Wallet
 func nameFlagPrompt() {
+	if organizationName != "" {
+		return
+	}
+
 	validate := func(input string) error {
 		if len(input) < 1 {
 			return errors.New("name cant be nil")
@@ -77,7 +67,6 @@ func nameFlagPrompt() {
 	}
 
 	result, err := prompt.Run()
-
 	if err != nil {
 		os.Exit(1)
 		return

@@ -28,7 +28,6 @@ func organizationConfigFactory() map[string]interface{} {
 }
 
 func createOrganization(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "Initialize")
 	if organizationName == "" {
 		generalPrompt(cmd, args, "Initialize")
 	}
@@ -44,6 +43,7 @@ func createOrganization(cmd *cobra.Command, args []string) {
 	}
 
 	common.OrganizationID = organization.ID.String()
+	log.Printf("initialized organization: %s\t%s\n", organizationName, common.OrganizationID)
 }
 
 func init() {

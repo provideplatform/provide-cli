@@ -44,7 +44,7 @@ func inviteParticipant(cmd *cobra.Command, args []string) {
 		emailPrompt()
 	}
 	common.AuthorizeApplicationContext()
-	common.AuthorizeOrganizationContext()
+	common.AuthorizeOrganizationContext(false)
 
 	vaults, err := vault.ListVaults(common.OrganizationAccessToken, map[string]interface{}{
 		"organization_id": common.OrganizationID,

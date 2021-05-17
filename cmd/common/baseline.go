@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/kthomas/gonnel"
+	"github.com/ory/viper"
 	"github.com/provideservices/provide-go/api"
 	"github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
@@ -92,7 +93,7 @@ func AuthorizeApplicationContext() {
 	}
 }
 
-func AuthorizeOrganizationContext() {
+func AuthorizeOrganizationContext(persist bool) {
 	RequireOrganization()
 
 	token, err := ident.CreateToken(RequireUserAuthToken(), map[string]interface{}{
@@ -106,6 +107,27 @@ func AuthorizeOrganizationContext() {
 
 	if token.AccessToken != nil {
 		OrganizationAccessToken = *token.AccessToken
+
+		if persist {
+			// FIXME-- DRY this up (also exists in api_tokens_init.go)
+			orgAPIAccessTokenKey := BuildConfigKeyWithOrg(APIAccessTokenConfigKeyPartial, OrganizationID)
+			orgAPIRefreshTokenKey := BuildConfigKeyWithOrg(APIRefreshTokenConfigKeyPartial, OrganizationID)
+
+			if token.AccessToken != nil {
+				// fmt.Printf("Access token authorized for organization: %s\t%s\n", OrganizationID, *token.AccessToken)
+				if !viper.IsSet(orgAPIAccessTokenKey) {
+					viper.Set(orgAPIAccessTokenKey, *token.AccessToken)
+					viper.WriteConfig()
+				}
+				if token.RefreshToken != nil {
+					// fmt.Printf("Refresh token authorized for organization: %s\t%s\n", OrganizationID, *token.RefreshToken)
+					if !viper.IsSet(orgAPIRefreshTokenKey) {
+						viper.Set(orgAPIRefreshTokenKey, *token.RefreshToken)
+						viper.WriteConfig()
+					}
+				}
+			}
+		}
 	}
 }
 
