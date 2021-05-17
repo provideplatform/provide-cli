@@ -273,6 +273,15 @@ func authorizeWorkgroupContext() {
 		os.Exit(1)
 	}
 
+	if nchainBaselineNetworkID == "" {
+		err := common.RequirePublicNetwork()
+		if err != nil {
+			log.Printf("failed to require network id; %s", err.Error())
+			os.Exit(1)
+		}
+		nchainBaselineNetworkID = common.NetworkID
+	}
+
 	orgRegistryContract := contracts[0]
 	if orgRegistryContract.Address == nil || *orgRegistryContract.Address == "0x" {
 		log.Printf("failed to resolve global organization registry contract; %s", err.Error())
@@ -781,16 +790,16 @@ func init() {
 		defaultBaselineRegistryContractAddress = os.Getenv("BASELINE_REGISTRY_CONTRACT_ADDRESS")
 	}
 
-	defaultNChainBaselineNetworkID := "66d44f30-9092-4182-a3c4-bc02736d6ae5"
-	if os.Getenv("NCHAIN_BASELINE_NETWORK_ID") != "" {
-		defaultNChainBaselineNetworkID = os.Getenv("NCHAIN_BASELINE_NETWORK_ID")
-	}
+	// defaultNChainBaselineNetworkID := "66d44f30-9092-4182-a3c4-bc02736d6ae5"
+	// if os.Getenv("NCHAIN_BASELINE_NETWORK_ID") != "" {
+	// 	defaultNChainBaselineNetworkID = os.Getenv("NCHAIN_BASELINE_NETWORK_ID")
+	// }
 
 	runBaselineStackCmd.Flags().StringVar(&baselineOrganizationAddress, "organization-address", defaultBaselineOrganizationAddress, "public baseline regsitry address of the organization")
 	runBaselineStackCmd.Flags().StringVar(&baselineRegistryContractAddress, "registry-contract-address", defaultBaselineRegistryContractAddress, "public baseline regsitry contract address")
 	runBaselineStackCmd.Flags().StringVar(&baselineWorkgroupID, "workgroup", "", "baseline workgroup identifier")
 
-	runBaselineStackCmd.Flags().StringVar(&nchainBaselineNetworkID, "nchain-network-id", defaultNChainBaselineNetworkID, "nchain network id of the baseline mainnet")
+	runBaselineStackCmd.Flags().StringVar(&nchainBaselineNetworkID, "nchain-network-id", "", "nchain network id of the baseline mainnet")
 
 	initSORFlags()
 }
