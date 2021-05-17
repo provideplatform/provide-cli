@@ -325,6 +325,52 @@ func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 // RequireOrganizationEndpoints fn is the function to call after the tunnel has been established,
 // prior to the runloop and signal handling is installed
 func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
+	run := func() {
+		org, err := ident.GetOrganizationDetails(OrganizationAccessToken, OrganizationID, map[string]interface{}{})
+		if err != nil {
+			log.Printf("failed to retrieve organization: %s; %s", OrganizationID, err.Error())
+			os.Exit(1)
+		}
+
+		if org.Metadata == nil {
+			org.Metadata = map[string]interface{}{}
+		}
+
+		key, err := RequireOrganizationKeypair("secp256k1")
+		if err == nil {
+			org.Metadata["address"] = key.Address
+			ResolvedBaselineOrgAddress = *key.Address
+		}
+
+		if APIEndpoint != "" {
+			org.Metadata["api_endpoint"] = APIEndpoint
+		} else {
+			org.Metadata["api_endpoint"] = "http://localhost:8080"
+		}
+
+		if MessagingEndpoint != "" {
+			org.Metadata["messaging_endpoint"] = MessagingEndpoint
+		} else {
+			org.Metadata["messaging_endpoint"] = "nats://localhost:4222"
+		}
+
+		if _, domainOk := org.Metadata["domain"].(string); !domainOk {
+			org.Metadata["domain"] = "baseline.local"
+		}
+
+		err = ident.UpdateOrganization(RequireUserAuthToken(), OrganizationID, map[string]interface{}{
+			"metadata": org.Metadata,
+		})
+		if err != nil {
+			log.Printf("failed to update messaging endpoint for organization: %s; %s", OrganizationID, err.Error())
+			os.Exit(1)
+		}
+
+		if fn != nil {
+			go fn()
+		}
+	}
+
 	if Tunnel {
 		ExposeAPITunnel = true
 		ExposeMessagingTunnel = true
@@ -339,6 +385,8 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
 
 		APIEndpoint = fmt.Sprintf("http://%s:%d", *publicIP, apiPort)
 		MessagingEndpoint = fmt.Sprintf("nats://%s:%d", *publicIP, messagingPort)
+
+		run()
 	} else {
 		const runloopSleepInterval = 250 * time.Millisecond
 		const runloopTickInterval = 5000 * time.Millisecond
@@ -453,52 +501,9 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
 			}
 		}
 
-		org, err := ident.GetOrganizationDetails(OrganizationAccessToken, OrganizationID, map[string]interface{}{})
-		if err != nil {
-			log.Printf("failed to retrieve organization: %s; %s", OrganizationID, err.Error())
-			os.Exit(1)
-		}
+		run()
 
-		if org.Metadata == nil {
-			org.Metadata = map[string]interface{}{}
-		}
-
-		key, err := RequireOrganizationKeypair("secp256k1")
-		if err == nil {
-			org.Metadata["address"] = key.Address
-			ResolvedBaselineOrgAddress = *key.Address
-		}
-
-		if APIEndpoint != "" {
-			org.Metadata["api_endpoint"] = APIEndpoint
-		} else {
-			org.Metadata["api_endpoint"] = "http://localhost:8080"
-		}
-
-		if MessagingEndpoint != "" {
-			org.Metadata["messaging_endpoint"] = MessagingEndpoint
-		} else {
-			org.Metadata["messaging_endpoint"] = "nats://localhost:4222"
-		}
-
-		if _, domainOk := org.Metadata["domain"].(string); !domainOk {
-			org.Metadata["domain"] = "baseline.local"
-		}
-
-		err = ident.UpdateOrganization(RequireUserAuthToken(), OrganizationID, map[string]interface{}{
-			"metadata": org.Metadata,
-		})
-		if err != nil {
-			log.Printf("failed to update messaging endpoint for organization: %s; %s", OrganizationID, err.Error())
-			os.Exit(1)
-		}
-
-		if fn != nil {
-			go fn()
-		}
-
-		log.Printf("starting tunnel runloop")
-
+		// log.Printf("starting tunnel runloop")
 		timer := time.NewTicker(runloopTickInterval)
 		defer timer.Stop()
 
