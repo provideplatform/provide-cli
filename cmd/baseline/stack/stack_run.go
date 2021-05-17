@@ -238,6 +238,15 @@ func authorizeContext() {
 }
 
 func authorizeWorkgroupContext() {
+	if baselineWorkgroupID == "" {
+		err := common.RequireWorkgroup()
+		if err != nil {
+			log.Printf("failed to require workgroup; %s", err.Error())
+			os.Exit(1)
+		}
+		baselineWorkgroupID = common.ApplicationID
+	}
+
 	token, err := ident.CreateToken(common.RequireUserAuthToken(), map[string]interface{}{
 		"scope":          "offline_access",
 		"application_id": baselineWorkgroupID,

@@ -1,8 +1,6 @@
 package common
 
 import (
-	"fmt"
-
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
@@ -34,7 +32,6 @@ func RequireApplication() error {
 		return err
 	}
 
-	fmt.Printf("selected application %s at index: %v", *apps[i].Name, i)
 	ApplicationID = apps[i].ID.String()
 	return nil
 }
@@ -58,7 +55,6 @@ func RequireWorkgroup() error {
 		return err
 	}
 
-	fmt.Printf("selected workgroup %s at index: %v", *apps[i].Name, i)
 	ApplicationID = apps[i].ID.String()
 	return nil
 }
@@ -81,7 +77,6 @@ func RequireConnector(params map[string]interface{}) error {
 		return err
 	}
 
-	fmt.Printf("selected connector %s at index: %v", *connectors[i].Name, i)
 	ConnectorID = connectors[i].ID.String()
 	return nil
 }
@@ -104,7 +99,6 @@ func RequireNetwork() error {
 		return err
 	}
 
-	fmt.Printf("selected network %s at index: %v", *networks[i].Name, i)
 	NetworkID = networks[i].ID.String()
 	return nil
 }
@@ -127,7 +121,6 @@ func RequireOrganization() error {
 		return err
 	}
 
-	fmt.Printf("selected organization %s at index: %v", *orgs[i].Name, i)
 	OrganizationID = orgs[i].ID.String()
 	return nil
 }
@@ -150,7 +143,6 @@ func RequireAccount(params map[string]interface{}) error {
 		return err
 	}
 
-	fmt.Printf("selected account %s at index: %v", *accounts[i].PublicKey, i)
 	AccountID = accounts[i].ID.String()
 	return nil
 }
@@ -173,7 +165,6 @@ func RequireWallet() error {
 		return err
 	}
 
-	fmt.Printf("selected wallet %s at index: %v", *wallets[i].PublicKey, i)
 	WalletID = wallets[i].ID.String()
 	return nil
 }

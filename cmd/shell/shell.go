@@ -36,7 +36,7 @@ const shellOptionSuggestionTextColor = prompt.Black
 const sanitizedPromptInputMatchClear = "clear"
 const sanitizedPromptInputMatchExit = "exit"
 const sanitizedPromptInputMatchQuit = "quit" // FIXME-- combine exit and quit into regex i.e. ^(exit|quit)$
-const sanitizedPromptInputMatchRoot = "prvd"
+const sanitizedPromptInputMatchRoot = ""
 
 var debug bool
 
@@ -105,11 +105,7 @@ func refresh(cmd *cobra.Command, msg []byte) {
 	parser.Setup()
 
 	writer = prompt.NewStdoutWriter()
-	writer.WriteRawStr("\033[H\033[2J")
-	writer.SetColor(prompt.Cyan, shellOptionDefaultBGColor, true)
-	writer.WriteStr(common.ASCIIBanner)
-	writer.WriteStr("\n\n")
-	writer.SetColor(shellOptionDefaultFGColor, shellOptionDefaultBGColor, true)
+	renderRootBanner()
 
 	if msg != nil && len(msg) > 0 {
 		writer.Write(msg)
@@ -165,6 +161,16 @@ func refresh(cmd *cobra.Command, msg []byte) {
 	)
 
 	prmpt.Run()
+}
+
+func renderRootBanner() {
+	if writer != nil {
+		writer.WriteRawStr("\033[H\033[2J")
+		writer.SetColor(prompt.Cyan, shellOptionDefaultBGColor, true)
+		writer.WriteStr(common.ASCIIBanner)
+		writer.WriteStr("\n\n")
+		writer.SetColor(shellOptionDefaultFGColor, shellOptionDefaultBGColor, true)
+	}
 }
 
 func shellOut(argv []string) error {
@@ -249,7 +255,7 @@ func interpret(cmd *cobra.Command, input string) {
 			panic(err)
 		}
 	} else {
-		writer.WriteStr(fmt.Sprintf("%s: command not found: %s\n", sanitizedPromptInputMatchRoot, strings.Join(argv, " ")))
+		writer.WriteStr(fmt.Sprintf("%s: command not found: %s\n", shellTitle, strings.Join(argv, " ")))
 	}
 }
 

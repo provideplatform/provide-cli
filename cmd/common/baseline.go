@@ -76,6 +76,8 @@ var VaultID string
 var ResolvedBaselineOrgAddress string // HACK
 
 func AuthorizeApplicationContext() {
+	RequireWorkgroup()
+
 	token, err := ident.CreateToken(RequireUserAuthToken(), map[string]interface{}{
 		"scope":          "offline_access",
 		"application_id": ApplicationID,
@@ -91,7 +93,7 @@ func AuthorizeApplicationContext() {
 }
 
 func AuthorizeOrganizationContext() {
-	//RequireOrganizationID()
+	RequireOrganization()
 
 	token, err := ident.CreateToken(RequireUserAuthToken(), map[string]interface{}{
 		"scope":           "offline_access",
