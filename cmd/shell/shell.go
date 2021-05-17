@@ -16,7 +16,7 @@ import (
 const shellExitMessage = "Exiting... have a nice day!"
 const shellTitle = "prvd"
 const shellPrefix = "➜  prvd:($VERSION)$PATH"
-const shellPrefixPrompt = " >  "
+const shellPrefixPrompt = " > "
 
 const shellOptionDefaultFGColor = prompt.DefaultColor
 const shellOptionDefaultBGColor = prompt.DefaultColor
