@@ -211,7 +211,6 @@ func configureNetwork(docker *client.Client) {
 	}
 
 	dockerNetworkID = network.ID
-
 	log.Printf("configured network for local baseline instance: %s", name)
 }
 

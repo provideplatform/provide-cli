@@ -367,7 +367,7 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
 		}
 
 		if fn != nil {
-			go fn()
+			fn()
 		}
 	}
 
