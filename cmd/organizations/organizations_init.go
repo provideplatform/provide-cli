@@ -27,17 +27,10 @@ func organizationConfigFactory() map[string]interface{} {
 	return cfg
 }
 func createOrganization(cmd *cobra.Command, args []string) {
-<<<<<<< HEAD
 	generalPrompt(cmd, args, promptStepInit)
 }
 
 func createOrganizationRun(cmd *cobra.Command, args []string) {
-=======
-	if organizationName == "" {
-		generalPrompt(cmd, args, "Initialize")
-		return
-	}
->>>>>>> Fix recursive prompt handling
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
 		"name":   organizationName,
