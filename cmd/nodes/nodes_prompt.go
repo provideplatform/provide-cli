@@ -16,6 +16,7 @@ var promptArgs []string
 const promptStepLogs = "Logs"
 const promptStepInit = "Initialize"
 const promptStepDelete = "Delete"
+const promptStepSummary = "Summary"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
@@ -34,6 +35,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		nodeLogsRun(cmd, args)
 	case "":
 		emptyPrompt(cmd, args)
+	default:
+		fmt.Println("no-ops")
 	}
 }
 
