@@ -89,10 +89,6 @@ func optionalFlagsInit(cmd *cobra.Command, args []string) {
 	if common.OrganizationID == "" {
 		organizationidFlagPrompt()
 	}
-<<<<<<< HEAD
-=======
-	generalPrompt(cmd, args, promptStepSummary)
->>>>>>> Fix recursive prompt handling
 }
 
 func optionalFlagsList(cmd *cobra.Command, args []string) {
