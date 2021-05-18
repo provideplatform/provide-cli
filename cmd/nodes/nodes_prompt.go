@@ -124,7 +124,6 @@ func optionalFlagsInit(cmd *cobra.Command, args []string) {
 	if common.TaskRole == "" {
 		taskRoleFlagPrompt()
 	}
-	summary(cmd, args, promptArgs)
 }
 
 func networkIDFlagPrompt() {
