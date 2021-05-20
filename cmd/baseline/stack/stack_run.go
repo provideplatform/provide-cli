@@ -760,7 +760,7 @@ func organizationAuthPrompt() {
 }
 
 func tunnelAPIPrompt() {
-	if !common.ExposeAPITunnel {
+	if common.ExposeAPITunnel {
 		return
 	}
 
@@ -781,7 +781,7 @@ func tunnelAPIPrompt() {
 }
 
 func tunnelMessagingPrompt() {
-	if !common.ExposeMessagingTunnel {
+	if common.ExposeMessagingTunnel {
 		return
 	}
 
