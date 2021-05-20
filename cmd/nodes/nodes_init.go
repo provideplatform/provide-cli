@@ -16,7 +16,7 @@ var isP2P bool
 var role string
 
 var nodesInitCmd = &cobra.Command{
-	Use:   "init --network 024ff1ef-7369-4dee-969c-1918c6edb5d4 --common.Image redis --provider docker --common.Region us-east-1 --role redis --target aws",
+	Use:   "init --network 024ff1ef-7369-4dee-969c-1918c6edb5d4 --image redis --provider docker --region us-east-1 --role redis --target aws",
 	Short: "Initialize a new node",
 	Long:  `Initialize a new node with options`,
 	Run:   CreateNode,
@@ -130,8 +130,7 @@ func init() {
 
 	nodesInitCmd.Flags().BoolVar(&isP2P, "p2p", true, "when true, genesis state and peer resolution are enforced during initialization")
 
-	nodesInitCmd.Flags().StringVar(&common.Image, "common.Image", "", "docker common.Image; can be an official common.Image name or fully-qualified repo")
-	//nodesInitCmd.MarkFlagRequired("common.Image")
+	nodesInitCmd.Flags().StringVar(&common.Image, "image", "", "docker image; can be an official image name or fully-qualified repo")
 
 	nodesInitCmd.Flags().StringVar(&role, "role", "", "role for the node, i.e., peer, validator, nats")
 	//nodesInitCmd.MarkFlagRequired("role")
