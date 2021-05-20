@@ -80,14 +80,14 @@ func nodeSecurityConfigFactory() map[string]interface{} {
 
 func nodeConfigFactory() map[string]interface{} {
 	cfg := map[string]interface{}{
-		"credentials":   common.InfrastructureCredentialsConfigFactory(),
-		"entrypoint":    nil,
-		"env":           nodeEnvConfigFactory(),
-		"common.Image":  common.Image,
-		"p2p":           isP2P,
-		"common.Region": common.Region,
-		"role":          role,
-		"target_id":     common.TargetID,
+		"credentials": common.InfrastructureCredentialsConfigFactory(),
+		"entrypoint":  nil,
+		"env":         nodeEnvConfigFactory(),
+		"image":       common.Image,
+		"p2p":         isP2P,
+		"region":      common.Region,
+		"role":        role,
+		"target_id":   common.TargetID,
 	}
 
 	if common.TaskRole != "" {
