@@ -71,6 +71,7 @@ var tunnelClient *gonnel.Client
 
 var ApplicationAccessToken string
 var OrganizationAccessToken string
+var OrganizationRefreshToken string
 
 var VaultID string
 
@@ -107,6 +108,10 @@ func AuthorizeOrganizationContext(persist bool) {
 
 	if token.AccessToken != nil {
 		OrganizationAccessToken = *token.AccessToken
+
+		if token.RefreshToken != nil {
+			OrganizationRefreshToken = *token.RefreshToken
+		}
 
 		if persist {
 			// FIXME-- DRY this up (also exists in api_tokens_init.go)
