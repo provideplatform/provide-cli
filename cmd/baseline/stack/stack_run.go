@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -157,6 +158,8 @@ func runProxy(cmd *cobra.Command, args []string) {
 	tunnelAPIPrompt()
 	tunnelMessagingPrompt()
 
+	wg := &sync.WaitGroup{}
+
 	for _, image := range []string{
 		baselineContainerImage,
 		natsContainerImage,
@@ -164,12 +167,14 @@ func runProxy(cmd *cobra.Command, args []string) {
 		redisContainerImage,
 	} {
 		img := image
+		wg.Add(1)
 		go func() {
 			err := pullImage(docker, img)
 			if err != nil {
 				log.Printf("failed to pull local baseline container image: %s; %s", img, err.Error())
 				os.Exit(1)
 			}
+			wg.Done()
 		}()
 	}
 
@@ -177,6 +182,8 @@ func runProxy(cmd *cobra.Command, args []string) {
 	common.RequireOrganizationEndpoints(
 		func() {
 			applyFlags()
+
+			wg.Wait()
 
 			// run local deps
 			runNATS(docker)
