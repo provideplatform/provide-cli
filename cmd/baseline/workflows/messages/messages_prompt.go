@@ -17,10 +17,7 @@ const promptStepSend = "Send"
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepSend:
-		mandatoryFlagsPrompt()
-		if flagPrompt(cmd, args) {
-			optionalFlagsPrompt(cmd, args)
-		}
+		prompt()
 		sendMessageRun(cmd, args)
 	case "":
 		emptyPrompt(cmd, args)
@@ -45,28 +42,7 @@ func emptyPrompt(cmd *cobra.Command, args []string) {
 	generalPrompt(cmd, args, result)
 }
 
-func flagPrompt(cmd *cobra.Command, args []string) bool {
-	flagPrompt := promptui.Select{
-		Label: "Would you like to set Optional Flags?",
-		Items: []string{"No", "Yes"},
-	}
-
-	_, flagResult, err := flagPrompt.Run()
-
-	if err != nil {
-		os.Exit(1)
-		return false
-	}
-	return flagResult == "Yes"
-}
-
-func optionalFlagsPrompt(cmd *cobra.Command, args []string) {
-	if baselineID == "" {
-		baselineIDFlagPrompt()
-	}
-}
-
-func mandatoryFlagsPrompt() {
+func prompt() {
 	if common.ApplicationID == "" {
 		common.RequireWorkgroup()
 	}
@@ -78,6 +54,9 @@ func mandatoryFlagsPrompt() {
 	}
 	if id == "" {
 		idFlagPrompt()
+	}
+	if baselineID == "" {
+		baselineIDFlagPrompt()
 	}
 	if data == "" {
 		dataFlagPrompt()
