@@ -171,6 +171,7 @@ func RequireOrganization() error {
 		return err
 	}
 
+	Organization = orgs[i]
 	OrganizationID = orgs[i].ID.String()
 	return nil
 }
