@@ -247,9 +247,8 @@ func authorizeContext() {
 			}
 		} else {
 			organizationAuthPrompt()
-			if viper.IsSet(refreshTokenKey) {
-				// log.Printf("using cached API refresh token for organization: %s\n", common.OrganizationID)
-				organizationRefreshToken = viper.GetString(refreshTokenKey)
+			if common.OrganizationRefreshToken != "" {
+				organizationRefreshToken = common.OrganizationRefreshToken
 				if vaultRefreshToken == "" {
 					vaultRefreshToken = organizationRefreshToken
 				}
