@@ -70,7 +70,7 @@ func baselineIDFlagPrompt() {
 	}
 
 	prompt := promptui.Prompt{
-		Label:    "Baseline Id",
+		Label:    "Baseline ID",
 		Validate: validate,
 	}
 
