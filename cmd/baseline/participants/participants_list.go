@@ -19,8 +19,9 @@ var listBaselineWorkgroupParticipantsCmd = &cobra.Command{
 
 func listParticipants(cmd *cobra.Command, args []string) {
 	common.AuthorizeApplicationContext()
+	common.AuthorizeOrganizationContext(false)
 
-	participants, err := ident.ListApplicationOrganizations(common.ApplicationAccessToken, common.ApplicationID, map[string]interface{}{
+	participants, err := ident.ListApplicationOrganizations(common.OrganizationAccessToken, common.ApplicationID, map[string]interface{}{
 		"type": "baseline",
 	})
 	if err != nil {
