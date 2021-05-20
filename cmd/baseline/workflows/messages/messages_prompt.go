@@ -17,9 +17,9 @@ const promptStepSend = "Send"
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepSend:
-		mandatoryFlagsSend()
+		mandatoryFlagsPrompt()
 		if flagPrompt(cmd, args) {
-			optionalFlagsSend(cmd, args)
+			optionalFlagsPrompt(cmd, args)
 		}
 		sendMessageRun(cmd, args)
 	case "":
@@ -60,27 +60,27 @@ func flagPrompt(cmd *cobra.Command, args []string) bool {
 	return flagResult == "Yes"
 }
 
-func optionalFlagsSend(cmd *cobra.Command, args []string) {
+func optionalFlagsPrompt(cmd *cobra.Command, args []string) {
 	if baselineID == "" {
 		baselineIDFlagPrompt()
 	}
 }
 
-func mandatoryFlagsSend() {
-	if data == "" {
-		dataFlagPrompt()
-	}
-	if id == "" {
-		idFlagPrompt()
-	}
-	if messageType == defaultBaselineMessageType {
-		messageTypeFlagPrompt()
+func mandatoryFlagsPrompt() {
+	if common.ApplicationID == "" {
+		common.RequireWorkgroup()
 	}
 	if common.OrganizationID == "" {
 		common.RequireOrganization()
 	}
-	if common.ApplicationID == "" {
-		common.RequireApplication()
+	if messageType == defaultBaselineMessageType {
+		messageTypeFlagPrompt()
+	}
+	if id == "" {
+		idFlagPrompt()
+	}
+	if data == "" {
+		dataFlagPrompt()
 	}
 }
 
