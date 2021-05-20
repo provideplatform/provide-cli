@@ -31,8 +31,8 @@ func listParticipants(cmd *cobra.Command, args []string) {
 
 	invitations, err := ident.ListApplicationInvitations(common.ApplicationAccessToken, common.ApplicationID, map[string]interface{}{})
 	if err != nil {
-		log.Printf("failed to retrieve invited baseline workgroup participants; %s", err.Error())
-		os.Exit(1)
+		// log.Printf("failed to retrieve invited baseline workgroup participants; %s", err.Error())
+		// os.Exit(1)
 	}
 
 	if len(participants) > 0 {
