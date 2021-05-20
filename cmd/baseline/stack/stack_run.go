@@ -247,6 +247,16 @@ func authorizeContext() {
 			}
 		} else {
 			organizationAuthPrompt()
+			if viper.IsSet(refreshTokenKey) {
+				// log.Printf("using cached API refresh token for organization: %s\n", common.OrganizationID)
+				organizationRefreshToken = viper.GetString(refreshTokenKey)
+				if vaultRefreshToken == "" {
+					vaultRefreshToken = organizationRefreshToken
+				}
+			} else {
+				log.Printf("failed to resolve refresh token for organization: %s\n", common.OrganizationID)
+				os.Exit(1)
+			}
 		}
 	}
 }
@@ -756,9 +766,6 @@ func organizationAuthPrompt() {
 
 	if strings.ToLower(result) == "y" {
 		common.AuthorizeOrganizationContext(true)
-	} else {
-		log.Printf("failed to resolve refresh token for organization: %s\n", common.OrganizationID)
-		os.Exit(1)
 	}
 }
 
