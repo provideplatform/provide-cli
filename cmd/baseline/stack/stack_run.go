@@ -240,8 +240,6 @@ func authorizeContext() {
 			}
 		} else {
 			organizationAuthPrompt()
-			log.Printf("failed to resolve refresh token for organization: %s\n", common.OrganizationID)
-			os.Exit(1)
 		}
 	}
 }
@@ -738,10 +736,6 @@ func listContainers(docker *client.Client) []types.Container {
 }
 
 func organizationAuthPrompt() {
-	if common.Organization == nil {
-		return
-	}
-
 	prompt := promptui.Prompt{
 		IsConfirm: true,
 		Label:     fmt.Sprintf("Authorize access/refresh token for %s?", *common.Organization.Name),
@@ -755,6 +749,9 @@ func organizationAuthPrompt() {
 
 	if strings.ToLower(result) == "y" {
 		common.AuthorizeOrganizationContext(true)
+	} else {
+		log.Printf("failed to resolve refresh token for organization: %s\n", common.OrganizationID)
+		os.Exit(1)
 	}
 }
 
