@@ -12,8 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const defaultBaselineMessageType = "arbitrary"
-
 var baselineAPIEndpoint string
 var baselineID string
 var data string
@@ -92,7 +90,7 @@ func init() {
 	sendBaselineMessageCmd.Flags().StringVar(&id, "id", "", "identifier of the associated payload in the internal system of record")
 	// sendBaselineMessageCmd.MarkFlagRequired("id")
 
-	sendBaselineMessageCmd.Flags().StringVar(&messageType, "type", defaultBaselineMessageType, "type of the payload to be baselined")
+	sendBaselineMessageCmd.Flags().StringVar(&messageType, "type", "", "type of the payload to be baselined")
 	// sendBaselineMessageCmd.Flags().StringVar(&recipients, "recipients", "", "comma-delimited list of recipient organization ids")
 
 	sendBaselineMessageCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier")

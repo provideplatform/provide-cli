@@ -49,7 +49,7 @@ func prompt() {
 	if common.OrganizationID == "" {
 		common.RequireOrganization()
 	}
-	if messageType == defaultBaselineMessageType {
+	if messageType == "" {
 		messageTypeFlagPrompt()
 	}
 	if id == "" {
@@ -132,24 +132,29 @@ func idFlagPrompt() {
 }
 
 func messageTypeFlagPrompt() {
-	validate := func(input string) error {
-		if len(input) < 1 {
-			return errors.New("name cant be nil")
-		}
-		return nil
+	if messageType != "" {
+		return
 	}
 
-	prompt := promptui.Prompt{
-		Label:    "Message Type",
-		Validate: validate,
+	items := map[string]string{
+		"General Consistency": "general_consistency",
 	}
 
-	result, err := prompt.Run()
+	opts := make([]string, 0)
+	for k := range items {
+		opts = append(opts, k)
+	}
 
+	prmpt := promptui.Select{
+		Label: "Message Type",
+		Items: opts,
+	}
+
+	_, result, err := prmpt.Run()
 	if err != nil {
 		os.Exit(1)
 		return
 	}
 
-	messageType = result
+	messageType = items[result]
 }
