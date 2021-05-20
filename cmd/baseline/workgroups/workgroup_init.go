@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-cli/cmd/common"
@@ -131,7 +132,7 @@ func organizationAuthPrompt(target string) {
 		return
 	}
 
-	if result == "Y" {
+	if strings.ToLower(result) == "y" {
 		common.AuthorizeOrganizationContext(true)
 	}
 }
