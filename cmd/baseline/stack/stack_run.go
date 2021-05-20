@@ -150,8 +150,12 @@ func runProxy(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	go purgeContainers(docker)
+
 	authorizeContext()
-	purgeContainers(docker)
+	sorPrompt()
+	tunnelAPIPrompt()
+	tunnelMessagingPrompt()
 
 	for _, image := range []string{
 		baselineContainerImage,
@@ -159,11 +163,14 @@ func runProxy(cmd *cobra.Command, args []string) {
 		natsStreamingContainerImage,
 		redisContainerImage,
 	} {
-		err := pullImage(docker, image)
-		if err != nil {
-			log.Printf("failed to pull local baseline container image: %s; %s", image, err.Error())
-			os.Exit(1)
-		}
+		img := image
+		go func() {
+			err := pullImage(docker, img)
+			if err != nil {
+				log.Printf("failed to pull local baseline container image: %s; %s", img, err.Error())
+				os.Exit(1)
+			}
+		}()
 	}
 
 	configureNetwork(docker)
@@ -750,6 +757,101 @@ func organizationAuthPrompt() {
 	if strings.ToLower(result) == "y" {
 		common.AuthorizeOrganizationContext(true)
 	}
+}
+
+func tunnelAPIPrompt() {
+	if !common.ExposeAPITunnel {
+		return
+	}
+
+	prompt := promptui.Prompt{
+		IsConfirm: true,
+		Label:     "Expose tunnel for the local API?",
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	if strings.ToLower(result) == "y" {
+		common.ExposeAPITunnel = true
+	}
+}
+
+func tunnelMessagingPrompt() {
+	if !common.ExposeMessagingTunnel {
+		return
+	}
+
+	prompt := promptui.Prompt{
+		IsConfirm: true,
+		Label:     "Expose tunnel for the local messaging endpoint?",
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	if strings.ToLower(result) == "y" {
+		common.ExposeMessagingTunnel = true
+	}
+}
+
+func sorPrompt() {
+	if sorID != "" {
+		return
+	}
+
+	items := map[string]string{
+		"Dynamics365":      "dynamics365",
+		"Ephemeral Memory": "ephemeral",
+		"Excel":            "excel",
+		"Salesforce":       "salesforce",
+		"SAP":              "sap",
+		"ServiceNow":       "servicenow",
+	}
+
+	opts := make([]string, 0)
+	for k := range items {
+		opts = append(opts, k)
+	}
+
+	prmpt := promptui.Select{
+		Label: "What is your primary system of record?",
+		Items: opts,
+	}
+
+	_, result, _ := prmpt.Run()
+	sorID = items[result]
+
+	switch sorID {
+	case "ephemeral":
+		// no-op
+	default:
+		sorURLPrompt()
+	}
+}
+
+func sorURLPrompt() {
+	if sorURL != "" {
+		return
+	}
+
+	prompt := promptui.Prompt{
+		Label: "What is the API endpoint for your primary system of record?",
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	sorURL = result
 }
 
 func init() {
