@@ -239,11 +239,10 @@ func authorizeContext() {
 				vaultRefreshToken = organizationRefreshToken
 			}
 		} else {
+			organizationAuthPrompt()
 			log.Printf("failed to resolve refresh token for organization: %s\n", common.OrganizationID)
 			os.Exit(1)
 		}
-	} else {
-		organizationAuthPrompt()
 	}
 }
 
