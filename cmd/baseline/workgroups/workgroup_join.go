@@ -88,7 +88,7 @@ func configureBaselineStack(jwt string, claims *InviteClaims) {
 		"token": jwt,
 	})
 	if err != nil {
-		log.Printf("failed to configure baseline stack to support joined workgroup; %s", err.Error())
+		// log.Printf("failed to configure baseline stack to support joined workgroup; %s", err.Error())
 		os.Exit(1)
 	}
 	log.Printf("configured baseline workgroup on local stack: %s", *claims.Baseline.WorkgroupID)
