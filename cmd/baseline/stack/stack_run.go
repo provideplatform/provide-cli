@@ -817,12 +817,12 @@ func sorPrompt() {
 	}
 
 	items := map[string]string{
-		"Dynamics365":      "dynamics365",
-		"Ephemeral Memory": "ephemeral",
-		"Excel":            "excel",
-		"Salesforce":       "salesforce",
-		"SAP":              "sap",
-		"ServiceNow":       "servicenow",
+		"Dynamics365":           "dynamics365",
+		"Ephemeral (In-Memory)": "ephemeral",
+		"Excel":                 "excel",
+		"Salesforce":            "salesforce",
+		"SAP":                   "sap",
+		"ServiceNow":            "servicenow",
 	}
 
 	opts := make([]string, 0)
