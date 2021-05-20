@@ -29,6 +29,10 @@ var sendBaselineMessageCmd = &cobra.Command{
 }
 
 func sendMessage(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, promptStepSend)
+}
+
+func sendMessageRun(cmd *cobra.Command, args []string) {
 	common.AuthorizeApplicationContext()
 	common.AuthorizeOrganizationContext(false)
 
@@ -83,17 +87,17 @@ func init() {
 	sendBaselineMessageCmd.Flags().StringVar(&baselineID, "baseline-id", "", "the globally-unique baseline identifier for the record")
 
 	sendBaselineMessageCmd.Flags().StringVar(&data, "data", "", "content of the message")
-	sendBaselineMessageCmd.MarkFlagRequired("data")
+	// sendBaselineMessageCmd.MarkFlagRequired("data")
 
 	sendBaselineMessageCmd.Flags().StringVar(&id, "id", "", "identifier of the associated payload in the internal system of record")
-	sendBaselineMessageCmd.MarkFlagRequired("id")
+	// sendBaselineMessageCmd.MarkFlagRequired("id")
 
 	sendBaselineMessageCmd.Flags().StringVar(&messageType, "type", defaultBaselineMessageType, "type of the payload to be baselined")
-	sendBaselineMessageCmd.Flags().StringVar(&recipients, "recipients", "", "comma-delimited list of recipient organization ids")
+	// sendBaselineMessageCmd.Flags().StringVar(&recipients, "recipients", "", "comma-delimited list of recipient organization ids")
 
 	sendBaselineMessageCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier")
-	sendBaselineMessageCmd.MarkFlagRequired("organization")
+	// sendBaselineMessageCmd.MarkFlagRequired("organization")
 
 	sendBaselineMessageCmd.Flags().StringVar(&common.ApplicationID, "workgroup", "", "workgroup identifier")
-	sendBaselineMessageCmd.MarkFlagRequired("workgroup")
+	//sendBaselineMessageCmd.MarkFlagRequired("workgroup")
 }

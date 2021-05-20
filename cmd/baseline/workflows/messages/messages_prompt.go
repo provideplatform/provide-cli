@@ -1,17 +1,17 @@
 package messages
 
 import (
-	"fmt"
+	"errors"
 	"os"
 
 	"github.com/manifoldco/promptui"
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 
 var promptArgs []string
 
 const promptStepSend = "Send"
-const promptStepSummary = "Summary"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
@@ -21,10 +21,9 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		if flagPrompt(cmd, args) {
 			optionalFlagsSend(cmd, args)
 		}
+		sendMessageRun(cmd, args)
 	case "":
 		emptyPrompt(cmd, args)
-	default:
-		fmt.Println("no-ops")
 	}
 }
 
@@ -58,25 +57,60 @@ func flagPrompt(cmd *cobra.Command, args []string) bool {
 		os.Exit(1)
 		return false
 	}
-	if flagResult == "Yes" {
-		return true
-	} else {
-		generalPrompt(cmd, args, promptStepSummary)
-		return false
-	}
+	return flagResult == "Yes"
 }
 
 func optionalFlagsSend(cmd *cobra.Command, args []string) {
-
+	if baselineID == "" {
+		baselineIDFlagPrompt()
+	}
 }
 
 func mandatoryFlagsSend() {
+	if data == "" {
+		dataFlagPrompt()
+	}
+	if id == "" {
+		idFlagPrompt()
+	}
+	if messageType == defaultBaselineMessageType {
+		messageTypeFlagPrompt()
+	}
+	if common.OrganizationID == "" {
+		common.RequireOrganization()
+	}
+	if common.ApplicationID == "" {
+		common.RequireApplication()
+	}
+}
 
+// Optional Flag
+func baselineIDFlagPrompt() {
+	validate := func(input string) error {
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    "Baseline Id",
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	baselineID = result
 }
 
 // Mandatory Flags
 func dataFlagPrompt() {
 	validate := func(input string) error {
+		if len(input) < 1 {
+			return errors.New("name cant be nil")
+		}
 		return nil
 	}
 
@@ -93,4 +127,50 @@ func dataFlagPrompt() {
 	}
 
 	data = result
+}
+
+func idFlagPrompt() {
+	validate := func(input string) error {
+		if len(input) < 1 {
+			return errors.New("name cant be nil")
+		}
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    "ID",
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	id = result
+}
+
+func messageTypeFlagPrompt() {
+	validate := func(input string) error {
+		if len(input) < 1 {
+			return errors.New("name cant be nil")
+		}
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    "Message Type",
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	messageType = result
 }
