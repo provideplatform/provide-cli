@@ -315,7 +315,7 @@ func RequireContract(contractID, contractType *string, printCreationTxLink bool)
 				if contract.Address != nil && *contract.Address != "0x" {
 					if Verbose {
 						tx, _ := nchain.GetTransactionDetails(ApplicationAccessToken, contract.TransactionID.String(), map[string]interface{}{})
-						txraw, _ := json.MarshalIndent(tx, "  ", "")
+						txraw, _ := json.MarshalIndent(tx, "", "  ")
 						log.Printf(string(txraw))
 					}
 
