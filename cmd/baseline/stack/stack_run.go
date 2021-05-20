@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -828,6 +829,7 @@ func sorPrompt() {
 	for k := range items {
 		opts = append(opts, k)
 	}
+	sort.Strings(opts)
 
 	prmpt := promptui.Select{
 		Label: "What is your primary system of record?",
