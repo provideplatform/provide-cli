@@ -279,6 +279,8 @@ func RequireContract(contractID, contractType *string) error {
 	startTime := time.Now()
 	timer := time.NewTicker(requireContractTickerInterval)
 
+	printed := false
+
 	for {
 		select {
 		case <-timer.C:
@@ -296,7 +298,22 @@ func RequireContract(contractID, contractType *string) error {
 			}
 
 			if err == nil && contract != nil {
+				if !printed {
+					tx, _ := nchain.GetTransactionDetails(ApplicationAccessToken, contract.TransactionID.String(), map[string]interface{}{})
+					etherscanBaseURL := EtherscanBaseURL(tx.NetworkID.String())
+					if etherscanBaseURL != nil {
+						log.Printf("view on Etherscan: %s/tx/%s", *etherscanBaseURL, *tx.Hash) // HACK
+					}
+					printed = true
+				}
+
 				if contract.Address != nil && *contract.Address != "0x" {
+					if Verbose {
+						tx, _ := nchain.GetTransactionDetails(ApplicationAccessToken, contract.TransactionID.String(), map[string]interface{}{})
+						txraw, _ := json.MarshalIndent(tx, "  ", "")
+						log.Printf(string(txraw))
+					}
+
 					return nil
 				}
 			}
