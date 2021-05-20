@@ -76,7 +76,13 @@ func sendMessageRun(cmd *cobra.Command, args []string) {
 		log.Printf("WARNING: failed to baseline %d-byte payload; %s", len(data), err.Error())
 		os.Exit(1)
 	}
-	log.Printf("baselined record: %v", baselinedRecord)
+
+	log.Printf("baselined record: %v", baselinedRecord.(map[string]interface{})["baseline_id"].(string))
+	if common.Verbose {
+		raw, _ := json.MarshalIndent(baselinedRecord, "  ", "")
+		log.Printf(string(raw))
+	}
+
 }
 
 func init() {
