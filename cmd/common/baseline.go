@@ -157,7 +157,7 @@ func InitWorkgroupContract() *nchain.Contract {
 		os.Exit(1)
 	}
 
-	err = RequireContract(util.StringOrNil(contract.ID.String()), nil)
+	err = RequireContract(util.StringOrNil(contract.ID.String()), nil, true)
 	if err != nil {
 		log.Printf("failed to initialize registry contract; %s", err.Error())
 		os.Exit(1)
@@ -167,7 +167,7 @@ func InitWorkgroupContract() *nchain.Contract {
 }
 
 func RegisterWorkgroupOrganization(applicationID string) {
-	err := RequireContract(nil, util.StringOrNil("organization-registry"))
+	err := RequireContract(nil, util.StringOrNil("organization-registry"), false)
 	if err != nil {
 		log.Printf("failed to initialize registry contract; %s", err.Error())
 		os.Exit(1)
@@ -275,7 +275,7 @@ func ResolveCapabilities() (map[string]interface{}, error) {
 	return capabilities.(map[string]interface{}), nil
 }
 
-func RequireContract(contractID, contractType *string) error {
+func RequireContract(contractID, contractType *string, printCreationTxLink bool) error {
 	startTime := time.Now()
 	timer := time.NewTicker(requireContractTickerInterval)
 
@@ -298,11 +298,11 @@ func RequireContract(contractID, contractType *string) error {
 			}
 
 			if err == nil && contract != nil {
-				if !printed {
+				if !printed && printCreationTxLink {
 					tx, _ := nchain.GetTransactionDetails(ApplicationAccessToken, contract.TransactionID.String(), map[string]interface{}{})
 					etherscanBaseURL := EtherscanBaseURL(tx.NetworkID.String())
 					if etherscanBaseURL != nil {
-						log.Printf("view on Etherscan: %s/tx/%s", *etherscanBaseURL, *tx.Hash) // HACK
+						log.Printf("View on Etherscan: %s/tx/%s", *etherscanBaseURL, *tx.Hash) // HACK
 					}
 					printed = true
 				}
