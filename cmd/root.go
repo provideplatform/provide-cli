@@ -60,4 +60,6 @@ func init() {
 	rootCmd.AddCommand(users.UsersCmd)
 	rootCmd.AddCommand(vaults.VaultsCmd)
 	rootCmd.AddCommand(wallets.WalletsCmd)
+
+	common.CacheCommands(rootCmd)
 }
