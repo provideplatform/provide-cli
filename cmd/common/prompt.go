@@ -1,10 +1,13 @@
 package common
 
 import (
+	"fmt"
+
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
 	"github.com/provideservices/provide-go/api/vault"
+	"github.com/spf13/cobra"
 )
 
 const requireAccountSelectLabel = "Select an account"
@@ -15,6 +18,27 @@ const requireOrganizationSelectLabel = "Select an organization"
 const requireVaultSelectLabel = "Select a vault"
 const requireWalletSelectLabel = "Select a wallet"
 const requireWorkgroupSelectLabel = "Select a workgroup"
+
+var commands map[string]*cobra.Command
+
+func CacheCommands(cmd *cobra.Command) {
+	if commands == nil {
+		commands = map[string]*cobra.Command{}
+	}
+	fmt.Println(cmd.Parent().CommandPath())
+	//commands[hashPath(cmd.Commands())] = cmd
+	for _, child := range cmd.Commands() {
+		CacheCommands(child)
+	}
+}
+
+// I need a function to hash the sttuff
+// function to make sure the stuff doesnt match the map
+
+// func hashPath(cmd *cobra.Command) {
+// 	sum := sha256.Sum256([32]byte(cmd.command))
+// 	fmt.Printf("%x", sum)
+// }
 
 // RequireApplication is equivalent to a required --application flag
 func RequireApplication() error {
