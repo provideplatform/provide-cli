@@ -1,7 +1,6 @@
 package vaults
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -14,7 +13,6 @@ var VaultsCmd = &cobra.Command{
 
 Supports encrypt/decrypt and sign/verify operations for select key specs.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Vaults command run")
 		generalPrompt(cmd, args, "")
 
 		defer func() {
@@ -28,4 +26,5 @@ Supports encrypt/decrypt and sign/verify operations for select key specs.`,
 func init() {
 	VaultsCmd.AddCommand(vaultsListCmd)
 	VaultsCmd.AddCommand(vaultsInitCmd)
+	VaultsCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

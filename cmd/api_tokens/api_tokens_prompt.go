@@ -2,9 +2,7 @@ package api_tokens
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
@@ -12,116 +10,46 @@ import (
 const promptStepInit = "Initialize"
 const promptStepList = "List"
 
+var emptyPromptArgs = []string{promptStepInit, promptStepList}
+var emptyPromptLabel = "What would you like to do"
+
+var refresTokenPromptArgs = []string{"Yes", "No"}
+var refresTokenPromptLabel = "Would you like to set a refresh token"
+
+var offlinePromptArgs = []string{"Yes", "No"}
+var offlinePromptLabel = "Would you like to set offline access"
+
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepInit:
-		if flagPrompt() {
-			optionalFlagsInit()
+		if optional {
+			if common.ApplicationID == "" {
+				common.RequireApplication()
+			}
+			if common.OrganizationID == "" {
+				common.RequireOrganization()
+			}
+			if !refreshToken {
+				result := common.SelectInput(refresTokenPromptArgs, refresTokenPromptLabel)
+				refreshToken = result == "Yes"
+			}
+			if !offlineAccess {
+				result := common.SelectInput(offlinePromptArgs, offlinePromptLabel)
+				offlineAccess = result == "Yes"
+			}
+			if refreshToken && offlineAccess {
+				fmt.Println("⚠️  WARNING: You currently have both refresh and offline token set, Refresh token will take precedence")
+			}
 		}
 		createAPIToken(cmd, args)
 	case promptStepList:
-		if flagPrompt() {
-			optionalFlagsList()
+		if optional {
+			common.RequireApplication()
 		}
 		listAPITokens(cmd, args)
 	case "":
-		emptyPrompt(cmd, args)
+		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)
+		generalPrompt(cmd, args, result)
 	}
-}
-
-func emptyPrompt(cmd *cobra.Command, args []string) {
-	prompt := promptui.Select{
-		Label: "What would you like to do",
-		Items: []string{promptStepList, promptStepInit},
-	}
-
-	_, result, err := prompt.Run()
-
-	if err != nil {
-		os.Exit(1)
-		return
-	}
-
-	generalPrompt(cmd, args, result)
-}
-
-func flagPrompt() bool {
-	flagPrompt := promptui.Select{
-		Label: "Would you like to set Optional Flags?",
-		Items: []string{"No", "Yes"},
-	}
-
-	_, flagResult, err := flagPrompt.Run()
-
-	if err != nil {
-		os.Exit(1)
-		return false
-	}
-
-	return flagResult == "Yes"
-}
-
-func optionalFlagsInit() {
-	if common.ApplicationID == "" {
-		applicationIDFlagPrompt()
-	}
-	if common.OrganizationID == "" {
-		organizationIDFlagPrompt()
-	}
-	if !refreshToken {
-		refreshTokenFlagPrompt()
-	}
-	if !offlineAccess {
-		offlineAccessFlagPrompt()
-	}
-	if refreshToken && offlineAccess {
-		fmt.Println("⚠️  WARNING: You currently have both refresh and offline token set, Refresh token will take precedence")
-	}
-}
-
-func optionalFlagsList() {
-	if common.ApplicationID == "" {
-		applicationIDFlagPrompt()
-	}
-}
-
-func refreshTokenFlagPrompt() {
-	flagPrompt := promptui.Select{
-		Label: "Would you like to refresh your access token?",
-		Items: []string{"No", "Yes"},
-	}
-
-	_, result, err := flagPrompt.Run()
-
-	if err != nil {
-		os.Exit(1)
-		return
-	}
-
-	refreshToken = result == "Yes"
-}
-
-func offlineAccessFlagPrompt() {
-	flagPrompt := promptui.Select{
-		Label: "Would you like to vend an access/refresh token pair?",
-		Items: []string{"No", "Yes"},
-	}
-
-	_, result, err := flagPrompt.Run()
-
-	if err != nil {
-		os.Exit(1)
-		return
-	}
-
-	offlineAccess = result == "Yes"
-}
-
-func applicationIDFlagPrompt() {
-	common.RequireApplication()
-}
-
-func organizationIDFlagPrompt() {
-	common.RequireOrganization()
 }

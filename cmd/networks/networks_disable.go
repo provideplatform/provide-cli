@@ -36,5 +36,5 @@ func disableNetwork(cmd *cobra.Command, args []string) {
 
 func init() {
 	networksDisableCmd.Flags().StringVar(&common.NetworkID, "network", "", "id of the network")
-	networksDisableCmd.MarkFlagRequired("network")
+	// networksDisableCmd.MarkFlagRequired("network")
 }

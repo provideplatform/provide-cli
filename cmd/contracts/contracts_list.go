@@ -39,4 +39,5 @@ func listContracts(cmd *cobra.Command, args []string) {
 
 func init() {
 	contractsListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter contracts")
+	contractsListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

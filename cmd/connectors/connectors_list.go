@@ -48,4 +48,5 @@ func listConnectors(cmd *cobra.Command, args []string) {
 
 func init() {
 	connectorsListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter connectors")
+	connectorsListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

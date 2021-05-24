@@ -16,6 +16,7 @@ var nativeCurrency string
 var platform string
 var protocolID string
 var networkName string
+var optional bool
 
 var networksInitCmd = &cobra.Command{
 	Use:   "init --name 'whiteblock testnet",
@@ -44,23 +45,22 @@ func CreateNetwork(cmd *cobra.Command, args []string) {
 
 func init() {
 	networksInitCmd.Flags().StringVar(&networkName, "name", "", "name of the network")
-	networksInitCmd.MarkFlagRequired("name")
+	// networksInitCmd.MarkFlagRequired("name")
 
 	networksInitCmd.Flags().StringVar(&chain, "chain", "", "name of the chain")
-	networksInitCmd.MarkFlagRequired("chain")
+	// networksInitCmd.MarkFlagRequired("chain")
 
 	networksInitCmd.Flags().StringVar(&common.EngineID, "engine", "", "consensus engine to be used for the chain (i.e., ethash, poa, ibft)")
-	networksInitCmd.MarkFlagRequired("engine")
+	// networksInitCmd.MarkFlagRequired("engine")
 
 	networksInitCmd.Flags().StringVar(&nativeCurrency, "native-currency", "", "symbol representing the native currency on the network (i.e., ETH)")
-	networksInitCmd.MarkFlagRequired("native-currency")
+	// networksInitCmd.MarkFlagRequired("native-currency")
 
 	networksInitCmd.Flags().StringVar(&platform, "platform", "", "platform type (i.e., evm, bcoin)")
-	networksInitCmd.MarkFlagRequired("platform")
+	// networksInitCmd.MarkFlagRequired("platform")
 
 	networksInitCmd.Flags().StringVar(&protocolID, "protocol", "", "type of consensus mechanism (i.e., pow, poa)")
-	networksInitCmd.MarkFlagRequired("protocol")
-
+	// networksInitCmd.MarkFlagRequired("protocol")
 }
 
 func configFactory() map[string]interface{} {
