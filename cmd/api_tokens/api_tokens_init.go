@@ -25,6 +25,7 @@ var scope string
 var grantType string
 var offlineAccess bool
 var refreshToken bool
+var optional bool
 
 var apiTokensInitCmd = &cobra.Command{
 	Use:   "init [--application 8fec625c-a8ad-4197-bb77-8b46d7aecd8f] [--organization 2209cf15-2402-4e25-b6b6-1c901b9dde69] [--offline-access] [--refresh-token]",
@@ -219,4 +220,5 @@ func init() {
 
 	apiTokensInitCmd.Flags().BoolVar(&offlineAccess, "offline-access", false, "offline access")
 	apiTokensInitCmd.Flags().BoolVar(&refreshToken, "refresh-token", false, "refresh token")
+	apiTokensInitCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

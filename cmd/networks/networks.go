@@ -28,4 +28,5 @@ func init() {
 	NetworksCmd.AddCommand(networksInitCmd)
 	NetworksCmd.AddCommand(networksListCmd)
 	NetworksCmd.AddCommand(networksDisableCmd)
+	NetworksCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

@@ -13,6 +13,7 @@ var WalletsCmd = &cobra.Command{
 
 More documentation forthcoming.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		//common.CmdExistsOrExit(cmd)
 		generalPrompt(cmd, args, "")
 
 		defer func() {
@@ -26,4 +27,5 @@ More documentation forthcoming.`,
 func init() {
 	WalletsCmd.AddCommand(walletsListCmd)
 	WalletsCmd.AddCommand(walletsInitCmd)
+	WalletsCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

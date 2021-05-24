@@ -1,7 +1,7 @@
 package common
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-go/api/ident"
@@ -21,23 +21,32 @@ const requireWorkgroupSelectLabel = "Select a workgroup"
 
 var commands map[string]*cobra.Command
 
-func CacheCommands(cmd *cobra.Command) {
-	if commands == nil {
-		commands = map[string]*cobra.Command{}
-	}
-	fmt.Println(cmd.Parent().CommandPath())
-	//commands[hashPath(cmd.Commands())] = cmd
-	for _, child := range cmd.Commands() {
-		CacheCommands(child)
-	}
-}
+// func CacheCommands(cmd *cobra.Command) {
+// 	if commands == nil {
+// 		commands = map[string]*cobra.Command{}
+// 	}
 
-// I need a function to hash the sttuff
-// function to make sure the stuff doesnt match the map
+// 	hashCmd := sha256.Sum256([]byte(cmd.UseLine()))
 
-// func hashPath(cmd *cobra.Command) {
-// 	sum := sha256.Sum256([32]byte(cmd.command))
-// 	fmt.Printf("%x", sum)
+// 	commands[string(hashCmd[:])] = cmd
+// 	for _, child := range cmd.Commands() {
+// 		fmt.Print(child)
+// 		CacheCommands(child)
+// 	}
+// }
+
+// func CmdExists(cmd *cobra.Command) bool {
+// 	hashCmd := sha256.Sum256([]byte(cmd.UseLine()))
+// 	fmt.Println(hashCmd)
+
+// 	return commands[string(hashCmd[:])] != nil
+
+// }
+
+// func CmdExistsOrExit(cmd *cobra.Command) {
+// 	if !CmdExists(cmd) {
+// 		os.Exit(1)
+// 	}
 // }
 
 // RequireApplication is equivalent to a required --application flag
@@ -278,4 +287,41 @@ func RequireWallet() error {
 
 	WalletID = wallets[i].ID.String()
 	return nil
+}
+
+func FreeInput(label string) string {
+	validate := func(input string) error {
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    label,
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		os.Exit(1)
+		return err.Error()
+	}
+
+	return result
+}
+
+func SelectInput(args []string, label string) string {
+	prompt := promptui.Select{
+		Label: label,
+		Items: args,
+	}
+
+	_, result, err := prompt.Run()
+
+	if err != nil {
+		os.Exit(1)
+		return err.Error()
+	}
+
+	return result
+
 }

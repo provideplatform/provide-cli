@@ -33,4 +33,5 @@ func init() {
 	ConnectorsCmd.AddCommand(connectorsInitCmd)
 	ConnectorsCmd.AddCommand(connectorsDetailsCmd)
 	ConnectorsCmd.AddCommand(connectorsDeleteCmd)
+	ConnectorsCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

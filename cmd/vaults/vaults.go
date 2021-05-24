@@ -1,7 +1,6 @@
 package vaults
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -18,7 +17,6 @@ Vaults support select symmetric and asymmetric key specs for encrypt/decrypt and
 
 Docs: https://docs.provide.services/vault`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Vaults command run")
 		generalPrompt(cmd, args, "")
 
 		defer func() {
@@ -34,4 +32,5 @@ func init() {
 	VaultsCmd.AddCommand(vaultsInitCmd)
 
 	VaultsCmd.AddCommand(keys.KeysCmd)
+	VaultsCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

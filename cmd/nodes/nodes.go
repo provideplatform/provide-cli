@@ -29,4 +29,6 @@ func init() {
 	NodesCmd.AddCommand(nodesInitCmd)
 	NodesCmd.AddCommand(nodesLogsCmd)
 	NodesCmd.AddCommand(nodesDeleteCmd)
+	NodesCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+
 }

@@ -17,6 +17,8 @@ var connectorType string
 var ipfsAPIPort uint64
 var ipfsGatewayPort uint64
 
+var optional bool
+
 var connectorsInitCmd = &cobra.Command{
 	Use:   "init --name 'my storage connector' --type ipfs --network 024ff1ef-7369-4dee-969c-1918c6edb5d4",
 	Short: "Initialize a new connector",
@@ -107,4 +109,6 @@ func init() {
 
 	connectorsInitCmd.Flags().Uint64Var(&ipfsAPIPort, "ipfs-api-port", 5001, "tcp listen port for the ipfs api")
 	connectorsInitCmd.Flags().Uint64Var(&ipfsGatewayPort, "ipfs-gateway-port", 8080, "tcp listen port for the ipfs gateway")
+	connectorsInitCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+
 }
