@@ -16,6 +16,7 @@ var promptArgs []string
 const promptStepLogs = "Logs"
 const promptStepInit = "Initialize"
 const promptStepDelete = "Delete"
+const promptStepSummary = "Summary"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
@@ -34,6 +35,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		nodeLogsRun(cmd, args)
 	case "":
 		emptyPrompt(cmd, args)
+	default:
+		fmt.Println("no-ops")
 	}
 }
 
@@ -63,7 +66,12 @@ func flagPrompt(cmd *cobra.Command, args []string) bool {
 		return false
 	}
 
-	return flagResult == "Yes"
+	if flagResult == "Yes" {
+		return true
+	} else {
+		generalPrompt(cmd, args, promptStepSummary)
+		return false
+	}
 }
 
 func mandatoryInitFlags() {
@@ -116,6 +124,7 @@ func optionalFlagsInit(cmd *cobra.Command, args []string) {
 	if common.TaskRole == "" {
 		taskRoleFlagPrompt()
 	}
+	summary(cmd, args, promptArgs)
 }
 
 func networkIDFlagPrompt() {
