@@ -16,6 +16,7 @@ var promptArgs []string
 const promptStepCustody = "Custody"
 const promptStepInit = "Initialize"
 const promptStepList = "List"
+const promptStepSummary = "Summary"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
@@ -34,6 +35,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		listWalletsRun(cmd, args)
 	case "":
 		emptyPrompt(cmd, args)
+	default:
+		fmt.Println("no-ops")
 	}
 }
 
@@ -67,7 +70,16 @@ func flagPrompt(cmd *cobra.Command, args []string) bool {
 		os.Exit(1)
 		return false
 	}
+<<<<<<< HEAD
 	return flagResult == "Yes"
+=======
+	if flagResult == "Yes" {
+		return true
+	} else {
+		generalPrompt(cmd, args, promptStepSummary)
+		return false
+	}
+>>>>>>> Fix recursive prompt handling
 }
 
 func optionalFlagsInit(cmd *cobra.Command, args []string) {
@@ -81,6 +93,7 @@ func optionalFlagsInit(cmd *cobra.Command, args []string) {
 	if purpose == 44 {
 		purposeFlagPrompt()
 	}
+	generalPrompt(cmd, args, promptStepSummary)
 }
 
 func optionalFlagsList(cmd *cobra.Command, args []string) {
@@ -88,6 +101,7 @@ func optionalFlagsList(cmd *cobra.Command, args []string) {
 	if common.ApplicationID == "" {
 		applicationIDFlagPrompt()
 	}
+	generalPrompt(cmd, args, promptStepSummary)
 }
 
 // Init Wallet

@@ -13,6 +13,7 @@ var promptArgs []string
 
 const promptStepInit = "Initialize"
 const promptStepList = "List"
+const promptStepSummary = "Summary"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
@@ -29,6 +30,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		listVaultsRun(cmd, args)
 	case "":
 		emptyPrompt(cmd, args)
+	default:
+		fmt.Println("no-ops")
 	}
 
 }
@@ -64,7 +67,12 @@ func flagPrompt(cmd *cobra.Command, args []string) bool {
 		return false
 	}
 
-	return flagResult == "Yes"
+	if flagResult == "Yes" {
+		return true
+	} else {
+		generalPrompt(cmd, args, promptStepSummary)
+		return false
+	}
 }
 
 func optionalFlagsInit(cmd *cobra.Command, args []string) {
@@ -81,6 +89,10 @@ func optionalFlagsInit(cmd *cobra.Command, args []string) {
 	if common.OrganizationID == "" {
 		organizationidFlagPrompt()
 	}
+<<<<<<< HEAD
+=======
+	generalPrompt(cmd, args, promptStepSummary)
+>>>>>>> Fix recursive prompt handling
 }
 
 func optionalFlagsList(cmd *cobra.Command, args []string) {
@@ -91,6 +103,7 @@ func optionalFlagsList(cmd *cobra.Command, args []string) {
 	if common.OrganizationID == "" {
 		applicationIDFlagPrompt()
 	}
+	generalPrompt(cmd, args, promptStepSummary)
 }
 
 // Optional Flags For Init Vault
