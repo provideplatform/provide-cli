@@ -11,7 +11,7 @@ var UsersCmd = &cobra.Command{
 	Short: "Manage users",
 	Long:  `Create and manage users and authenticate`,
 	Run: func(cmd *cobra.Command, args []string) {
-		usersPrompt(cmd, args)
+		generalPrompt(cmd, args, "")
 		defer func() {
 			if r := recover(); r != nil {
 				os.Exit(1)
