@@ -10,6 +10,8 @@ import (
 	"github.com/provideservices/provide-cli/cmd/baseline/workgroups"
 )
 
+var optional bool
+
 var BaselineCmd = &cobra.Command{
 	Use:   "baseline",
 	Short: "Interact with the baseline protocol",
@@ -35,4 +37,6 @@ func init() {
 	BaselineCmd.AddCommand(stack.StackCmd)
 	BaselineCmd.AddCommand(workgroups.WorkgroupsCmd)
 	BaselineCmd.AddCommand(workflows.WorkflowsCmd)
+	BaselineCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+
 }
