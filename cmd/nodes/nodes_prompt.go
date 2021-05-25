@@ -11,7 +11,6 @@ import (
 const promptStepLogs = "Logs"
 const promptStepInit = "Initialize"
 const promptStepDelete = "Delete"
-const promptStepSummary = "Summary"
 
 var emptyPromptArgs = []string{promptStepInit, promptStepLogs, promptStepDelete}
 var emptyPromptLabel = "What would you like to do"
