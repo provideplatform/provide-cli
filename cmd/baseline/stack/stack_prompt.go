@@ -1,8 +1,10 @@
 package stack
 
 import (
+	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
@@ -17,8 +19,8 @@ var emptyPromptLabel = "What would you like to do"
 
 var boolPromptArgs = []string{"No", "Yes"}
 var tunnelPromptLabel = "Would you like to set up a tunnel"
-var tunnelAPIPromptLabel = "Would you like to set up a tunnel"
-var tunnelMessagingPromptLabel = "Would you like to set up a tunnel"
+var tunnelAPIPromptLabel = "Would you like to set up a API tunnel"
+var tunnelMessagingPromptLabel = "Would you like to set up a messaging tunnel"
 var autoRemovePromptLabel = "Would you like to automatically remove"
 var localVaultPromptLabel = "Would you like to set up vault locally"
 var localIdentPromptLabel = "Would you like to set up ident locally"
@@ -30,7 +32,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepRun:
 		common.RequireOrganization()
-		if optional {
+		fmt.Print(OptionalStack)
+		if OptionalStack {
 			if name == "" {
 				name = common.FreeInput("Name")
 			}
@@ -40,13 +43,13 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			if common.MessagingEndpoint == "" {
 				common.MessagingEndpoint = common.FreeInput("Messaging endpoint")
 			}
-			if common.Tunnel == false {
+			if !common.Tunnel {
 				common.Tunnel = common.SelectInput(boolPromptArgs, tunnelPromptLabel) == "Yes"
 			}
-			if common.ExposeAPITunnel == false {
+			if !common.ExposeAPITunnel {
 				common.ExposeAPITunnel = common.SelectInput(boolPromptArgs, tunnelAPIPromptLabel) == "Yes"
 			}
-			if common.ExposeMessagingTunnel == false {
+			if !common.ExposeMessagingTunnel {
 				common.ExposeMessagingTunnel = common.SelectInput(boolPromptArgs, tunnelMessagingPromptLabel) == "Yes"
 			}
 			if sorID == "" {
@@ -91,8 +94,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			// if redisHosts == redisHostname+":"+strconv.Atoi(redisContainerPort) {
 			// 	redisPort, _ = strconv.Atoi(common.FreeInput("Reddis Port"))
 			// }
-			if autoRemove == false {
-				autoRemove = common.SelectInput(boolPromptArgs, tunnelMessagingPromptLabel) == "Yes"
+			if !autoRemove {
+				autoRemove = common.SelectInput(boolPromptArgs, autoRemovePromptLabel) == "Yes"
 			}
 			if logLevel == "DEBUG" {
 				logLevel = common.FreeInput("Reddis Host Name")
@@ -130,17 +133,17 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			if vaultSealUnsealKey == os.Getenv("VAULT_SEAL_UNSEAL_KEY") {
 				vaultSealUnsealKey = common.FreeInput("Vault API Scheme")
 			}
-			if withLocalVault == false {
-				withLocalVault = common.SelectInput(boolPromptArgs, localVaultPromptLabel) == "Yes"
+			if !withLocalVault {
+				withLocalVault = strings.ToLower(common.SelectInput(boolPromptArgs, localVaultPromptLabel)) == "yes"
 			}
-			if withLocalIdent == false {
-				withLocalIdent = common.SelectInput(boolPromptArgs, localIdentPromptLabel) == "Yes"
+			if !withLocalIdent {
+				withLocalIdent = strings.ToLower(common.SelectInput(boolPromptArgs, localIdentPromptLabel)) == "yes"
 			}
-			if withLocalNchain == false {
-				withLocalNchain = common.SelectInput(boolPromptArgs, localNchainPromptLabel) == "Yes"
+			if !withLocalNchain {
+				withLocalNchain = strings.ToLower(common.SelectInput(boolPromptArgs, localNchainPromptLabel)) == "yes"
 			}
-			if withLocalPrivacy == false {
-				withLocalPrivacy = common.SelectInput(boolPromptArgs, localPrivacyPromptLabel) == "Yes"
+			if !withLocalPrivacy {
+				withLocalPrivacy = strings.ToLower(common.SelectInput(boolPromptArgs, localPrivacyPromptLabel)) == "yes"
 			}
 			if organizationRefreshToken == os.Getenv("PROVIDE_ORGANIZATION_REFRESH_TOKEN") {
 				organizationRefreshToken = common.FreeInput("Organization Refresh Token")

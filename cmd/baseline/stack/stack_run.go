@@ -67,7 +67,7 @@ type portMapping struct {
 }
 
 var dockerNetworkID string
-var optional bool
+var OptionalStack bool
 var name string
 var port int
 var natsPort int
@@ -962,5 +962,5 @@ func initSORFlags() {
 	runBaselineStackCmd.Flags().StringVar(&serviceNowAPIPath, "servicenow-api-path", "api/now/table", "base path of the ServiceNow API")
 	runBaselineStackCmd.Flags().StringVar(&serviceNowAPIUsername, "servicenow-api-username", "", "username to use for basic authorization against the ServiceNow API")
 	runBaselineStackCmd.Flags().StringVar(&serviceNowAPIPassword, "servicenow-api-password", "", "password to use for basic authorization against the ServiceNow API")
-	runBaselineStackCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+	runBaselineStackCmd.Flags().BoolVarP(&OptionalStack, "optionalStack", "", false, "List all the optional flags")
 }

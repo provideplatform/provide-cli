@@ -23,8 +23,8 @@ var emptyPromptArgs = []string{promptStepInit, promptStepList}
 var emptyPromptLabel = "What would you like to do"
 
 // General Endpoints
-func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
-	switch step := currentStep; step {
+func generalPrompt(cmd *cobra.Command, args []string, step string) {
+	switch step {
 	case promptStepInit:
 		common.SelectInput(walletTypePromptArgs, walletTypeLabel)
 		generalPrompt(cmd, args, promptStepCustody)
