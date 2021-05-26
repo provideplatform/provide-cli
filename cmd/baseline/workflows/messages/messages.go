@@ -16,4 +16,5 @@ var MessagesCmd = &cobra.Command{
 func init() {
 	MessagesCmd.AddCommand(listBaselineMessagesCmd)
 	MessagesCmd.AddCommand(sendBaselineMessageCmd)
+	MessagesCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }

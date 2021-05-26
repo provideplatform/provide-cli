@@ -18,6 +18,10 @@ var listBaselineWorkgroupsCmd = &cobra.Command{
 }
 
 func listWorkgroups(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, promptStepList)
+}
+
+func listWorkgroupsRun(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	applications, err := ident.ListApplications(token, map[string]interface{}{
 		"type": "baseline",

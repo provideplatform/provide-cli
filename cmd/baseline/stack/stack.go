@@ -17,5 +17,5 @@ func init() {
 	StackCmd.AddCommand(logsBaselineStackCmd)
 	StackCmd.AddCommand(runBaselineStackCmd)
 	StackCmd.AddCommand(stopBaselineStackCmd)
-	StackCmd.Flags().BoolVarP(&OptionalStack, "optional", "", false, "List all the optional flags")
+	StackCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the optional flags")
 }

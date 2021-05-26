@@ -18,6 +18,7 @@ var data string
 var id string
 var messageType string
 var recipients string
+var Optional bool
 
 var sendBaselineMessageCmd = &cobra.Command{
 	Use:   "send",
