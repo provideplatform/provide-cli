@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/c-bata/go-prompt"
@@ -47,12 +48,18 @@ var version string
 var childCommands []*cobra.Command
 var childCommandSuggestions []prompt.Suggest
 
+var cursorHidden bool
+var viewingAlternateBuffer bool
+
 var prmpt *prompt.Prompt
 var history *prompt.History
 var parser prompt.ConsoleParser
 var writer prompt.ConsoleWriter
 
-var shellOutPending bool
+var mutex *sync.Mutex
+var repl *REPL
+var repls []*REPL
+var wg *sync.WaitGroup
 
 var ShellCmd = &cobra.Command{
 	Use:   "shell",
@@ -66,6 +73,11 @@ Run with the --help flag to see available options`, common.ASCIIBanner),
 }
 
 func shell(cmd *cobra.Command, args []string) {
+	mutex = &sync.Mutex{}
+	wg = &sync.WaitGroup{}
+
+	repls = make([]*REPL, 0)
+
 	childCommands = make([]*cobra.Command, 0)
 	childCommandSuggestions = make([]prompt.Suggest, 0)
 	for _, child := range cmd.Root().Commands() {
@@ -106,11 +118,14 @@ func refresh(cmd *cobra.Command, msg []byte) {
 	parser.Setup()
 
 	writer = prompt.NewStdoutWriter()
+
+	clear()
 	renderRootBanner()
+	defaultCursorPosition()
 
 	if msg != nil && len(msg) > 0 {
-		writer.Write(msg)
-		writer.WriteStr("\n\n")
+		write(msg, false)
+		writeRaw([]byte("\n"), true)
 	}
 
 	prmpt = prompt.New(
@@ -125,7 +140,17 @@ func refresh(cmd *cobra.Command, msg []byte) {
 		prompt.OptionAddKeyBind(prompt.KeyBind{
 			Key: prompt.ControlC,
 			Fn: func(buf *prompt.Buffer) {
-				writer.WriteStr("Interrupt\n")
+				if viewingAlternateBuffer {
+					for _, repl := range repls { // FIXME-- should this just be a single, top-level repl?
+						repl.shutdown()
+					}
+
+					repls = make([]*REPL, 0)
+					toggleAlternateBuffer()
+					showCursor()
+				} else {
+					writer.WriteRaw([]byte("Interrupt\n"))
+				}
 			},
 		}),
 		prompt.OptionAddKeyBind(prompt.KeyBind{
@@ -141,6 +166,9 @@ func refresh(cmd *cobra.Command, msg []byte) {
 		prompt.OptionDescriptionTextColor(shellOptionDescriptionTextColor),
 		prompt.OptionInputTextColor(shellOptionDefaultInputTextColor),
 		prompt.OptionLivePrefix(func() (string, bool) {
+			if cursorHidden {
+				return "", true
+			}
 			return prefix, true
 		}),
 		prompt.OptionMaxSuggestion(shellOptionDefaultMaxSuggestions),
@@ -162,44 +190,99 @@ func refresh(cmd *cobra.Command, msg []byte) {
 		prompt.OptionWriter(writer),
 	)
 
+	installREPL()
+
 	prmpt.Run()
+}
+
+func installREPL() {
+	repl, _ = NewREPL(func(_wg *sync.WaitGroup) error {
+		renderRootBanner()
+		return nil
+	})
+	go repl.run()
+
+	// buf := &bytes.Buffer{}
+	// n := 0
+	// go shellOut("docker", []string{"stats"}, buf)
+	// repl, _ = NewREPL(func(_wg *sync.WaitGroup) error {
+	// 	writer.SaveCursor()
+	// 	writer.HideCursor()
+
+	// 	if buf.Len() > 0 {
+	// 		mutex.Lock()
+	// 		str := string(buf.Bytes()[n:])
+
+	// 		i := 0
+	// 		for _, line := range strings.Split(str, "\n") {
+	// 			writer.CursorGoTo(1+i, 64)
+	// 			raw := stripEscapeSequences(line)
+	// 			writer.WriteRawStr(raw)
+
+	// 			i += 1
+	// 		}
+
+	// 		writer.Flush()
+	// 		writer.UnSaveCursor()
+
+	// 		n += buf.Len() - n
+	// 		buf.Reset()
+	// 		mutex.Unlock()
+	// 	}
+
+	// 	return nil
+	// })
+	// go repl.run()
 }
 
 func renderRootBanner() {
 	if writer != nil {
-		writer.WriteRawStr("\033[H\033[2J")
+		mutex.Lock()
+		defer mutex.Unlock()
+
+		shouldShowCursor := !cursorHidden
+
+		writer.SaveCursor()
+		hideCursor()
+		writer.CursorGoTo(1, 0)
 		writer.SetColor(prompt.Cyan, shellOptionDefaultBGColor, true)
 		writer.WriteStr(common.ASCIIBanner)
-		writer.WriteStr("\n\n")
+		writer.WriteRawStr("\n\n")
 		writer.SetColor(shellOptionDefaultFGColor, shellOptionDefaultBGColor, true)
+		writer.UnSaveCursor()
+		if shouldShowCursor {
+			showCursor()
+		}
+		writer.Flush()
 	}
 }
 
-func shellOut(argv []string) error {
-	if shellOutPending {
-		return nil
+func shellOut(bin string, argv []string, buf *bytes.Buffer) error {
+	shellOutPending := true
+
+	write := buf == nil
+	if write {
+		buf = &bytes.Buffer{}
 	}
 
-	shellOutPending = true
-
-	buf := &bytes.Buffer{}
-	cmd := exec.Command("prvd", argv...)
+	cmd := exec.Command(bin, argv...)
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = nil
 	cmd.Stdout = buf
 
-	go func() {
-		for shellOutPending {
-			if buf.Len() > 0 {
-				writer.WriteRawStr("\033[2K")
-				writer.WriteRawStr(buf.String())
-				writer.Flush()
-				buf.Truncate(0)
-			}
+	if write {
+		go func() {
+			for shellOutPending {
+				if buf.Len() > 0 {
+					eraseCurrentLine()
+					writeRaw(buf.Bytes(), true)
+					buf.Reset()
+				}
 
-			time.Sleep(time.Millisecond * 50)
-		}
-	}()
+				time.Sleep(time.Millisecond * 50)
+			}
+		}()
+	}
 
 	err := cmd.Run()
 	shellOutPending = false
@@ -220,9 +303,11 @@ func interpret(cmd *cobra.Command, input string) {
 		refresh(cmd, []byte{})
 		return
 	case sanitizedPromptInputMatchExit:
+		showCursor()
 		os.Exit(0)
 		return
 	case sanitizedPromptInputMatchQuit:
+		showCursor()
 		os.Exit(0)
 		return
 	}
@@ -232,12 +317,11 @@ func interpret(cmd *cobra.Command, input string) {
 	_cmd, i := resolveChildCmd(cmd, argv)
 	if _cmd != nil {
 		if debug {
-			writer.WriteStr(fmt.Sprintf("resolved child command for input: %s; argv[%d]: %v; use: %s", input, i, argv, _cmd.Use))
+			write([]byte(fmt.Sprintf("resolved child command for input: %s; argv[%d]: %v; use: %s", input, i, argv, _cmd.Use)), true)
 		}
 
 		// // TODO? -- use the following instead of shellOut()
 		// _cmd.SetArgs(argv[i:])
-		// out := &bytes.Buffer{}
 		// _cmd.SetErr(out)
 		// _cmd.SetOut(out)
 		// _cmd.SetOutput(out)
@@ -248,12 +332,25 @@ func interpret(cmd *cobra.Command, input string) {
 		// }
 		// writer.WriteStr(out.String())
 
-		err := shellOut(argv)
+		out := &bytes.Buffer{}
+		repl, _ := NewREPLWithCmd(*exec.Command("prvd", argv...), out)
+		repl.run()
+		repls = append(repls, repl)
+		writeRaw(out.Bytes(), true)
+	} else if supportedNativeCommand(argv) {
+		mutex.Lock()
+		writer.SaveCursor()
+		writer.HideCursor()
+		writer.Flush()
+		mutex.Unlock()
+
+		repl, err := resolveNativeCommand(argv)(argv)
+		repls = append(repls, repl)
 		if err != nil {
-			panic(err)
+			write([]byte(fmt.Sprintf("%s: native command returned err: %s;%s\n", shellTitle, strings.Join(argv, " "), err.Error())), true)
 		}
 	} else {
-		writer.WriteStr(fmt.Sprintf("%s: command not found: %s\n", shellTitle, strings.Join(argv, " ")))
+		write([]byte(fmt.Sprintf("%s: command not found: %s\n", shellTitle, strings.Join(argv, " "))), true)
 	}
 }
 
@@ -271,8 +368,11 @@ func resolveChildCmd(cmd *cobra.Command, argv []string) (*cobra.Command, int) {
 }
 
 func promptSuggestionFactory(cmd *cobra.Command, d prompt.Document) []prompt.Suggest {
-	var results []prompt.Suggest = nil
+	if cursorHidden {
+		return nil
+	}
 
+	var results []prompt.Suggest = nil
 	input := strings.TrimSpace(d.CurrentLine())
 	argv := strings.Split(input, " ") // this is hardly sanitized -- but it's a start
 
@@ -285,4 +385,32 @@ func promptSuggestionFactory(cmd *cobra.Command, d prompt.Document) []prompt.Sug
 	}
 
 	return results
+}
+
+func write(buf []byte, flush bool) error {
+	if writer != nil {
+		mutex.Lock()
+		defer mutex.Lock()
+
+		writer.Write(buf)
+		if flush {
+			writer.Flush()
+		}
+	}
+
+	return nil
+}
+
+func writeRaw(buf []byte, flush bool) error {
+	if writer != nil {
+		mutex.Lock()
+		defer mutex.Unlock()
+
+		writer.WriteRaw(buf)
+		if flush {
+			writer.Flush()
+		}
+	}
+
+	return nil
 }
