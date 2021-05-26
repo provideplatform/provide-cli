@@ -1,8 +1,6 @@
 package workgroups
 
 import (
-	"fmt"
-
 	"github.com/provideservices/provide-cli/cmd/baseline/participants"
 	"github.com/spf13/cobra"
 )
@@ -12,7 +10,7 @@ var WorkgroupsCmd = &cobra.Command{
 	Short: "Interact with a baseline workgroups",
 	Long:  `Create, manage and interact with workgroups via the baseline protocol.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("workgroups unimplemented")
+		generalPrompt(cmd, args, "")
 	},
 }
 
@@ -21,4 +19,5 @@ func init() {
 	WorkgroupsCmd.AddCommand(joinBaselineWorkgroupCmd)
 	WorkgroupsCmd.AddCommand(listBaselineWorkgroupsCmd)
 	WorkgroupsCmd.AddCommand(participants.ParticipantsCmd)
+	WorkgroupsCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }

@@ -32,8 +32,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepRun:
 		common.RequireOrganization()
-		fmt.Print(OptionalStack)
-		if OptionalStack {
+		if Optional {
 			if name == "" {
 				name = common.FreeInput("Name")
 			}
@@ -116,22 +115,22 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				nchainAPIScheme = common.FreeInput("Nchain API Scheme")
 			}
 			if privacyAPIHost == "privacy.provide.services" {
-				privacyAPIHost = common.FreeInput("Privacy API Scheme")
+				privacyAPIHost = common.FreeInput("Privacy API Host")
 			}
 			if privacyAPIScheme == "https" {
 				privacyAPIScheme = common.FreeInput("Privacy API Scheme")
 			}
 			if vaultAPIHost == "vault.provide.services" {
-				vaultAPIHost = common.FreeInput("Vault API Scheme")
+				vaultAPIHost = common.FreeInput("Vault API Host")
 			}
 			if vaultAPIScheme == "https" {
 				vaultAPIScheme = common.FreeInput("Vault API Scheme")
 			}
 			if vaultRefreshToken == os.Getenv("VAULT_REFRESH_TOKEN") {
-				vaultRefreshToken = common.FreeInput("Vault API Scheme")
+				vaultRefreshToken = common.FreeInput("Vault API Refresh Token")
 			}
 			if vaultSealUnsealKey == os.Getenv("VAULT_SEAL_UNSEAL_KEY") {
-				vaultSealUnsealKey = common.FreeInput("Vault API Scheme")
+				vaultSealUnsealKey = common.FreeInput("Vault Un/Seal Token")
 			}
 			if !withLocalVault {
 				withLocalVault = strings.ToLower(common.SelectInput(boolPromptArgs, localVaultPromptLabel)) == "yes"
@@ -160,30 +159,24 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			if nchainBaselineNetworkID == "0x" {
 				baselineOrganizationAddress = common.FreeInput("Nchain Baseline Network ID")
 			}
-			runProxy(cmd, args)
 		}
-	// case promptStepStop:
-	// 	if optional {
-	// 		fmt.Println("Optional Flags:")
-	// 		if !nonCustodial {
-	// 			nonCustodial = common.SelectInput(custodyPromptArgs, custodyPromptLabel) == "Yes"
-	// 		}
-	// 		if walletName == "" {
-	// 			walletName = common.FreeInput("Wallet Name")
-	// 		}
-	// 		if purpose == 44 {
-	// 			purpose, _ = strconv.Atoi(common.FreeInput("Wallet Purpose"))
-	// 		}
-	// 	}
-	// 	CreateWalletRun(cmd, args)
-	// case promptStepLogs:
-	// 	if optional {
-	// 		fmt.Println("Optional Flags:")
-	// 		if common.ApplicationID == "" {
-	// 			common.RequireApplication()
-	// 		}
-	// 	}
-	// 	listWalletsRun(cmd, args)
+		runProxyRun(cmd, args)
+	case promptStepStop:
+		if Optional {
+			fmt.Println("Optional Flags:")
+			if name == "" {
+				name = common.FreeInput("Name")
+			}
+		}
+		stopProxyRun(cmd, args)
+	case promptStepLogs:
+		if Optional {
+			fmt.Println("Optional Flags:")
+			if name == "" {
+				name = common.FreeInput("Name")
+			}
+		}
+		logsProxyRun(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)
 		generalPrompt(cmd, args, result)

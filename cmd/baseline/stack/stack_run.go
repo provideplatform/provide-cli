@@ -67,7 +67,7 @@ type portMapping struct {
 }
 
 var dockerNetworkID string
-var OptionalStack bool
+var Optional bool
 var name string
 var port int
 var natsPort int
@@ -146,6 +146,10 @@ var runBaselineStackCmd = &cobra.Command{
 }
 
 func runProxy(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, promptStepRun)
+}
+
+func runProxyRun(cmd *cobra.Command, args []string) {
 	docker, err := client.NewEnvClient()
 	if err != nil {
 		log.Printf("failed to initialize docker; %s", err.Error())
@@ -962,5 +966,5 @@ func initSORFlags() {
 	runBaselineStackCmd.Flags().StringVar(&serviceNowAPIPath, "servicenow-api-path", "api/now/table", "base path of the ServiceNow API")
 	runBaselineStackCmd.Flags().StringVar(&serviceNowAPIUsername, "servicenow-api-username", "", "username to use for basic authorization against the ServiceNow API")
 	runBaselineStackCmd.Flags().StringVar(&serviceNowAPIPassword, "servicenow-api-password", "", "password to use for basic authorization against the ServiceNow API")
-	runBaselineStackCmd.Flags().BoolVarP(&OptionalStack, "optionalStack", "", false, "List all the optional flags")
+	runBaselineStackCmd.Flags().BoolVarP(&Optional, "optionalStack", "", false, "List all the optional flags")
 }
