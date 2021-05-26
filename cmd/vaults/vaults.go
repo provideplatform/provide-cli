@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
+	"github.com/provideservices/provide-cli/cmd/vaults/keys"
 )
 
 var VaultsCmd = &cobra.Command{
@@ -12,7 +14,9 @@ var VaultsCmd = &cobra.Command{
 	Short: "Manage vaults",
 	Long: `Create and manage vaults and their associated keys and secrets.
 
-Supports encrypt/decrypt and sign/verify operations for select key specs.`,
+Vaults support select symmetric and asymmetric key specs for encrypt/decrypt and sign/verify operations.
+
+Docs: https://docs.provide.services/vault`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Vaults command run")
 		generalPrompt(cmd, args, "")
@@ -28,4 +32,6 @@ Supports encrypt/decrypt and sign/verify operations for select key specs.`,
 func init() {
 	VaultsCmd.AddCommand(vaultsListCmd)
 	VaultsCmd.AddCommand(vaultsInitCmd)
+
+	VaultsCmd.AddCommand(keys.KeysCmd)
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
+	"github.com/provideservices/provide-go/api/vault"
 )
 
 const requireAccountSelectLabel = "Select an account"
@@ -11,6 +12,7 @@ const requireApplicationSelectLabel = "Select an application"
 const requireConnectorSelectLabel = "Select a connector"
 const requireNetworkSelectLabel = "Select a network"
 const requireOrganizationSelectLabel = "Select an organization"
+const requireVaultSelectLabel = "Select a vault"
 const requireWalletSelectLabel = "Select a wallet"
 const requireWorkgroupSelectLabel = "Select a workgroup"
 
@@ -173,6 +175,32 @@ func RequireOrganization() error {
 
 	Organization = orgs[i]
 	OrganizationID = orgs[i].ID.String()
+	return nil
+}
+
+// RequireVault is equivalent to a required --vault flag
+func RequireVault() error {
+	if VaultID != "" {
+		return nil
+	}
+
+	opts := make([]string, 0)
+	vaults, _ := vault.ListVaults(RequireAPIToken(), map[string]interface{}{})
+	for _, vlt := range vaults {
+		opts = append(opts, *vlt.Name)
+	}
+
+	prompt := promptui.Select{
+		Label: requireVaultSelectLabel,
+		Items: opts,
+	}
+
+	i, _, err := prompt.Run()
+	if err != nil {
+		return err
+	}
+
+	VaultID = vaults[i].ID.String()
 	return nil
 }
 
