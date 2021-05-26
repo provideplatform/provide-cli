@@ -31,6 +31,7 @@ var nativeCommands = map[string]interface{}{
 
 				writer.SaveCursor()
 				writer.CursorGoTo(shellHeaderRows+1, 0)
+				writer.WriteRaw([]byte("\033[0J"))
 				raw := stripEscapeSequences(string(buf.Bytes()[i:]))
 				writer.WriteRaw([]byte(raw))
 				writer.UnSaveCursor()
