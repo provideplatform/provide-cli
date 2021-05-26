@@ -33,6 +33,11 @@ import (
 )
 
 const baselineContainerImage = "provide/baseline"
+const identContainerImage = "provide/ident"
+const nchainContainerImage = "provide/nchain"
+const privacyContainerImage = "provide/privacy"
+const vaultContainerImage = "provide/vault"
+const postgresContainerImage = "postgres"
 const natsContainerImage = "provide/nats-server:2.2.3-beta.4-PRVD"
 const natsStreamingContainerImage = "provide/nats-streaming"
 const redisContainerImage = "redis"
@@ -59,6 +64,7 @@ const apiContainerPort = 8080
 const natsContainerPort = 4222
 const natsWebsocketContainerPort = 4221
 const natsStreamingContainerPort = 4222
+const postgresContainerPort = 5432
 const redisContainerPort = 6379
 
 type portMapping struct {
@@ -70,16 +76,31 @@ var dockerNetworkID string
 
 var name string
 var port int
+var identPort int
+var nchainPort int
+var privacyPort int
+var vaultPort int
 var natsPort int
 var natsWebsocketPort int
 var natsStreamingPort int
+var postgresPort int
 var redisPort int
 
 var apiHostname string
 var consumerHostname string
+var identHostname string
+var identConsumerHostname string
+var nchainHostname string
+var nchainConsumerHostname string
+var nchainStatsdaemonHostname string
+var nchainReachabilitydaemonHostname string
+var privacyHostname string
+var privacyConsumerHostname string
+var vaultHostname string
 var natsHostname string
 var natsServerName string
 var natsStreamingHostname string
+var postgresHostname string
 var redisHostname string
 var redisHosts string
 
@@ -135,7 +156,7 @@ var salesforceAPIPath string
 
 var withLocalVault bool
 var withLocalIdent bool
-var withLocalNchain bool
+var withLocalNChain bool
 var withLocalPrivacy bool
 
 var runBaselineStackCmd = &cobra.Command{
@@ -161,12 +182,36 @@ func runProxy(cmd *cobra.Command, args []string) {
 
 	wg := &sync.WaitGroup{}
 
-	for _, image := range []string{
+	images := make([]string, 0)
+	images = append(
+		images,
 		baselineContainerImage,
 		natsContainerImage,
 		natsStreamingContainerImage,
 		redisContainerImage,
-	} {
+	)
+
+	if withLocalIdent {
+		images = append(images, identContainerImage)
+	}
+
+	if withLocalNChain {
+		images = append(images, nchainContainerImage)
+	}
+
+	if withLocalPrivacy {
+		images = append(images, privacyContainerImage)
+	}
+
+	if withLocalVault {
+		images = append(images, vaultContainerImage)
+	}
+
+	if withLocalIdent || withLocalNChain || withLocalPrivacy || withLocalVault {
+		images = append(images, postgresContainerImage)
+	}
+
+	for _, image := range images {
 		img := image
 		wg.Add(1)
 		go func() {
@@ -187,13 +232,39 @@ func runProxy(cmd *cobra.Command, args []string) {
 			wg.Wait()
 
 			// run local deps
-			runNATS(docker)
-			runNATSStreaming(docker)
-			runRedis(docker)
+			go runNATS(docker)
+			go runNATSStreaming(docker)
+			go runRedis(docker)
+
+			if withLocalIdent || withLocalNChain || withLocalPrivacy || withLocalVault {
+				go runPostgres(docker)
+			}
+
+			// run optional local containers
+			if withLocalIdent {
+				go runIdentAPI(docker)
+				go runIdentConsumer(docker)
+			}
+
+			if withLocalNChain {
+				go runNChainAPI(docker)
+				go runNChainConsumer(docker)
+				go runStatsdaemon(docker)
+				go runReachabilitydaemon(docker)
+			}
+
+			if withLocalPrivacy {
+				go runPrivacyAPI(docker)
+				go runPrivacyConsumer(docker)
+			}
+
+			if withLocalVault {
+				go runVaultAPI(docker)
+			}
 
 			// run proxy
-			runProxyAPI(docker)
-			runProxyConsumer(docker)
+			go runProxyAPI(docker)
+			go runProxyConsumer(docker)
 
 			log.Printf("%s local baseline instance started", name)
 		},
@@ -333,6 +404,51 @@ func applyFlags() {
 	// HACK
 	if strings.HasSuffix(consumerHostname, "-consumer") {
 		consumerHostname = fmt.Sprintf("%s-consumer", name)
+	}
+
+	// HACK
+	if strings.HasSuffix(identHostname, "-ident-api") {
+		identHostname = fmt.Sprintf("%s-ident-api", name)
+	}
+
+	// HACK
+	if strings.HasSuffix(identHostname, "-ident-consumer") {
+		identConsumerHostname = fmt.Sprintf("%s-ident-consumer", name)
+	}
+
+	// HACK
+	if strings.HasSuffix(nchainHostname, "-nchain-api") {
+		nchainHostname = fmt.Sprintf("%s-nchain-api", name)
+	}
+
+	// HACK
+	if strings.HasSuffix(nchainConsumerHostname, "-nchain-consumer") {
+		nchainConsumerHostname = fmt.Sprintf("%s-nchain-consumer", name)
+	}
+
+	// HACK
+	if strings.HasSuffix(nchainConsumerHostname, "-reachabilitydaemon") {
+		nchainReachabilitydaemonHostname = fmt.Sprintf("%s-reachabilitydaemon", name)
+	}
+
+	// HACK
+	if strings.HasSuffix(nchainStatsdaemonHostname, "-statsdaemon") {
+		nchainStatsdaemonHostname = fmt.Sprintf("%s-statsdaemon", name)
+	}
+
+	// HACK
+	if strings.HasSuffix(privacyHostname, "-privacy-api") {
+		privacyHostname = fmt.Sprintf("%s-privacy-api", name)
+	}
+
+	// HACK
+	if strings.HasSuffix(privacyConsumerHostname, "-privacy-consumer") {
+		privacyConsumerHostname = fmt.Sprintf("%s-privacy-consumer", name)
+	}
+
+	// HACK
+	if strings.HasSuffix(vaultHostname, "-vault-api") {
+		vaultHostname = fmt.Sprintf("%s-vault-api", name)
 	}
 
 	// HACK
@@ -507,6 +623,189 @@ func runProxyConsumer(docker *client.Client) {
 	}
 }
 
+func runIdentAPI(docker *client.Client) {
+	_, err := runContainer(
+		docker,
+		fmt.Sprintf("%s-ident-api", strings.ReplaceAll(name, " ", "")),
+		identHostname,
+		identContainerImage,
+		&[]string{"./ops/run_api.sh"},
+		nil,
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", identHostname, apiContainerPort)},
+		map[string]string{},
+		[]portMapping{{
+			hostPort:      identPort,
+			containerPort: apiContainerPort,
+		}}...,
+	)
+
+	if err != nil {
+		log.Printf("failed to create local ident API container; %s", err.Error())
+		os.Exit(1)
+	}
+}
+
+func runIdentConsumer(docker *client.Client) {
+	_, err := runContainer(
+		docker,
+		fmt.Sprintf("%s-ident-consumer", strings.ReplaceAll(name, " ", "")),
+		identConsumerHostname,
+		identContainerImage,
+		&[]string{"./ops/run_consumer.sh"},
+		nil,
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", identHostname, apiContainerPort)},
+		map[string]string{},
+		[]portMapping{}...,
+	)
+
+	if err != nil {
+		log.Printf("failed to create local ident consumer container; %s", err.Error())
+		os.Exit(1)
+	}
+}
+
+func runNChainAPI(docker *client.Client) {
+	_, err := runContainer(
+		docker,
+		fmt.Sprintf("%s-nchain-api", strings.ReplaceAll(name, " ", "")),
+		nchainHostname,
+		nchainContainerImage,
+		&[]string{"./ops/run_api.sh"},
+		nil,
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, apiContainerPort)},
+		map[string]string{},
+		[]portMapping{{
+			hostPort:      nchainPort,
+			containerPort: apiContainerPort,
+		}}...,
+	)
+
+	if err != nil {
+		log.Printf("failed to create local nchain API container; %s", err.Error())
+		os.Exit(1)
+	}
+}
+
+func runNChainConsumer(docker *client.Client) {
+	_, err := runContainer(
+		docker,
+		fmt.Sprintf("%s-nchain-consumer", strings.ReplaceAll(name, " ", "")),
+		nchainConsumerHostname,
+		nchainContainerImage,
+		&[]string{"./ops/run_consumer.sh"},
+		nil,
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, apiContainerPort)},
+		map[string]string{},
+		[]portMapping{}...,
+	)
+
+	if err != nil {
+		log.Printf("failed to create local nchain consumer container; %s", err.Error())
+		os.Exit(1)
+	}
+}
+
+func runStatsdaemon(docker *client.Client) {
+	_, err := runContainer(
+		docker,
+		fmt.Sprintf("%s-statsdaemon", strings.ReplaceAll(name, " ", "")),
+		nchainStatsdaemonHostname,
+		nchainContainerImage,
+		&[]string{"./ops/run_statsdaemon.sh"},
+		nil,
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, apiContainerPort)},
+		map[string]string{},
+		[]portMapping{}...,
+	)
+
+	if err != nil {
+		log.Printf("failed to create local statsdaemon container; %s", err.Error())
+		os.Exit(1)
+	}
+}
+
+func runReachabilitydaemon(docker *client.Client) {
+	_, err := runContainer(
+		docker,
+		fmt.Sprintf("%s-reachabilitydaemon", strings.ReplaceAll(name, " ", "")),
+		nchainReachabilitydaemonHostname,
+		nchainContainerImage,
+		&[]string{"./ops/run_reachabilitydaemon.sh"},
+		nil,
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, apiContainerPort)},
+		map[string]string{},
+		[]portMapping{}...,
+	)
+
+	if err != nil {
+		log.Printf("failed to create local reachabilitydaemon container; %s", err.Error())
+		os.Exit(1)
+	}
+}
+
+func runPrivacyAPI(docker *client.Client) {
+	_, err := runContainer(
+		docker,
+		fmt.Sprintf("%s-privacy-api", strings.ReplaceAll(name, " ", "")),
+		privacyHostname,
+		privacyContainerImage,
+		&[]string{"./ops/run_api.sh"},
+		nil,
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", privacyHostname, apiContainerPort)},
+		map[string]string{},
+		[]portMapping{{
+			hostPort:      privacyPort,
+			containerPort: apiContainerPort,
+		}}...,
+	)
+
+	if err != nil {
+		log.Printf("failed to create local privacy API container; %s", err.Error())
+		os.Exit(1)
+	}
+}
+
+func runPrivacyConsumer(docker *client.Client) {
+	_, err := runContainer(
+		docker,
+		fmt.Sprintf("%s-privacy-consumer", strings.ReplaceAll(name, " ", "")),
+		privacyConsumerHostname,
+		privacyContainerImage,
+		&[]string{"./ops/run_consumer.sh"},
+		nil,
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", privacyHostname, apiContainerPort)},
+		map[string]string{},
+		[]portMapping{}...,
+	)
+
+	if err != nil {
+		log.Printf("failed to create local privacy consumer container; %s", err.Error())
+		os.Exit(1)
+	}
+}
+
+func runVaultAPI(docker *client.Client) {
+	_, err := runContainer(
+		docker,
+		fmt.Sprintf("%s-vault-api", strings.ReplaceAll(name, " ", "")),
+		vaultHostname,
+		vaultContainerImage,
+		&[]string{"./ops/run_api.sh"},
+		nil,
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", vaultHostname, apiContainerPort)},
+		map[string]string{},
+		[]portMapping{{
+			hostPort:      vaultPort,
+			containerPort: apiContainerPort,
+		}}...,
+	)
+
+	if err != nil {
+		log.Printf("failed to create local vault API container; %s", err.Error())
+		os.Exit(1)
+	}
+}
+
 func writeNATSConfig() {
 	cfg := []byte("max_payload: 100Mb\n")
 	// FIXME-- use properly-resolved path to tmp
@@ -584,6 +883,28 @@ func runNATSStreaming(docker *client.Client) {
 
 	if err != nil {
 		log.Printf("failed to create local baseline NATS streaming container; %s", err.Error())
+		os.Exit(1)
+	}
+}
+
+func runPostgres(docker *client.Client) {
+	_, err := runContainer(
+		docker,
+		fmt.Sprintf("%s-postgres", strings.ReplaceAll(name, " ", "")),
+		postgresHostname,
+		postgresContainerImage,
+		nil,
+		nil,
+		&[]string{"CMD", "pg_isready", "-U", "prvd", "-d", "prvd"},
+		map[string]string{},
+		[]portMapping{{
+			hostPort:      postgresPort,
+			containerPort: postgresContainerPort,
+		}}...,
+	)
+
+	if err != nil {
+		log.Printf("failed to create local postgres container; %s", err.Error())
 		os.Exit(1)
 	}
 }
@@ -892,6 +1213,9 @@ func init() {
 	runBaselineStackCmd.Flags().StringVar(&natsStreamingHostname, "nats-streaming-hostname", fmt.Sprintf("%s-nats-streaming", name), "hostname for the local baseline NATS streaming container")
 	runBaselineStackCmd.Flags().IntVar(&natsStreamingPort, "nats-streaming-port", 4220, "host port on which to expose the local NATS streaming service")
 
+	runBaselineStackCmd.Flags().StringVar(&postgresHostname, "postgres-hostname", fmt.Sprintf("%s-postgres", name), "hostname for the local postgres container")
+	runBaselineStackCmd.Flags().IntVar(&postgresPort, "postgres-port", 5432, "host port on which to expose the local postgres service")
+
 	runBaselineStackCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the local baseline redis container")
 	runBaselineStackCmd.Flags().IntVar(&redisPort, "redis-port", 6379, "host port on which to expose the local redis service")
 	runBaselineStackCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisContainerPort), "list of clustered redis hosts in the local baseline stack")
@@ -915,10 +1239,17 @@ func init() {
 	runBaselineStackCmd.Flags().StringVar(&vaultRefreshToken, "vault-refresh-token", os.Getenv("VAULT_REFRESH_TOKEN"), "refresh token to vend access tokens for use with vault")
 	runBaselineStackCmd.Flags().StringVar(&vaultSealUnsealKey, "vault-seal-unseal-key", os.Getenv("VAULT_SEAL_UNSEAL_KEY"), "seal/unseal key for the vault service")
 
-	runBaselineStackCmd.Flags().BoolVar(&withLocalVault, "with-local-vault", false, "when true, vault service is run locally")
 	runBaselineStackCmd.Flags().BoolVar(&withLocalIdent, "with-local-ident", false, "when true, ident service is run locally")
-	runBaselineStackCmd.Flags().BoolVar(&withLocalNchain, "with-local-nchain", false, "when true, nchain service is run locally")
+	runBaselineStackCmd.Flags().IntVar(&identPort, "ident-local-port", 8081, "port for the local ident service")
+
+	runBaselineStackCmd.Flags().BoolVar(&withLocalNChain, "with-local-nchain", false, "when true, nchain service is run locally")
+	runBaselineStackCmd.Flags().IntVar(&nchainPort, "nchain-local-port", 8082, "port for the local nchain service")
+
 	runBaselineStackCmd.Flags().BoolVar(&withLocalPrivacy, "with-local-privacy", false, "when true, privacy service is run locally")
+	runBaselineStackCmd.Flags().IntVar(&privacyPort, "privacy-local-port", 8083, "port for the local privacy service")
+
+	runBaselineStackCmd.Flags().BoolVar(&withLocalVault, "with-local-vault", false, "when true, vault service is run locally")
+	runBaselineStackCmd.Flags().IntVar(&vaultPort, "vault-local-port", 8084, "port for the local vault service")
 
 	runBaselineStackCmd.Flags().StringVar(&organizationRefreshToken, "organization-refresh-token", os.Getenv("PROVIDE_ORGANIZATION_REFRESH_TOKEN"), "refresh token to vend access tokens for use with the local organization")
 
