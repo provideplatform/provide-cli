@@ -138,8 +138,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			if !withLocalIdent {
 				withLocalIdent = strings.ToLower(common.SelectInput(boolPromptArgs, localIdentPromptLabel)) == "yes"
 			}
-			if !withLocalNchain {
-				withLocalNchain = strings.ToLower(common.SelectInput(boolPromptArgs, localNchainPromptLabel)) == "yes"
+			if !withLocalNChain {
+				withLocalNChain = strings.ToLower(common.SelectInput(boolPromptArgs, localNchainPromptLabel)) == "yes"
 			}
 			if !withLocalPrivacy {
 				withLocalPrivacy = strings.ToLower(common.SelectInput(boolPromptArgs, localPrivacyPromptLabel)) == "yes"
