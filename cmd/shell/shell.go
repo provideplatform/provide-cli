@@ -398,7 +398,8 @@ func promptSuggestionFactory(cmd *cobra.Command, d prompt.Document) []prompt.Sug
 				results = append(results, result)
 			}
 		} else {
-			results = append(results, result)
+			// Uncomment the following line to enable suggestions by default
+			// results = append(results, result)
 		}
 	}
 
