@@ -15,9 +15,9 @@ import (
 	"github.com/provideservices/provide-go/common"
 )
 
-const replTickerInterval = 250 * time.Millisecond
-const replSleepInterval = 50 * time.Millisecond
-const replCmdSleepInterval = 25 * time.Millisecond
+const replTickerInterval = 500 * time.Millisecond
+const replSleepInterval = 250 * time.Millisecond
+const replCmdSleepInterval = 100 * time.Millisecond
 
 type REPL struct {
 	buf         *bytes.Buffer
@@ -103,12 +103,6 @@ func (r *REPL) exec() error {
 		return nil
 	}
 
-	// write := buf == nil
-	// if write {
-	// 	buf = &bytes.Buffer{}
-	// }
-
-	// cmd := exec.Command(bin, argv...)
 	r.cmd.Stdin = os.Stdin
 	r.cmd.Stderr = nil
 	r.cmd.Stdout = r.buf

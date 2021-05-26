@@ -247,7 +247,8 @@ func renderRootBanner() {
 		writer.CursorGoTo(1, 0)
 		writer.SetColor(prompt.Cyan, shellOptionDefaultBGColor, true)
 		writer.WriteStr(common.ASCIIBanner)
-		writer.WriteRawStr("\n\n")
+		writer.CursorGoTo(7, 0)
+		writer.WriteRaw([]byte("\033[2K\n")) // delete current line
 		writer.SetColor(shellOptionDefaultFGColor, shellOptionDefaultBGColor, true)
 		writer.UnSaveCursor()
 		if shouldShowCursor {
@@ -300,7 +301,8 @@ func interpret(cmd *cobra.Command, input string) {
 
 	switch input {
 	case sanitizedPromptInputMatchClear:
-		refresh(cmd, []byte{})
+		defaultCursorPosition()
+		eraseCursorToEnd()
 		return
 	case sanitizedPromptInputMatchExit:
 		showCursor()
