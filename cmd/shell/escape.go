@@ -8,9 +8,29 @@ func cursorUp() {
 	writeRaw([]byte("\033[A"), true)
 }
 
+func cursorDown() {
+	writeRaw([]byte("\033[B"), true)
+}
+
+func cursorRight() {
+	writeRaw([]byte("\033[C"), true)
+}
+
+func cursorLeft() {
+	writeRaw([]byte("\033[D"), true)
+}
+
+func cursorNextLine() {
+	writeRaw([]byte("\033[E"), true)
+}
+
+func cursorPreviousLine() {
+	writeRaw([]byte("\033[F"), true)
+}
+
 func defaultCursorPosition() {
 	if writer != nil {
-		writer.CursorGoTo(8, 0)
+		writer.CursorGoTo(shellHeaderRows+1, 0)
 	}
 }
 

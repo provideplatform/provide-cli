@@ -14,6 +14,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const shellHeaderStartRow = 1
+const shellHeaderRows = 7
+
 const shellExitMessage = "Exiting... have a nice day!"
 const shellTitle = "prvd"
 const shellPrefix = "➜  prvd:($VERSION)$PATH"
@@ -244,10 +247,10 @@ func renderRootBanner() {
 
 		writer.SaveCursor()
 		hideCursor()
-		writer.CursorGoTo(1, 0)
+		writer.CursorGoTo(shellHeaderStartRow, 0)
 		writer.SetColor(prompt.Cyan, shellOptionDefaultBGColor, true)
 		writer.WriteStr(common.ASCIIBanner)
-		writer.CursorGoTo(7, 0)
+		writer.CursorGoTo(shellHeaderRows, 0)
 		writer.WriteRaw([]byte("\033[2K\n")) // delete current line
 		writer.SetColor(shellOptionDefaultFGColor, shellOptionDefaultBGColor, true)
 		writer.UnSaveCursor()
@@ -352,7 +355,8 @@ func interpret(cmd *cobra.Command, input string) {
 			write([]byte(fmt.Sprintf("%s: native command returned err: %s;%s\n", shellTitle, strings.Join(argv, " "), err.Error())), true)
 		}
 	} else {
-		write([]byte(fmt.Sprintf("%s: command not found: %s\n", shellTitle, strings.Join(argv, " "))), true)
+		go write([]byte(fmt.Sprintf("%s: command not found: %s\n", shellTitle, strings.Join(argv, " "))), true)
+		go eraseCurrentLine()
 	}
 }
 
@@ -374,16 +378,27 @@ func promptSuggestionFactory(cmd *cobra.Command, d prompt.Document) []prompt.Sug
 		return nil
 	}
 
-	var results []prompt.Suggest = nil
+	// var results []prompt.Suggest = nil
 	input := strings.TrimSpace(d.CurrentLine())
-	argv := strings.Split(input, " ") // this is hardly sanitized -- but it's a start
+	// argv := strings.Split(input, " ") // this is hardly sanitized -- but it's a start
 
-	i := len(argv) - 1 // TODO: handle caret position for previous suggest fields...
+	// i := len(argv) - 1 // TODO: handle caret position for previous suggest fields...
 	// i now contains offset for arg at cursor position
 
-	switch argv[i] {
-	case sanitizedPromptInputMatchRoot:
-		results = childCommandSuggestions
+	// switch argv[i] {
+	// case sanitizedPromptInputMatchRoot:
+	// 	results = childCommandSuggestions
+	// }
+
+	results := make([]prompt.Suggest, 0)
+	for _, result := range childCommandSuggestions {
+		if len(input) > 0 {
+			if strings.HasPrefix(result.Text, input) {
+				results = append(results, result)
+			}
+		} else {
+			results = append(results, result)
+		}
 	}
 
 	return results

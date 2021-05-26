@@ -30,7 +30,7 @@ var nativeCommands = map[string]interface{}{
 				defer mutex.Unlock()
 
 				writer.SaveCursor()
-				writer.CursorGoTo(8, 0)
+				writer.CursorGoTo(shellHeaderRows+1, 0)
 				raw := stripEscapeSequences(string(buf.Bytes()[i:]))
 				writer.WriteRaw([]byte(raw))
 				writer.UnSaveCursor()
