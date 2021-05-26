@@ -295,8 +295,8 @@ github.com/kthomas/go-auth0 v0.0.0-20210417042937-27d1d2dadf19 h1:anZ2QxZWRUGU2M
 github.com/kthomas/go-auth0 v0.0.0-20210417042937-27d1d2dadf19/go.mod h1:5o9CD0v7+NFL4+2diOZIqQ0gZIFZepkl5XRXHQt0zN8=
 github.com/kthomas/go-logger v0.0.0-20200602041232-5c46e0cab608/go.mod h1:sXRQB767yNz+melLbxSNF+yu0H7kxguvoJHqa47Mxh4=
 github.com/kthomas/go-logger v0.0.0-20200602072946-d7d72dfc2531/go.mod h1:sXRQB767yNz+melLbxSNF+yu0H7kxguvoJHqa47Mxh4=
-github.com/kthomas/go-logger v0.0.0-20210411034702-66a0af9aee2c h1:M8vy2L8G7n2pVgc5PVuRo0h8Y502WdieAn4o5B+5eKc=
-github.com/kthomas/go-logger v0.0.0-20210411034702-66a0af9aee2c/go.mod h1:TtVSBQILggONVgiZObhmzisbSxWrgnF+GYhwKbNDV8Y=
+github.com/kthomas/go-logger v0.0.0-20210526080020-a63672d0724c h1:RY4Ei3MRDKfjWqaSG9OA2R/xz4GGmRQx/wcgGosYilI=
+github.com/kthomas/go-logger v0.0.0-20210526080020-a63672d0724c/go.mod h1:TtVSBQILggONVgiZObhmzisbSxWrgnF+GYhwKbNDV8Y=
 github.com/kthomas/go-pgputil v0.0.0-20200602073402-784e96083943 h1:cDp8m82Etk3UybAMLVTgUyvscBc54Yuy1MsoqXbo71c=
 github.com/kthomas/go-pgputil v0.0.0-20200602073402-784e96083943/go.mod h1:1wYaoVWP9k76g2FfW5U9NaJ6dELUDFt2J2XMzSbJAVg=
 github.com/kthomas/go-self-signed-cert v0.0.0-20200602041729-f9878375d46e h1:G//bQmubE/JtHY10bbiPnulIuDi1zHkjuP9QpcB4+8I=
@@ -414,8 +414,8 @@ github.com/prometheus/procfs v0.0.0-20190507164030-5867b95ac084/go.mod h1:TjEm7z
 github.com/prometheus/tsdb v0.6.2-0.20190402121629-4f204dcbc150/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
 github.com/prometheus/tsdb v0.7.1 h1:YZcsG11NqnK4czYLrWd9mpEuAJIHVQLwdrleYfszMAA=
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
-github.com/provideservices/provide-go v0.0.0-20210520093012-d8c8efe60c07 h1:ZyH5mjDZbpMVDoYJzgY5dgrMoJyKtTRaY0VcQmVBVzc=
-github.com/provideservices/provide-go v0.0.0-20210520093012-d8c8efe60c07/go.mod h1:lAT70A7vk8dxX8lh6kcjgo3BKVJ8ceu+k9aSBrnLZwU=
+github.com/provideservices/provide-go v0.0.0-20210526080135-56bf9dc77084 h1:lfKxJxPqKyThvPNdhzDFtCImH4o9IPkocokrW5VFBtE=
+github.com/provideservices/provide-go v0.0.0-20210526080135-56bf9dc77084/go.mod h1:7DcVnSaId1x8W42xofin3gbBsfRJjo4DlILIhJJxDZU=
 github.com/rivo/uniseg v0.1.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.2.0 h1:S1pD9weZBuJdFmowNwbpi7BJ8TNftyUImj/0WQi72jY=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
