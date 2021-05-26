@@ -43,4 +43,5 @@ func listWalletsRun(cmd *cobra.Command, args []string) {
 
 func init() {
 	walletsListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter HD wallets")
+	walletsListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

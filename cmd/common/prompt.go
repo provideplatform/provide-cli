@@ -1,10 +1,13 @@
 package common
 
 import (
+	"os"
+
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
 	"github.com/provideservices/provide-go/api/vault"
+	"github.com/spf13/cobra"
 )
 
 const requireAccountSelectLabel = "Select an account"
@@ -15,6 +18,36 @@ const requireOrganizationSelectLabel = "Select an organization"
 const requireVaultSelectLabel = "Select a vault"
 const requireWalletSelectLabel = "Select a wallet"
 const requireWorkgroupSelectLabel = "Select a workgroup"
+
+var commands map[string]*cobra.Command
+
+// func CacheCommands(cmd *cobra.Command) {
+// 	if commands == nil {
+// 		commands = map[string]*cobra.Command{}
+// 	}
+
+// 	hashCmd := sha256.Sum256([]byte(cmd.UseLine()))
+
+// 	commands[string(hashCmd[:])] = cmd
+// 	for _, child := range cmd.Commands() {
+// 		fmt.Print(child)
+// 		CacheCommands(child)
+// 	}
+// }
+
+// func CmdExists(cmd *cobra.Command) bool {
+// 	hashCmd := sha256.Sum256([]byte(cmd.UseLine()))
+// 	fmt.Println(hashCmd)
+
+// 	return commands[string(hashCmd[:])] != nil
+
+// }
+
+// func CmdExistsOrExit(cmd *cobra.Command) {
+// 	if !CmdExists(cmd) {
+// 		os.Exit(1)
+// 	}
+// }
 
 // RequireApplication is equivalent to a required --application flag
 func RequireApplication() error {
@@ -254,4 +287,41 @@ func RequireWallet() error {
 
 	WalletID = wallets[i].ID.String()
 	return nil
+}
+
+func FreeInput(label string) string {
+	validate := func(input string) error {
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    label,
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		os.Exit(1)
+		return err.Error()
+	}
+
+	return result
+}
+
+func SelectInput(args []string, label string) string {
+	prompt := promptui.Select{
+		Label: label,
+		Items: args,
+	}
+
+	_, result, err := prompt.Run()
+
+	if err != nil {
+		os.Exit(1)
+		return err.Error()
+	}
+
+	return result
+
 }

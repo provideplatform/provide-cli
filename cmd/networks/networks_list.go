@@ -40,4 +40,5 @@ func listNetworks(cmd *cobra.Command, args []string) {
 
 func init() {
 	networksListCmd.Flags().BoolVarP(&public, "public", "p", false, "filter private networks (false by default)")
+	networksListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

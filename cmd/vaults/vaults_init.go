@@ -13,6 +13,7 @@ import (
 
 var name string
 var description string
+var optional bool
 
 var vaultsInitCmd = &cobra.Command{
 	Use:   "init --name 'My Vault' --description 'not your keys, not your crypto'",
@@ -47,4 +48,5 @@ func init() {
 
 	vaultsInitCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier for which the vault will be created")
 	vaultsInitCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier for which the vault will be created")
+	vaultsInitCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

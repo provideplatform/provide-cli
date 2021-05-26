@@ -16,6 +16,7 @@ import (
 
 var accountName string
 var nonCustodial bool
+var optional bool
 
 var accountsInitCmd = &cobra.Command{
 	Use:   "init [--non-custodial|-nc] [--network 024ff1ef-7369-4dee-969c-1918c6edb5d4] [--application 024ff1ef-7369-4dee-969c-1918c6edb5d4] [--organization 024ff1ef-7369-4dee-969c-1918c6edb5d4]",
@@ -25,8 +26,6 @@ var accountsInitCmd = &cobra.Command{
 }
 
 func CreateAccount(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, "Initialize")
-
 	if nonCustodial {
 		createDecentralizedAccount()
 		return
@@ -91,4 +90,5 @@ func init() {
 
 	accountsInitCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application id")
 	accountsInitCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization id")
+	accountsInitCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

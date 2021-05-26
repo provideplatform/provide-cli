@@ -18,13 +18,13 @@ const defaultNChainBaselineNetworkID = "66d44f30-9092-4182-a3c4-bc02736d6ae5"
 const defaultWorkgroupType = "baseline"
 
 var name string
-var networkID string
 
 var vaultID string
 var babyJubJubKeyID string
 var secp256k1KeyID string
 var hdwalletID string
 var rsa4096Key string
+var Optional bool
 
 var initBaselineWorkgroupCmd = &cobra.Command{
 	Use:   "init",
@@ -43,8 +43,11 @@ func authorizeApplicationContext() {
 		os.Exit(1)
 	}
 }
-
 func initWorkgroup(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, promptStepInit)
+}
+
+func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	if name == "" {
 		namePrompt()
 	}
@@ -142,4 +145,5 @@ func init() {
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.NetworkID, "network", "", "nchain network id of the baseline mainnet to use for this workgroup")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.MessagingEndpoint, "endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
+	initBaselineWorkgroupCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }

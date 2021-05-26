@@ -15,6 +15,7 @@ import (
 var contractExecMethod string
 var contractExecValue uint64
 var contractExecParams []interface{}
+var optional bool
 
 var contractsExecuteCmd = &cobra.Command{
 	Use:   "execute --contract 0x5E250bB077ec836915155229E83d187715266167 --method vote --argv [] --value 0 --wallet 0x8A70B0C7E9896ac7025279a2Da240aEBD17A0cA3",
@@ -67,13 +68,14 @@ func executeContract(cmd *cobra.Command, args []string) {
 
 func init() {
 	contractsExecuteCmd.Flags().StringVar(&common.ContractID, "contract", "", "target contract id")
-	contractsExecuteCmd.MarkFlagRequired("contract")
+	// contractsExecuteCmd.MarkFlagRequired("contract")
 
 	contractsExecuteCmd.Flags().StringVar(&contractExecMethod, "method", "", "ABI method to invoke on the contract")
-	contractsExecuteCmd.MarkFlagRequired("method")
+	// contractsExecuteCmd.MarkFlagRequired("method")
 
 	contractsExecuteCmd.Flags().Uint64Var(&contractExecValue, "value", 0, "value to send with transaction, specific in the smallest denonination of currency for the network (i.e., wei)")
 
 	contractsExecuteCmd.Flags().StringVar(&common.AccountID, "account", "", "signing account id with which to sign the tx")
 	contractsExecuteCmd.Flags().StringVar(&common.WalletID, "wallet", "", "HD wallet id with which to sign the tx")
+	contractsExecuteCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

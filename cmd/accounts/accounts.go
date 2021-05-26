@@ -31,4 +31,5 @@ looking for hierarchical deterministic support, check out the wallets API.`,
 func init() {
 	AccountsCmd.AddCommand(accountsListCmd)
 	AccountsCmd.AddCommand(accountsInitCmd)
+	AccountsCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

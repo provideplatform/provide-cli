@@ -17,6 +17,7 @@ import (
 var nonCustodial bool
 var walletName string
 var purpose int
+var optional bool
 
 var walletsInitCmd = &cobra.Command{
 	Use:   "init [--non-custodial|-nc]",
@@ -88,4 +89,5 @@ func init() {
 	walletsInitCmd.Flags().BoolVarP(&nonCustodial, "non-custodial", "", false, "if the generated HD wallet is custodial")
 	walletsInitCmd.Flags().StringVarP(&walletName, "name", "n", "", "human-readable name to associate with the generated HD wallet")
 	walletsInitCmd.Flags().IntVarP(&purpose, "purpose", "p", 44, "purpose of the HD wallet per BIP44")
+	walletsInitCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

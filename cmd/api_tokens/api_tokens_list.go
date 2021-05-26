@@ -42,4 +42,5 @@ func listAPITokens(cmd *cobra.Command, args []string) {
 
 func init() {
 	apiTokensListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter API tokens")
+	apiTokensListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

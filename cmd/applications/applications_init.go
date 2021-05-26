@@ -19,6 +19,7 @@ var baseline bool
 var withoutAPIToken bool
 var withoutAccount bool
 var withoutWallet bool
+var optional bool
 
 var applicationsInitCmd = &cobra.Command{
 	Use:   "init --name 'my app' --network 024ff1ef-7369-4dee-969c-1918c6edb5d4 [--baseline]",
@@ -96,4 +97,6 @@ func init() {
 
 	applicationsInitCmd.Flags().BoolVar(&withoutAccount, "without-account", false, "do not create a new account (signing identity) for this application")
 	applicationsInitCmd.Flags().BoolVar(&withoutWallet, "without-wallet", false, "do not create a new HD wallet for this application")
+	applicationsInitCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+
 }

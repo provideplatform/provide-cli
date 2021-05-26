@@ -46,4 +46,5 @@ func listVaultsRun(cmd *cobra.Command, args []string) {
 func init() {
 	vaultsListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter vaults")
 	vaultsListCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier to filter vaults")
+	vaultsListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }

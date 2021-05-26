@@ -35,6 +35,10 @@ var joinBaselineWorkgroupCmd = &cobra.Command{
 }
 
 func joinWorkgroup(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, promptStepJoin)
+}
+
+func joinWorkgroupRun(cmd *cobra.Command, args []string) {
 	if inviteJWT == "" {
 		jwtPrompt()
 	}
@@ -111,4 +115,6 @@ func jwtPrompt() {
 func init() {
 	joinBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	joinBaselineWorkgroupCmd.Flags().StringVar(&inviteJWT, "jwt", "", "JWT invitation token received from the inviting counterparty")
+	joinBaselineWorkgroupCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
+
 }

@@ -32,5 +32,5 @@ func fetchApplicationDetails(cmd *cobra.Command, args []string) {
 
 func init() {
 	applicationsDetailsCmd.Flags().StringVar(&common.ApplicationID, "application", "", "id of the application")
-	applicationsDetailsCmd.MarkFlagRequired("application")
+	// applicationsDetailsCmd.MarkFlagRequired("application")
 }

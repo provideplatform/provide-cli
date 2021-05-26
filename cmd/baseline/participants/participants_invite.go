@@ -26,6 +26,7 @@ var permissions int
 var invitorAddress string
 var registryContractAddress string
 var managedTenant bool
+var Optional bool
 
 var inviteBaselineWorkgroupParticipantCmd = &cobra.Command{
 	Use:   "invite",
@@ -37,6 +38,10 @@ A verifiable credential is issued which can then be distributed to the invited p
 }
 
 func inviteParticipant(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, promptStepInvite)
+}
+
+func inviteParticipantRun(cmd *cobra.Command, args []string) {
 	if name == "" {
 		namePrompt()
 	}
@@ -301,4 +306,5 @@ func init() {
 	inviteBaselineWorkgroupParticipantCmd.Flags().StringVar(&email, "email", "", "email address of the invited participant")
 	inviteBaselineWorkgroupParticipantCmd.Flags().BoolVar(&managedTenant, "managed-tenant", false, "if set, the invited participant is authorized to leverage operator-provided infrastructure")
 	inviteBaselineWorkgroupParticipantCmd.Flags().IntVar(&permissions, "permissions", 0, "permissions for invited participant")
+	inviteBaselineWorkgroupParticipantCmd.Flags().BoolVarP(&Optional, "Optional", "", false, "List all the Optional flags")
 }

@@ -18,6 +18,10 @@ var listBaselineWorkgroupParticipantsCmd = &cobra.Command{
 }
 
 func listParticipants(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, promptStepList)
+}
+
+func listParticipantsRun(cmd *cobra.Command, args []string) {
 	common.AuthorizeApplicationContext()
 	common.AuthorizeOrganizationContext(false)
 
@@ -68,4 +72,5 @@ func listParticipants(cmd *cobra.Command, args []string) {
 
 func init() {
 	listBaselineWorkgroupParticipantsCmd.Flags().StringVar(&common.ApplicationID, "workgroup", "", "workgroup identifier")
+	listBaselineWorkgroupParticipantsCmd.Flags().BoolVarP(&Optional, "Optional", "", false, "List all the Optional flags")
 }

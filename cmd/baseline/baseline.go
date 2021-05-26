@@ -1,8 +1,6 @@
 package baseline
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/provideservices/provide-cli/cmd/baseline/stack"
@@ -10,12 +8,14 @@ import (
 	"github.com/provideservices/provide-cli/cmd/baseline/workgroups"
 )
 
+var Optional bool
+
 var BaselineCmd = &cobra.Command{
 	Use:   "baseline",
 	Short: "Interact with the baseline protocol",
 	Long:  `Interact with the baseline protocol.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("baseline unimplemented")
+		generalPrompt(cmd, args, "")
 	},
 }
 
@@ -26,7 +26,7 @@ var proxyCmd = &cobra.Command{
 
 See: prvd baseline stack --help instead. This command is deprecated and will be removed soon.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		stack.StackCmd.Run(cmd, args)
+		generalPrompt(cmd, args, "")
 	},
 }
 
@@ -35,4 +35,5 @@ func init() {
 	BaselineCmd.AddCommand(stack.StackCmd)
 	BaselineCmd.AddCommand(workgroups.WorkgroupsCmd)
 	BaselineCmd.AddCommand(workflows.WorkflowsCmd)
+	BaselineCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the optional flags")
 }

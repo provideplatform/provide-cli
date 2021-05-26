@@ -14,6 +14,7 @@ import (
 
 var isP2P bool
 var role string
+var optional bool
 
 var nodesInitCmd = &cobra.Command{
 	Use:   "init --network 024ff1ef-7369-4dee-969c-1918c6edb5d4 --image redis --provider docker --region us-east-1 --role redis --target aws",
@@ -141,4 +142,5 @@ func init() {
 	nodesInitCmd.Flags().StringVar(&common.TCPIngressPorts, "tcp-ingress", "", "tcp ingress ports to open on the node")
 	nodesInitCmd.Flags().StringVar(&common.UDPIngressPorts, "udp-ingress", "", "udp ingress ports to open on the node")
 	nodesInitCmd.Flags().StringVar(&common.TaskRole, "task-role", "", "the optional vendor-specific task role (i.e., the ECS task execution role in the case of AWS)")
+	nodesInitCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 }
