@@ -322,7 +322,7 @@ func interpret(cmd *cobra.Command, input string) {
 	_cmd, i := resolveChildCmd(cmd, argv)
 	if _cmd != nil {
 		if debug {
-			write([]byte(fmt.Sprintf("resolved child command for input: %s; argv[%d]: %v; use: %s", input, i, argv, _cmd.Use)), true)
+			writer.WriteRaw([]byte(fmt.Sprintf("resolved child command for input: %s; argv[%d]: %v; use: %s", input, i, argv, _cmd.Use)))
 		}
 
 		// // TODO? -- use the following instead of shellOut()
@@ -341,7 +341,7 @@ func interpret(cmd *cobra.Command, input string) {
 		repl, _ := NewREPLWithCmd(*exec.Command("prvd", argv...), out)
 		repl.run()
 		repls = append(repls, repl)
-		writeRaw(out.Bytes(), true)
+		writer.WriteRaw(out.Bytes())
 	} else if supportedNativeCommand(argv) {
 		mutex.Lock()
 		writer.SaveCursor()
@@ -352,11 +352,12 @@ func interpret(cmd *cobra.Command, input string) {
 		repl, err := resolveNativeCommand(argv)(argv)
 		repls = append(repls, repl)
 		if err != nil {
-			write([]byte(fmt.Sprintf("%s: native command returned err: %s;%s\n", shellTitle, strings.Join(argv, " "), err.Error())), true)
+			writer.WriteRaw([]byte(fmt.Sprintf("%s: native command returned err: %s;%s\n", shellTitle, strings.Join(argv, " "), err.Error())))
 		}
 	} else {
-		go write([]byte(fmt.Sprintf("%s: command not found: %s\n", shellTitle, strings.Join(argv, " "))), true)
-		go eraseCurrentLine()
+		if len(argv) > 0 {
+			writer.WriteRaw([]byte(fmt.Sprintf("%s: command not found: %s\n", shellTitle, strings.Join(argv, " "))))
+		}
 	}
 }
 
