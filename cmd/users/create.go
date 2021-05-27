@@ -25,10 +25,10 @@ var email string
 var passwd string
 
 func create(cmd *cobra.Command, args []string) {
-	firstName = common.FreeInput("First Name")
-	lastName = common.FreeInput("Last Name")
-	email = common.FreeInput("Email")
-	passwd = common.FreeInput("Password")
+	firstName = common.FreeInput("First Name", "", "")
+	lastName = common.FreeInput("Last Name", "", "")
+	email = common.FreeInput("Email", "", "")
+	passwd = common.FreeInput("Password", "", "")
 
 	resp, err := provide.CreateUser("", map[string]interface{}{
 		"email":      email,

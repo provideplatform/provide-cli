@@ -16,7 +16,7 @@ var emptyPromptLabel = "What would you like to do"
 func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	switch step {
 	case promptStepInit:
-		organizationName = common.FreeInput("Organization Name")
+		organizationName = common.FreeInput("Organization Name", "", "Mandatory")
 		createOrganizationRun(cmd, args)
 	case promptStepList:
 		listOrganizationsRun(cmd, args)

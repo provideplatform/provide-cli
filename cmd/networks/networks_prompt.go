@@ -21,19 +21,19 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	case promptStepInit:
 		// Validation non-null
 		if chain == "" {
-			chain = common.FreeInput("Chain")
+			chain = common.FreeInput("Chain", "", "")
 		}
 		if nativeCurrency == "" {
-			nativeCurrency = common.FreeInput("Native Currency")
+			nativeCurrency = common.FreeInput("Native Currency", "", "")
 		}
 		if platform == "" {
-			platform = common.FreeInput("Platform")
+			platform = common.FreeInput("Platform", "", "")
 		}
 		if protocolID == "" {
-			protocolID = common.FreeInput("Protocol ID")
+			protocolID = common.FreeInput("Protocol ID", "", "")
 		}
 		if networkName == "" {
-			networkName = common.FreeInput("Network Name")
+			networkName = common.FreeInput("Network Name", "", "")
 		}
 		CreateNetwork(cmd, args)
 	case promptStepList:

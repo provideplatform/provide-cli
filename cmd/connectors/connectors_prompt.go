@@ -20,10 +20,10 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepInit:
 		if connectorName == "" {
-			connectorName = common.FreeInput("Connector Name")
+			connectorName = common.FreeInput("Connector Name", "", "Mandatory")
 		}
 		if connectorType == "" {
-			connectorType = common.FreeInput("Connector Type")
+			connectorType = common.FreeInput("Connector Type", "", "Mandatory")
 		}
 		if common.ApplicationID == "" {
 			common.RequireApplication()
@@ -32,14 +32,12 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			common.RequirePublicNetwork()
 		}
 		if optional {
-			// Validation number
 			if ipfsAPIPort == 5001 {
-				result := common.FreeInput("IPFS API Port")
+				result := common.FreeInput("IPFS API Port", "5001", "")
 				ipfsAPIPort, _ = strconv.ParseUint(result, 10, 64)
 			}
-			// Validation number
 			if ipfsGatewayPort == 8080 {
-				result := common.FreeInput("IPFS Gateway Port")
+				result := common.FreeInput("IPFS Gateway Port", "8080", "")
 				ipfsGatewayPort, _ = strconv.ParseUint(result, 10, 64)
 			}
 		}
