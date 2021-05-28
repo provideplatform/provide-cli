@@ -28,10 +28,10 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 				common.RequireOrganization()
 			}
 			if common.MessagingEndpoint == "" {
-				common.MessagingEndpoint = common.FreeInput("Messaging Endpoint")
+				common.MessagingEndpoint = common.FreeInput("Messaging Endpoint", "", "")
 			}
 			if name == "" {
-				name = common.FreeInput("Name")
+				name = common.FreeInput("Name", "", "")
 			}
 		}
 		initWorkgroupRun(cmd, args)
@@ -44,7 +44,7 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 				common.RequireOrganization()
 			}
 			if inviteJWT == "" {
-				inviteJWT = common.FreeInput("JWT Invite")
+				inviteJWT = common.FreeInput("JWT Invite", "", "")
 			}
 		}
 		joinWorkgroupRun(cmd, args)

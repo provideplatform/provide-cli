@@ -33,7 +33,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				nonCustodial = common.SelectInput(custodyPromptArgs, custodyPromptLabel) == "Yes"
 			}
 			if accountName == "" {
-				accountName = common.FreeInput("Account Name")
+				accountName = common.FreeInput("Account Name", "", "")
 			}
 			if common.ApplicationID == "" {
 				common.RequireApplication()

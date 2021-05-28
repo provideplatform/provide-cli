@@ -18,10 +18,10 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepExecute:
 		if contractExecMethod == "" {
-			contractExecMethod = common.FreeInput("Method")
+			contractExecMethod = common.FreeInput("Method", "", "Mandatory")
 		}
 		if common.ContractID == "" {
-			common.ContractID = common.FreeInput("Contract ID")
+			common.ContractID = common.FreeInput("Contract ID", "", "Mandatory")
 		}
 		if optional {
 			if common.AccountID == "" {
@@ -31,7 +31,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				common.RequireWallet()
 			}
 			if contractExecValue == 0 {
-				result := common.FreeInput("Value")
+				result := common.FreeInput("Value", "0", "")
 				contractExecValue, _ = strconv.ParseUint(result, 10, 64)
 
 			}

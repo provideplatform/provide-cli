@@ -28,7 +28,7 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	switch step {
 	case promptStepInit:
 		if applicationName == "" {
-			applicationName = common.FreeInput("Application Name")
+			applicationName = common.FreeInput("Application Name", "", "Mandatory")
 		}
 		if common.NetworkID == "" {
 			common.RequireNetwork()
@@ -36,7 +36,7 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 		if optional {
 			fmt.Println("Optional Flags:")
 			if applicationType == "" {
-				applicationType = common.FreeInput("Application Type")
+				applicationType = common.FreeInput("Application Type", "", "")
 			}
 			if !baseline {
 				result := common.SelectInput(baselinePromptArgs, baselinePromptLabel)

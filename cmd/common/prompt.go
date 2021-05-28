@@ -1,6 +1,7 @@
 package common
 
 import (
+	"errors"
 	"os"
 
 	"github.com/manifoldco/promptui"
@@ -289,14 +290,35 @@ func RequireWallet() error {
 	return nil
 }
 
-func FreeInput(label string) string {
+func FreeInput(label string, defaultValue string, validation string) string {
 	validate := func(input string) error {
 		return nil
 	}
 
-	prompt := promptui.Prompt{
-		Label:    label,
-		Validate: validate,
+	if validation == "Mandatory" {
+		validate = func(input string) error {
+			if len(input) < 1 {
+				return errors.New("password must have more than 6 characters")
+			}
+			return nil
+		}
+	}
+
+	var prompt = promptui.Prompt{}
+	if label == "Password" {
+		prompt = promptui.Prompt{
+			Label:    label,
+			Validate: validate,
+			Default:  defaultValue,
+			Mask:     '*',
+		}
+
+	} else {
+		prompt = promptui.Prompt{
+			Label:    label,
+			Validate: validate,
+			Default:  defaultValue,
+		}
 	}
 
 	result, err := prompt.Run()

@@ -9,7 +9,6 @@ import (
 
 const promptStepInit = "Initialize"
 const promptStepList = "List"
-const promptStepSummary = "Summary"
 
 var emptyPromptArgs = []string{promptStepInit, promptStepList}
 var emptyPromptLabel = "What would you like to do"
@@ -21,10 +20,10 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		if optional {
 			fmt.Println("Optional Flags:")
 			if description == "" {
-				description = common.FreeInput("Vault Description")
+				description = common.FreeInput("Vault Description", "", "")
 			}
 			if name == "" {
-				name = common.FreeInput("Vault Name")
+				name = common.FreeInput("Vault Name", "", "")
 			}
 			if common.ApplicationID == "" {
 				common.RequireApplication()
