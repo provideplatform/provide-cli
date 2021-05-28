@@ -6,6 +6,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-cli/cmd/common"
+	"github.com/provideservices/provide-cli/cmd/shell"
 	"github.com/spf13/cobra"
 
 	vault "github.com/provideservices/provide-go/api/vault"
@@ -156,12 +157,23 @@ func descriptionFlagPrompt() {
 func keySpecPrompt() {
 	prompt := promptui.Select{
 		Label: "Spec",
-		Items: []string{vault.KeySpecAES256GCM, vault.KeySpecECCBabyJubJub, vault.KeySpecChaCha20, vault.KeySpecECCC25519, vault.KeySpecECCBIP39, vault.KeySpecECCEd25519, vault.KeySpecECCSecp256k1, vault.KeySpecRSA2048, vault.KeySpecRSA3072, vault.KeySpecRSA4096},
+		Items: []string{
+			vault.KeySpecAES256GCM,
+			vault.KeySpecECCBabyJubJub,
+			vault.KeySpecChaCha20,
+			vault.KeySpecECCC25519,
+			vault.KeySpecECCBIP39,
+			vault.KeySpecECCEd25519,
+			vault.KeySpecECCSecp256k1,
+			vault.KeySpecRSA2048,
+			vault.KeySpecRSA3072,
+			vault.KeySpecRSA4096,
+		},
 	}
 
+	shell.MarshalPromptIO(&prompt)
 	_, result, err := prompt.Run()
 	if err != nil {
-		os.Exit(1)
 		return
 	}
 
