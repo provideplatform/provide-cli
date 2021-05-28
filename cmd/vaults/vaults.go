@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/provideservices/provide-cli/cmd/vaults/keys"
 )
 
@@ -17,6 +18,8 @@ Vaults support select symmetric and asymmetric key specs for encrypt/decrypt and
 
 Docs: https://docs.provide.services/vault`,
 	Run: func(cmd *cobra.Command, args []string) {
+		common.CmdExistsOrExit(cmd, args)
+
 		generalPrompt(cmd, args, "")
 
 		defer func() {

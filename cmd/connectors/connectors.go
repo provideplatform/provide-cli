@@ -3,6 +3,7 @@ package connectors
 import (
 	"os"
 
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 
@@ -18,6 +19,8 @@ var ConnectorsCmd = &cobra.Command{
 
 This API allows you to provision load balanced, cloud-agnostic infrastructure for your distributed system.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		common.CmdExistsOrExit(cmd, args)
+
 		generalPrompt(cmd, args, "")
 
 		defer func() {

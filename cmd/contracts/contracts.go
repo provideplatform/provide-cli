@@ -3,6 +3,7 @@ package contracts
 import (
 	"os"
 
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 
@@ -17,6 +18,8 @@ var ContractsCmd = &cobra.Command{
 	Short: "Manage smart contracts",
 	Long:  `Compile and deploy smart contracts locally from source or execute previously-deployed contracts`,
 	Run: func(cmd *cobra.Command, args []string) {
+		common.CmdExistsOrExit(cmd, args)
+
 		generalPrompt(cmd, args, "")
 
 		defer func() {

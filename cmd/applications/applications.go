@@ -3,6 +3,7 @@ package applications
 import (
 	"os"
 
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 
@@ -25,6 +26,8 @@ var ApplicationsCmd = &cobra.Command{
 	- Payment Hubs
 	- Transactions`,
 	Run: func(cmd *cobra.Command, args []string) {
+		common.CmdExistsOrExit(cmd, args)
+
 		generalPrompt(cmd, args, "")
 
 		defer func() {

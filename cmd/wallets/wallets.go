@@ -3,6 +3,7 @@ package wallets
 import (
 	"os"
 
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 
@@ -13,7 +14,7 @@ var WalletsCmd = &cobra.Command{
 
 More documentation forthcoming.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		//common.CmdExistsOrExit(cmd)
+		common.CmdExistsOrExit(cmd, args)
 		generalPrompt(cmd, args, "")
 
 		defer func() {
