@@ -57,7 +57,7 @@ func CacheCommands(cmd *cobra.Command) {
 func CmdExists(cmd *cobra.Command, args []string) (bool, string) {
 	command, arguments := normaliseCmd(cmd, args)
 
-	argsCommandNormalised := command + " " + arguments
+	argsCommandNormalised := fmt.Sprintf("%s%s", command, arguments)
 
 	hashCmd := sha256.Sum256([]byte(argsCommandNormalised))
 
