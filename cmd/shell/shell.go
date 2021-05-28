@@ -209,20 +209,23 @@ func installREPL() {
 	// n := 0
 	// go shellOut("docker", []string{"stats"}, buf)
 	// repl, _ = NewREPL(func(_wg *sync.WaitGroup) error {
-	// 	writer.SaveCursor()
-	// 	writer.HideCursor()
-
 	// 	if buf.Len() > 0 {
 	// 		mutex.Lock()
-	// 		str := string(buf.Bytes()[n:])
+	// 		defer mutex.Unlock()
 
+	// 		writer.SaveCursor()
+	// 		writer.HideCursor()
+
+	// 		str := string(buf.Bytes()[n:])
 	// 		i := 0
+
 	// 		for _, line := range strings.Split(str, "\n") {
 	// 			writer.CursorGoTo(1+i, 64)
+	// 			writer.WriteRaw([]byte("\033[0K")) // erase to end of line
 	// 			raw := stripEscapeSequences(line)
 	// 			writer.WriteRawStr(raw)
 
-	// 			i += 1
+	// 			i++
 	// 		}
 
 	// 		writer.Flush()
@@ -230,7 +233,6 @@ func installREPL() {
 
 	// 		n += buf.Len() - n
 	// 		buf.Reset()
-	// 		mutex.Unlock()
 	// 	}
 
 	// 	return nil
@@ -247,17 +249,28 @@ func renderRootBanner() {
 
 		writer.SaveCursor()
 		hideCursor()
+
+		// writer.CursorGoTo(shellHeaderStartRow, 0)
+
+		// i := 0
+		// for i < shellHeaderRows {
+		// 	writer.CursorGoTo(i, 0)
+		// 	writer.WriteRaw([]byte("\033[2K\n")) // delete current line
+		// 	i++
+		// }
+
 		writer.CursorGoTo(shellHeaderStartRow, 0)
 		writer.SetColor(prompt.Cyan, shellOptionDefaultBGColor, true)
 		writer.WriteStr(common.ASCIIBanner)
 		writer.CursorGoTo(shellHeaderRows, 0)
 		writer.WriteRaw([]byte("\033[2K\n")) // delete current line
 		writer.SetColor(shellOptionDefaultFGColor, shellOptionDefaultBGColor, true)
+		writer.Flush()
 		writer.UnSaveCursor()
+
 		if shouldShowCursor {
 			showCursor()
 		}
-		writer.Flush()
 	}
 }
 

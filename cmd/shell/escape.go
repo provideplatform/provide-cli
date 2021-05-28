@@ -38,6 +38,10 @@ func eraseCursorToEnd() {
 	writeRaw([]byte("\033[0J"), true)
 }
 
+func eraseCursorToLineEnd() {
+	writeRaw([]byte("\033[0K"), true)
+}
+
 func eraseCurrentLineToCursor() {
 	writeRaw([]byte("\033[1K"), true)
 }
