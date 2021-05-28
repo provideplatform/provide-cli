@@ -3,6 +3,7 @@ package organizations
 import (
 	"os"
 
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 
@@ -18,6 +19,8 @@ var OrganizationsCmd = &cobra.Command{
 	- Tokens
 	- Vaults`,
 	Run: func(cmd *cobra.Command, args []string) {
+		common.CmdExistsOrExit(cmd, args)
+
 		generalPrompt(cmd, args, "")
 
 		defer func() {

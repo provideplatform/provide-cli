@@ -2,6 +2,7 @@ package workgroups
 
 import (
 	"github.com/provideservices/provide-cli/cmd/baseline/participants"
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 
@@ -10,6 +11,8 @@ var WorkgroupsCmd = &cobra.Command{
 	Short: "Interact with a baseline workgroups",
 	Long:  `Create, manage and interact with workgroups via the baseline protocol.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		common.CmdExistsOrExit(cmd, args)
+
 		generalPrompt(cmd, args, "")
 	},
 }

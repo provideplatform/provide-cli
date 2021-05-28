@@ -3,6 +3,7 @@ package networks
 import (
 	"os"
 
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 
@@ -14,6 +15,8 @@ var NetworksCmd = &cobra.Command{
 	Short: "Manage networks",
 	Long:  `Manage and provision elastic distributed networks and other infrastructure`,
 	Run: func(cmd *cobra.Command, args []string) {
+		common.CmdExistsOrExit(cmd, args)
+
 		generalPrompt(cmd, args, "")
 
 		defer func() {

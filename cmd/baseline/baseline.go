@@ -6,6 +6,7 @@ import (
 	"github.com/provideservices/provide-cli/cmd/baseline/stack"
 	"github.com/provideservices/provide-cli/cmd/baseline/workflows"
 	"github.com/provideservices/provide-cli/cmd/baseline/workgroups"
+	"github.com/provideservices/provide-cli/cmd/common"
 )
 
 var Optional bool
@@ -15,6 +16,8 @@ var BaselineCmd = &cobra.Command{
 	Short: "Interact with the baseline protocol",
 	Long:  `Interact with the baseline protocol.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		common.CmdExistsOrExit(cmd, args)
+
 		generalPrompt(cmd, args, "")
 	},
 }

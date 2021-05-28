@@ -3,6 +3,7 @@ package api_tokens
 import (
 	"os"
 
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 
@@ -11,6 +12,8 @@ var APITokensCmd = &cobra.Command{
 	Short: "Manage API tokens",
 	Long:  `API tokens can be created on behalf of a developer account, application or application user`,
 	Run: func(cmd *cobra.Command, args []string) {
+		common.CmdExistsOrExit(cmd, args)
+
 		generalPrompt(cmd, args, "")
 
 		defer func() {

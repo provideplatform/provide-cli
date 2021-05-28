@@ -1,8 +1,12 @@
 package common
 
 import (
+	"crypto/sha256"
 	"errors"
+	"fmt"
 	"os"
+	"regexp"
+	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideservices/provide-go/api/ident"
@@ -22,33 +26,51 @@ const requireWorkgroupSelectLabel = "Select a workgroup"
 
 var commands map[string]*cobra.Command
 
-// func CacheCommands(cmd *cobra.Command) {
-// 	if commands == nil {
-// 		commands = map[string]*cobra.Command{}
-// 	}
+func normaliseCmd(cmd *cobra.Command, args []string) (string, string) {
+	flag, _ := regexp.Compile("\\[(.*)")
+	r, _ := regexp.Compile("\\--(.*)")
+	usedCommand := strings.Split(cmd.UseLine(), flag.FindString(cmd.UseLine()))
+	normalisedCommand := strings.TrimSpace(strings.Join(usedCommand, ""))
+	argsLine := strings.TrimSpace(strings.Join(args, " "))
 
-// 	hashCmd := sha256.Sum256([]byte(cmd.UseLine()))
+	rmFlagsLine := strings.Split(normalisedCommand, r.FindString(normalisedCommand))
 
-// 	commands[string(hashCmd[:])] = cmd
-// 	for _, child := range cmd.Commands() {
-// 		fmt.Print(child)
-// 		CacheCommands(child)
-// 	}
-// }
+	normalisedOutput := strings.TrimSpace(strings.Join(rmFlagsLine, ""))
 
-// func CmdExists(cmd *cobra.Command) bool {
-// 	hashCmd := sha256.Sum256([]byte(cmd.UseLine()))
-// 	fmt.Println(hashCmd)
+	return normalisedOutput, argsLine
+}
 
-// 	return commands[string(hashCmd[:])] != nil
+func CacheCommands(cmd *cobra.Command) {
+	if commands == nil {
+		commands = map[string]*cobra.Command{}
+	}
 
-// }
+	command, _ := normaliseCmd(cmd, nil)
+	hashCmd := sha256.Sum256([]byte(command))
 
-// func CmdExistsOrExit(cmd *cobra.Command) {
-// 	if !CmdExists(cmd) {
-// 		os.Exit(1)
-// 	}
-// }
+	commands[string(hashCmd[:])] = cmd
+	for _, child := range cmd.Commands() {
+		CacheCommands(child)
+	}
+}
+
+func CmdExists(cmd *cobra.Command, args []string) (bool, string) {
+	command, arguments := normaliseCmd(cmd, args)
+
+	argsCommandNormalised := command + " " + arguments
+
+	hashCmd := sha256.Sum256([]byte(argsCommandNormalised))
+
+	return commands[string(hashCmd[:])] != nil, argsCommandNormalised
+}
+
+func CmdExistsOrExit(cmd *cobra.Command, args []string) {
+	exists, command := CmdExists(cmd, args)
+	if !exists {
+		fmt.Println(command + " is not a valid command")
+		os.Exit(1)
+	}
+}
 
 // RequireApplication is equivalent to a required --application flag
 func RequireApplication() error {

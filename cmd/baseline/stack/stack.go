@@ -1,6 +1,7 @@
 package stack
 
 import (
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 
@@ -9,6 +10,8 @@ var StackCmd = &cobra.Command{
 	Short: "Interact with a local baseline stack",
 	Long:  `Create, manage and interact with local baseline stack instances.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		common.CmdExistsOrExit(cmd, args)
+
 		generalPrompt(cmd, args, "")
 	},
 }

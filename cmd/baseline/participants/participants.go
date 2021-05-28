@@ -1,6 +1,7 @@
 package participants
 
 import (
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 
@@ -9,6 +10,8 @@ var ParticipantsCmd = &cobra.Command{
 	Short: "Interact with participants in a baseline workgroup",
 	Long:  `Invite, manage and interact with workgroup participants via the baseline protocol.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		common.CmdExistsOrExit(cmd, args)
+
 		generalPrompt(cmd, args, "")
 	},
 }

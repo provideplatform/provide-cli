@@ -1,6 +1,7 @@
 package messages
 
 import (
+	"github.com/provideservices/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 
@@ -9,6 +10,8 @@ var MessagesCmd = &cobra.Command{
 	Short: "Interact with a baseline workflows",
 	Long:  `Create, manage and interact with workflows via the baseline protocol.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		common.CmdExistsOrExit(cmd, args)
+
 		generalPrompt(cmd, args, "")
 	},
 }
