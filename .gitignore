@@ -28,6 +28,7 @@ provide-cli
 .DS_Store
 
 .bin/
+.vscode/
 vendor/
 
 nats-server.conf
