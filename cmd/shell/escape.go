@@ -4,6 +4,10 @@ func clear() {
 	writeRaw([]byte("\033[H\033[2J"), true)
 }
 
+func clearScrollback() {
+	writeRaw([]byte("\033[3J"), true)
+}
+
 func cursorUp() {
 	writeRaw([]byte("\033[A"), true)
 }
