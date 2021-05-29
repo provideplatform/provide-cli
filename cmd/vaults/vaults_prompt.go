@@ -20,10 +20,10 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		if optional {
 			fmt.Println("Optional Flags:")
 			if description == "" {
-				description = common.FreeInput("Vault Description", "", "")
+				description = common.FreeInput("Vault Description", "", common.NoValidation)
 			}
 			if name == "" {
-				name = common.FreeInput("Vault Name", "", "")
+				name = common.FreeInput("Vault Name", "", common.NoValidation)
 			}
 			if common.ApplicationID == "" {
 				common.RequireApplication()

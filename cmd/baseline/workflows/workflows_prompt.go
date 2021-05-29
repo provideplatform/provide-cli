@@ -21,7 +21,7 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 			common.RequireWorkgroup()
 		}
 		if name == "" {
-			name = common.FreeInput("Name", "", "")
+			name = common.FreeInput("Name", "", common.MandatoryValidation)
 		}
 		initWorkflowRun(cmd, args)
 	case promptStepMessages:

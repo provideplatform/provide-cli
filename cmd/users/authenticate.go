@@ -21,8 +21,8 @@ valid API token which can be used to access various APIs.`,
 }
 
 func authenticate(cmd *cobra.Command, args []string) {
-	email = common.FreeInput("Email", "", "")
-	passwd = common.FreeInput("Password", "", "")
+	email = common.FreeInput("Email", "", common.MandatoryValidation)
+	passwd = common.FreeInput("Password", "", common.MandatoryValidation)
 
 	resp, err := provide.Authenticate(email, passwd)
 	if err != nil {

@@ -35,10 +35,10 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 				nonCustodial = common.SelectInput(custodyPromptArgs, custodyPromptLabel) == "Yes"
 			}
 			if walletName == "" {
-				walletName = common.FreeInput("Wallet Name", "", "")
+				walletName = common.FreeInput("Wallet Name", "", common.NoValidation)
 			}
 			if purpose == 44 {
-				purpose, _ = strconv.Atoi(common.FreeInput("Wallet Purpose", "44", ""))
+				purpose, _ = strconv.Atoi(common.FreeInput("Wallet Purpose", "44", common.NumberValidation))
 			}
 		}
 		CreateWalletRun(cmd, args)

@@ -2,10 +2,12 @@ package common
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -312,19 +314,60 @@ func RequireWallet() error {
 	return nil
 }
 
-func FreeInput(label string, defaultValue string, validation string) string {
-	validate := func(input string) error {
-		return nil
+var MandatoryValidation = func(input string) error {
+	if len(input) < 1 {
+		return errors.New("password must have more than 6 characters")
+	}
+	return nil
+}
+
+var MandatoryNumberValidation = func(input string) error {
+	if len(input) < 1 {
+		return errors.New("field cant be nil")
+	}
+	_, err := strconv.ParseFloat(input, 64)
+	if err != nil {
+		return errors.New("invalid number")
+	}
+	return nil
+}
+
+var NumberValidation = func(input string) error {
+	_, err := strconv.ParseFloat(input, 64)
+	if err != nil {
+		return errors.New("invalid number")
+	}
+	return nil
+}
+
+var NoValidation = func(input string) error {
+	return nil
+}
+
+var JSONValidation = func(input string) error {
+	if len(input) < 1 {
+		return errors.New("field cant be nil")
 	}
 
-	if validation == "Mandatory" {
-		validate = func(input string) error {
-			if len(input) < 1 {
-				return errors.New("password must have more than 6 characters")
-			}
-			return nil
-		}
+	var js map[string]interface{}
+	if json.Unmarshal([]byte(input), &js) != nil {
+		return errors.New("invalid JSON")
+
 	}
+	return nil
+}
+
+var HexValidation = func(input string) error {
+	re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
+	isHex := re.MatchString(input)
+
+	if !isHex {
+		return errors.New("input is not a Hex")
+	}
+	return nil
+}
+
+func FreeInput(label string, defaultValue string, validate func(string) error) string {
 
 	var prompt = promptui.Prompt{}
 	if label == "Password" {
