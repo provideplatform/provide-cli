@@ -23,24 +23,24 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			common.RequirePublicNetwork()
 		}
 		if common.Image == "" {
-			common.Image = common.FreeInput("Image", "", "Mandatory")
+			common.Image = common.FreeInput("Image", "", common.MandatoryValidation)
 		}
 		if role == "" {
-			role = common.FreeInput("Role", "", "Mandatory")
+			role = common.FreeInput("Role", "", common.MandatoryValidation)
 		}
 		if optional {
 			fmt.Println("Optional Flags:")
 			if common.HealthCheckPath == "" {
-				common.HealthCheckPath = common.FreeInput("Health Check Path", "", "")
+				common.HealthCheckPath = common.FreeInput("Health Check Path", "", common.NoValidation)
 			}
 			if common.TCPIngressPorts == "" {
-				common.TCPIngressPorts = common.FreeInput("TCP Ingress Ports", "", "")
+				common.TCPIngressPorts = common.FreeInput("TCP Ingress Ports", "", common.NoValidation)
 			}
 			if common.UDPIngressPorts == "" {
-				common.UDPIngressPorts = common.FreeInput("UDP Ingress Ports", "", "")
+				common.UDPIngressPorts = common.FreeInput("UDP Ingress Ports", "", common.NoValidation)
 			}
 			if common.TaskRole == "" {
-				common.TaskRole = common.FreeInput("Task Role", "", "")
+				common.TaskRole = common.FreeInput("Task Role", "", common.NoValidation)
 
 			}
 		}
@@ -50,7 +50,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			common.RequirePublicNetwork()
 		}
 		if common.NodeID == "" {
-			common.NodeID = common.FreeInput("Node ID", "", "Mandatory")
+			common.NodeID = common.FreeInput("Node ID", "", common.MandatoryValidation)
 		}
 		deleteNodeRun(cmd, args)
 	case promptStepLogs:
@@ -58,16 +58,16 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			common.RequirePublicNetwork()
 		}
 		if common.NodeID == "" {
-			common.NodeID = common.FreeInput("Node ID", "", "Mandatory")
+			common.NodeID = common.FreeInput("Node ID", "", common.MandatoryValidation)
 		}
 		// Validation Number
 		if page == 1 {
-			result := common.FreeInput("Page", "1", "Number")
+			result := common.FreeInput("Page", "1", common.MandatoryNumberValidation)
 			page, _ = strconv.ParseUint(result, 10, 64)
 		}
 		// Validation Number
 		if rpp == 100 {
-			result := common.FreeInput("RPP", "100", "Number")
+			result := common.FreeInput("RPP", "100", common.MandatoryValidation)
 			rpp, _ = strconv.ParseUint(result, 10, 64)
 		}
 		nodeLogsRun(cmd, args)

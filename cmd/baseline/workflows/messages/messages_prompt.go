@@ -32,13 +32,13 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 
 		}
 		if id == "" {
-			id = common.FreeInput("ID", "", "")
+			id = common.FreeInput("ID", "", common.MandatoryValidation)
 		}
 		if baselineID == "" {
-			baselineID = common.FreeInput("Baseline ID", "", "")
+			baselineID = common.FreeInput("Baseline ID", "", common.NoValidation)
 		}
 		if data == "" {
-			data = common.FreeInput("Data", "", "")
+			data = common.FreeInput("Data", "", common.JSONValidation)
 		}
 		sendMessageRun(cmd, args)
 	case "":

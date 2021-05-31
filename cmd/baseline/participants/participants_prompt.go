@@ -34,13 +34,13 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 				managedTenant = common.SelectInput(custodyPromptArgs, custodyPromptLabel) == "Yes"
 			}
 			if name == "" {
-				name = common.FreeInput("Wallet Name", "", "")
+				name = common.FreeInput("Wallet Name", "", common.NoValidation)
 			}
 			if email == "" {
-				email = common.FreeInput("Wallet Purpose", "", "")
+				email = common.FreeInput("Wallet Purpose", "", common.NoValidation)
 			}
 			if permissions == 0 {
-				permissions, _ = strconv.Atoi(common.FreeInput("Wallet Purpose", "0", ""))
+				permissions, _ = strconv.Atoi(common.FreeInput("Wallet Purpose", "0", common.NoValidation))
 			}
 		}
 		inviteParticipantRun(cmd, args)
