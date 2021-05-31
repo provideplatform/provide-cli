@@ -275,7 +275,7 @@ func RequireAccount(params map[string]interface{}) error {
 	}
 
 	prompt := promptui.Select{
-		Label: requireWalletSelectLabel,
+		Label: requireAccountSelectLabel,
 		Items: opts,
 	}
 

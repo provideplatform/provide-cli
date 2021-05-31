@@ -1,6 +1,7 @@
 package stack
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -27,7 +28,7 @@ var localIdentPromptLabel = "Would you like to set up ident locally"
 var localNchainPromptLabel = "Would you like to set up nachain locally"
 var localPrivacyPromptLabel = "Would you like to set up privacy locally"
 
-var SoRPromptArgs = []string{"SAP", "ServiceNow", "Sales Force"}
+var SoRPromptArgs = []string{"SAP", "Service Now", "Sales Force"}
 var SoRPromptLabel = "Select a Sor"
 
 // General Endpoints
@@ -54,7 +55,6 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			if !common.ExposeMessagingTunnel {
 				common.ExposeMessagingTunnel = common.SelectInput(boolPromptArgs, tunnelMessagingPromptLabel) == "Yes"
 			}
-			// TODO ... call app flags
 			if sorID == "" {
 				sorID = common.SelectInput(SoRPromptArgs, SoRPromptLabel)
 			}
@@ -164,6 +164,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				baselineOrganizationAddress = common.FreeInput("Nchain Baseline Network ID", "0x", common.HexValidation)
 			}
 		}
+		common.ManifestSave(content)
 		runProxyRun(cmd, args)
 	case promptStepStop:
 		if Optional {
@@ -186,3 +187,106 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		generalPrompt(cmd, args, result)
 	}
 }
+
+// var portMappings = common.PortMapping{
+// 	[]portMapping{
+// 		hostPort:      port,
+// 		containerPort: apiContainerPort,
+// 	},
+// }
+var content, err = json.Marshal(common.Keys{
+	common.APIEndpoint,
+	apiContainerPort,
+	natsContainerPort,
+	natsWebsocketContainerPort,
+	natsStreamingContainerPort,
+	postgresContainerPort,
+	redisContainerPort,
+	//portMappings,
+	dockerNetworkID,
+	Optional,
+	name,
+	port,
+	identPort,
+	nchainPort,
+	privacyPort,
+	vaultPort,
+	natsPort,
+	natsWebsocketPort,
+	natsStreamingPort,
+	postgresPort,
+	redisPort,
+
+	apiHostname,
+	consumerHostname,
+	identHostname,
+	identConsumerHostname,
+	nchainHostname,
+	nchainConsumerHostname,
+	nchainStatsdaemonHostname,
+	nchainReachabilitydaemonHostname,
+	privacyHostname,
+	privacyConsumerHostname,
+	vaultHostname,
+	natsHostname,
+	natsServerName,
+	natsStreamingHostname,
+	postgresHostname,
+	redisHostname,
+	redisHosts,
+
+	autoRemove,
+	logLevel,
+
+	baselineOrganizationAddress,
+
+	//  baselineOrganizationAPIEndpoint
+	baselineRegistryContractAddress,
+	baselineWorkgroupID,
+
+	nchainBaselineNetworkID,
+
+	jwtSignerPublicKey,
+	natsAuthToken,
+
+	identAPIHost,
+	identAPIScheme,
+
+	nchainAPIHost,
+	nchainAPIScheme,
+
+	workgroupAccessToken,
+	organizationRefreshToken,
+
+	privacyAPIHost,
+	privacyAPIScheme,
+
+	sorID,
+	sorURL,
+
+	vaultAPIHost,
+	vaultAPIScheme,
+	vaultRefreshToken,
+	vaultSealUnsealKey,
+
+	sapAPIHost,
+	sapAPIScheme,
+	sapAPIUsername,
+	sapAPIPassword,
+	sapAPIPath,
+
+	serviceNowAPIHost,
+	serviceNowAPIScheme,
+	serviceNowAPIUsername,
+	serviceNowAPIPassword,
+	serviceNowAPIPath,
+
+	salesforceAPIHost,
+	salesforceAPIScheme,
+	salesforceAPIPath,
+
+	withLocalVault,
+	withLocalIdent,
+	withLocalNChain,
+	withLocalPrivacy,
+})

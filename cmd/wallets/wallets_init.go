@@ -50,7 +50,7 @@ func createDecentralizedWallet() {
 		log.Printf("Failed to genereate decentralized HD wallet; %s", err.Error())
 		os.Exit(1)
 	}
-	result := fmt.Sprintf("%s\t%s\n", *publicKey, string(walletJSON))
+	result := fmt.Sprintf("Public Key: %s\nWallet JSON:%s\n", *publicKey, string(walletJSON))
 	fmt.Print(result)
 }
 
