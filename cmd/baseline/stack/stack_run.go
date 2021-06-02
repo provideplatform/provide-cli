@@ -1277,6 +1277,7 @@ func init() {
 	runBaselineStackCmd.Flags().StringVar(&baselineWorkgroupID, "workgroup", "", "baseline workgroup identifier")
 
 	runBaselineStackCmd.Flags().StringVar(&nchainBaselineNetworkID, "nchain-network-id", "", "nchain network id of the baseline mainnet")
+	runBaselineStackCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the optional flags")
 
 	initSORFlags()
 }
@@ -1302,6 +1303,5 @@ func initSORFlags() {
 		runBaselineStackCmd.Flags().StringVar(&serviceNowAPIPath, "servicenow-api-path", "api/now/table", "base path of the ServiceNow API")
 		runBaselineStackCmd.Flags().StringVar(&serviceNowAPIUsername, "servicenow-api-username", "", "username to use for basic authorization against the ServiceNow API")
 		runBaselineStackCmd.Flags().StringVar(&serviceNowAPIPassword, "servicenow-api-password", "", "password to use for basic authorization against the ServiceNow API")
-		runBaselineStackCmd.Flags().BoolVarP(&Optional, "optionalStack", "", false, "List all the optional flags")
 	}
 }
