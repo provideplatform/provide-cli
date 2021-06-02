@@ -74,7 +74,7 @@ func inviteParticipantRun(cmd *cobra.Command, args []string) {
 		log.Printf("failed to resolve contract for organization; %s", err.Error())
 		os.Exit(1)
 	}
-
+	// TODO ... if no address prompt the user to get one
 	invitorAddress := keys[0].Address
 	registryContractAddress := contracts[0].Address
 
