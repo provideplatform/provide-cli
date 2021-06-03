@@ -67,7 +67,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				if apiHostname == "" {
 					apiHostname = common.FreeInput("API Hostname", "", common.NoValidation)
 				}
-				if port == 8080 {
+				if port == apiContainerPort {
 					port, _ = strconv.Atoi(common.FreeInput("Port", "8080", common.NumberValidation))
 				}
 				if consumerHostname == name+"-consumer" {
@@ -76,10 +76,10 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				if natsHostname == name+"-nats" {
 					natsHostname = common.FreeInput("Nats Hostname", name+"-nats", common.NoValidation)
 				}
-				if natsPort == 4222 {
+				if natsPort == natsContainerPort {
 					natsPort, _ = strconv.Atoi(common.FreeInput("Nats Port", "4222", common.NumberValidation))
 				}
-				if natsWebsocketPort == 4221 {
+				if natsWebsocketPort == natsWebsocketContainerPort {
 					natsWebsocketPort, _ = strconv.Atoi(common.FreeInput("Nats Websocket Port", "4221", common.NumberValidation))
 				}
 				if natsAuthToken == "testtoken" {
@@ -88,13 +88,13 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				if natsStreamingHostname == name+"-nats-streaming" {
 					natsStreamingHostname = common.FreeInput("Nats Streaming Token", name+"-nats-streaming", common.NoValidation)
 				}
-				if natsStreamingPort == 4220 {
+				if natsStreamingPort == natsStreamingContainerPort {
 					natsStreamingPort, _ = strconv.Atoi(common.FreeInput("Nats Streaming Port", "4221", common.NumberValidation))
 				}
 				if redisHostname == name+"-reddis" {
 					redisHostname = common.FreeInput("Reddis Host Name", name+"-reddis", common.NoValidation)
 				}
-				if redisPort == 6379 {
+				if redisPort == redisContainerPort {
 					redisPort, _ = strconv.Atoi(common.FreeInput("Reddis Port", "6379", common.NumberValidation))
 				}
 				if redisHosts == redisHostname+":"+strconv.Itoa(redisContainerPort) {
@@ -166,7 +166,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				if nchainBaselineNetworkID == "0x" {
 					nchainBaselineNetworkID = common.FreeInput("Nchain Baseline Network ID", "0x", common.HexValidation)
 				}
-				common.ManifestSave(setKeysContents())
+				common.ManifestSave(marshalEnvManifest())
 			}
 		}
 		runProxyRun(cmd, args)
@@ -198,8 +198,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 // 		containerPort: apiContainerPort,
 // 	},
 // }
-func setKeysContents() []byte {
-	content, _ := json.Marshal(common.Keys{
+func marshalEnvManifest() []byte {
+	content, _ := json.MarshalIndent(common.EnvManifest{
 		APIEndpoint:                      common.APIEndpoint,
 		MessagingEndpoint:                common.MessagingEndpoint,
 		Tunnel:                           common.Tunnel,
@@ -279,82 +279,82 @@ func setKeysContents() []byte {
 		WithLocalIdent:                   withLocalIdent,
 		WithLocalNChain:                  withLocalNChain,
 		WithLocalPrivacy:                 withLocalPrivacy,
-	})
+	}, "", "  ")
 	return content
 }
 
 func setVarsContents() {
-	common.APIEndpoint = common.LoadedKeys.APIEndpoint
-	common.MessagingEndpoint = common.LoadedKeys.MessagingEndpoint
-	common.Tunnel = common.LoadedKeys.Tunnel
-	common.ExposeAPITunnel = common.LoadedKeys.ExposeAPITunnel
-	common.ExposeMessagingTunnel = common.LoadedKeys.ExposeMessagingTunnel
-	dockerNetworkID = common.LoadedKeys.DockerNetworkID
-	name = common.LoadedKeys.Name
-	port = common.LoadedKeys.Port
-	identPort = common.LoadedKeys.IdentPort
-	nchainPort = common.LoadedKeys.NchainPort
-	privacyPort = common.LoadedKeys.PrivacyPort
-	vaultPort = common.LoadedKeys.VaultPort
-	natsPort = common.LoadedKeys.NatsPort
-	natsWebsocketPort = common.LoadedKeys.NatsWebsocketPort
-	natsStreamingPort = common.LoadedKeys.NatsStreamingPort
-	postgresPort = common.LoadedKeys.PostgresPort
-	redisPort = common.LoadedKeys.RedisPort
-	apiHostname = common.LoadedKeys.ApiHostname
-	consumerHostname = common.LoadedKeys.ConsumerHostname
-	identAPIHost = common.LoadedKeys.IdentAPIHost
-	identHostname = common.LoadedKeys.IdentHostname
-	identConsumerHostname = common.LoadedKeys.IdentConsumerHostname
-	nchainHostname = common.LoadedKeys.NchainHostname
-	nchainConsumerHostname = common.LoadedKeys.NchainConsumerHostname
-	nchainStatsdaemonHostname = common.LoadedKeys.NchainStatsdaemonHostname
-	nchainReachabilitydaemonHostname = common.LoadedKeys.NchainReachabilitydaemonHostname
-	privacyHostname = common.LoadedKeys.PrivacyHostname
-	privacyConsumerHostname = common.LoadedKeys.PrivacyConsumerHostname
-	vaultHostname = common.LoadedKeys.VaultHostname
-	natsHostname = common.LoadedKeys.NatsHostname
-	natsServerName = common.LoadedKeys.NatsServerName
-	natsStreamingHostname = common.LoadedKeys.NatsStreamingHostname
-	postgresHostname = common.LoadedKeys.PostgresHostname
-	redisHostname = common.LoadedKeys.RedisHostname
-	redisHosts = common.LoadedKeys.RedisHosts
-	autoRemove = common.LoadedKeys.AutoRemove
-	logLevel = common.LoadedKeys.LogLevel
-	baselineOrganizationAddress = common.LoadedKeys.BaselineOrganizationAddress
-	baselineRegistryContractAddress = common.LoadedKeys.BaselineRegistryContractAddress
-	baselineWorkgroupID = common.LoadedKeys.BaselineWorkgroupID
-	nchainBaselineNetworkID = common.LoadedKeys.NchainBaselineNetworkID
-	jwtSignerPublicKey = common.LoadedKeys.JwtSignerPublicKey
-	natsAuthToken = common.LoadedKeys.NatsAuthToken
-	identAPIScheme = common.LoadedKeys.IdentAPIScheme
-	nchainAPIHost = common.LoadedKeys.NchainAPIHost
-	nchainAPIScheme = common.LoadedKeys.NchainAPIScheme
-	workgroupAccessToken = common.LoadedKeys.WorkgroupAccessToken
-	organizationRefreshToken = common.LoadedKeys.OrganizationRefreshToken
-	privacyAPIHost = common.LoadedKeys.PrivacyAPIHost
-	privacyAPIScheme = common.LoadedKeys.PrivacyAPIScheme
-	sorID = common.LoadedKeys.SorID
-	sorURL = common.LoadedKeys.SorURL
-	vaultAPIHost = common.LoadedKeys.VaultAPIHost
-	vaultAPIScheme = common.LoadedKeys.VaultAPIScheme
-	vaultRefreshToken = common.LoadedKeys.VaultRefreshToken
-	vaultSealUnsealKey = common.LoadedKeys.VaultSealUnsealKey
-	sapAPIHost = common.LoadedKeys.SapAPIHost
-	sapAPIScheme = common.LoadedKeys.SapAPIScheme
-	sapAPIUsername = common.LoadedKeys.SapAPIUsername
-	sapAPIPassword = common.LoadedKeys.SapAPIPassword
-	sapAPIPath = common.LoadedKeys.SapAPIPath
-	serviceNowAPIHost = common.LoadedKeys.ServiceNowAPIHost
-	serviceNowAPIScheme = common.LoadedKeys.ServiceNowAPIScheme
-	serviceNowAPIUsername = common.LoadedKeys.ServiceNowAPIUsername
-	serviceNowAPIPassword = common.LoadedKeys.ServiceNowAPIPassword
-	serviceNowAPIPath = common.LoadedKeys.ServiceNowAPIPath
-	salesforceAPIHost = common.LoadedKeys.SalesforceAPIHost
-	salesforceAPIScheme = common.LoadedKeys.SalesforceAPIScheme
-	salesforceAPIPath = common.LoadedKeys.SalesforceAPIPath
-	withLocalVault = common.LoadedKeys.WithLocalVault
-	withLocalIdent = common.LoadedKeys.WithLocalIdent
-	withLocalNChain = common.LoadedKeys.WithLocalNChain
-	withLocalPrivacy = common.LoadedKeys.WithLocalPrivacy
+	common.APIEndpoint = common.LoadedManifest.APIEndpoint
+	common.MessagingEndpoint = common.LoadedManifest.MessagingEndpoint
+	common.Tunnel = common.LoadedManifest.Tunnel
+	common.ExposeAPITunnel = common.LoadedManifest.ExposeAPITunnel
+	common.ExposeMessagingTunnel = common.LoadedManifest.ExposeMessagingTunnel
+	dockerNetworkID = common.LoadedManifest.DockerNetworkID
+	name = common.LoadedManifest.Name
+	port = common.LoadedManifest.Port
+	identPort = common.LoadedManifest.IdentPort
+	nchainPort = common.LoadedManifest.NchainPort
+	privacyPort = common.LoadedManifest.PrivacyPort
+	vaultPort = common.LoadedManifest.VaultPort
+	natsPort = common.LoadedManifest.NatsPort
+	natsWebsocketPort = common.LoadedManifest.NatsWebsocketPort
+	natsStreamingPort = common.LoadedManifest.NatsStreamingPort
+	postgresPort = common.LoadedManifest.PostgresPort
+	redisPort = common.LoadedManifest.RedisPort
+	apiHostname = common.LoadedManifest.ApiHostname
+	consumerHostname = common.LoadedManifest.ConsumerHostname
+	identAPIHost = common.LoadedManifest.IdentAPIHost
+	identHostname = common.LoadedManifest.IdentHostname
+	identConsumerHostname = common.LoadedManifest.IdentConsumerHostname
+	nchainHostname = common.LoadedManifest.NchainHostname
+	nchainConsumerHostname = common.LoadedManifest.NchainConsumerHostname
+	nchainStatsdaemonHostname = common.LoadedManifest.NchainStatsdaemonHostname
+	nchainReachabilitydaemonHostname = common.LoadedManifest.NchainReachabilitydaemonHostname
+	privacyHostname = common.LoadedManifest.PrivacyHostname
+	privacyConsumerHostname = common.LoadedManifest.PrivacyConsumerHostname
+	vaultHostname = common.LoadedManifest.VaultHostname
+	natsHostname = common.LoadedManifest.NatsHostname
+	natsServerName = common.LoadedManifest.NatsServerName
+	natsStreamingHostname = common.LoadedManifest.NatsStreamingHostname
+	postgresHostname = common.LoadedManifest.PostgresHostname
+	redisHostname = common.LoadedManifest.RedisHostname
+	redisHosts = common.LoadedManifest.RedisHosts
+	autoRemove = common.LoadedManifest.AutoRemove
+	logLevel = common.LoadedManifest.LogLevel
+	baselineOrganizationAddress = common.LoadedManifest.BaselineOrganizationAddress
+	baselineRegistryContractAddress = common.LoadedManifest.BaselineRegistryContractAddress
+	baselineWorkgroupID = common.LoadedManifest.BaselineWorkgroupID
+	nchainBaselineNetworkID = common.LoadedManifest.NchainBaselineNetworkID
+	jwtSignerPublicKey = common.LoadedManifest.JwtSignerPublicKey
+	natsAuthToken = common.LoadedManifest.NatsAuthToken
+	identAPIScheme = common.LoadedManifest.IdentAPIScheme
+	nchainAPIHost = common.LoadedManifest.NchainAPIHost
+	nchainAPIScheme = common.LoadedManifest.NchainAPIScheme
+	workgroupAccessToken = common.LoadedManifest.WorkgroupAccessToken
+	organizationRefreshToken = common.LoadedManifest.OrganizationRefreshToken
+	privacyAPIHost = common.LoadedManifest.PrivacyAPIHost
+	privacyAPIScheme = common.LoadedManifest.PrivacyAPIScheme
+	sorID = common.LoadedManifest.SorID
+	sorURL = common.LoadedManifest.SorURL
+	vaultAPIHost = common.LoadedManifest.VaultAPIHost
+	vaultAPIScheme = common.LoadedManifest.VaultAPIScheme
+	vaultRefreshToken = common.LoadedManifest.VaultRefreshToken
+	vaultSealUnsealKey = common.LoadedManifest.VaultSealUnsealKey
+	sapAPIHost = common.LoadedManifest.SapAPIHost
+	sapAPIScheme = common.LoadedManifest.SapAPIScheme
+	sapAPIUsername = common.LoadedManifest.SapAPIUsername
+	sapAPIPassword = common.LoadedManifest.SapAPIPassword
+	sapAPIPath = common.LoadedManifest.SapAPIPath
+	serviceNowAPIHost = common.LoadedManifest.ServiceNowAPIHost
+	serviceNowAPIScheme = common.LoadedManifest.ServiceNowAPIScheme
+	serviceNowAPIUsername = common.LoadedManifest.ServiceNowAPIUsername
+	serviceNowAPIPassword = common.LoadedManifest.ServiceNowAPIPassword
+	serviceNowAPIPath = common.LoadedManifest.ServiceNowAPIPath
+	salesforceAPIHost = common.LoadedManifest.SalesforceAPIHost
+	salesforceAPIScheme = common.LoadedManifest.SalesforceAPIScheme
+	salesforceAPIPath = common.LoadedManifest.SalesforceAPIPath
+	withLocalVault = common.LoadedManifest.WithLocalVault
+	withLocalIdent = common.LoadedManifest.WithLocalIdent
+	withLocalNChain = common.LoadedManifest.WithLocalNChain
+	withLocalPrivacy = common.LoadedManifest.WithLocalPrivacy
 }
