@@ -123,6 +123,7 @@ func refresh(cmd *cobra.Command, msg []byte) {
 	writer = prompt.NewStdoutWriter()
 
 	clear()
+	clearScrollback()
 	renderRootBanner()
 	defaultCursorPosition()
 
