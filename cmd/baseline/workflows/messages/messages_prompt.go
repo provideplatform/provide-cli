@@ -28,8 +28,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			for k := range items {
 				opts = append(opts, k)
 			}
-			messageType = common.SelectInput(opts, custodyPromptLabel)
-
+			value := common.SelectInput(opts, custodyPromptLabel)
+			messageType = items[value]
 		}
 		if id == "" {
 			id = common.FreeInput("ID", "", common.MandatoryValidation)
