@@ -21,8 +21,6 @@ valid access/refresh token pair which can be used to make API calls.`,
 }
 
 func authenticate(cmd *cobra.Command, args []string) {
-	RefreshToken()
-
 	email = common.FreeInput("Email", "", common.MandatoryValidation)
 	passwd = common.FreeInput("Password", "", common.MandatoryValidation)
 
@@ -58,8 +56,6 @@ func RefreshToken() {
 	if resp != nil {
 		cacheAccessRefreshToken(resp)
 	}
-
-	log.Printf("Refreshed access token")
 }
 
 func cacheAPIToken(token string) {
