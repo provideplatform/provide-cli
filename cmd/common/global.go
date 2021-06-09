@@ -1,9 +1,19 @@
 package common
 
 import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"strings"
+
+	provide "github.com/provideservices/provide-go/api"
 	"github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/common"
 )
+
+const releaseRepositoryPackageName = "Provide"
+const releaseRepositorySSHURL = "git@github.com:provideplatform/provide.git"
+const releaseRepositoryHTTPSURL = "https://github.com/provideplatform/provide"
 
 var (
 	Application   *ident.Application
@@ -22,8 +32,13 @@ var (
 	NodeID      string
 	WalletID    string
 
-	Verbose bool
+	Manifest *provide.Manifest
+	Verbose  bool
 )
+
+func init() {
+	resolveReleaseContext()
+}
 
 func EtherscanBaseURL(networkID string) *string {
 	switch networkID {
@@ -40,4 +55,40 @@ func EtherscanBaseURL(networkID string) *string {
 	default:
 		return nil
 	}
+}
+
+// resolveReleaseContext attempts to parse a Provide release manifest.json
+func resolveReleaseContext() {
+	path := fmt.Sprintf("./manifest.json")
+	if _, err := os.Stat(path); err == nil {
+		manifestJSON, err := os.ReadFile(path)
+		if err != nil {
+			return
+		}
+		err = json.Unmarshal(manifestJSON, &Manifest)
+	}
+}
+
+// IsReleaseContext returns true if `prvd` is run when `pwd` is the root of a Provide release
+func IsReleaseContext() bool {
+	if Manifest != nil {
+		return Manifest.Name == releaseRepositoryPackageName && (strings.ToLower(Manifest.Repository) == releaseRepositoryHTTPSURL || strings.ToLower(Manifest.Repository) == releaseRepositorySSHURL)
+	}
+
+	return false
+}
+
+// IsReleaseRepositoryContext is not yet used...
+func IsReleaseRepositoryContext() bool {
+	path := fmt.Sprintf("./.git/config")
+	if _, err := os.Stat(path); err == nil {
+		cfg, err := os.ReadFile(path)
+		if err != nil {
+			return false
+		}
+		cfgstr := string(cfg)
+		return strings.Contains(cfgstr, releaseRepositorySSHURL) || strings.Contains(cfgstr, releaseRepositoryHTTPSURL)
+	}
+
+	return false
 }

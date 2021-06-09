@@ -253,16 +253,23 @@ func renderRootBanner() {
 
 		// writer.CursorGoTo(shellHeaderStartRow, 0)
 
-		// i := 0
-		// for i < shellHeaderRows {
-		// 	writer.CursorGoTo(i, 0)
-		// 	writer.WriteRaw([]byte("\033[2K\n")) // delete current line
-		// 	i++
-		// }
+		i := 0
+		for i < shellHeaderRows {
+			writer.CursorGoTo(i, 0)
+			writer.WriteRaw([]byte("\033[2K\n")) // delete current line
+			i++
+		}
 
 		writer.CursorGoTo(shellHeaderStartRow, 0)
 		writer.SetColor(prompt.Cyan, shellOptionDefaultBGColor, true)
 		writer.WriteStr(common.ASCIIBanner)
+
+		if common.IsReleaseContext() {
+			writer.CursorGoTo(shellHeaderRows-1, int(parser.GetWinSize().Col-uint16(len(common.Manifest.Version))))
+			writer.WriteStr(common.Manifest.Version)
+		}
+
+		// render single blank link
 		writer.CursorGoTo(shellHeaderRows, 0)
 		writer.WriteRaw([]byte("\033[2K\n")) // delete current line
 		writer.SetColor(shellOptionDefaultFGColor, shellOptionDefaultBGColor, true)
