@@ -346,7 +346,7 @@ func authorizeWorkgroupContext() {
 		baselineWorkgroupID = common.ApplicationID
 	}
 
-	token, err := ident.CreateToken(common.RequireUserAuthToken(), map[string]interface{}{
+	token, err := ident.CreateToken(common.RequireUserAccessToken(), map[string]interface{}{
 		"scope":          "offline_access",
 		"application_id": baselineWorkgroupID,
 	})

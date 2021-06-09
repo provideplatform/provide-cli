@@ -20,7 +20,8 @@ const (
 	// Viper downcases key names, so hyphenating for better readability.
 	// 'Partial' keys are to be combined with the application ID they are associated with.
 	// and NOT used by themselves.
-	AuthTokenConfigKey              = "auth-token"        // user-scoped API token key
+	AccessTokenConfigKey            = "access-token"      // user-scoped API access token key
+	RefreshTokenConfigKey           = "refresh-token"     // user-scoped API refresh token key
 	APIAccessTokenConfigKeyPartial  = "api-token"         // app- or org-scoped API token key
 	APIRefreshTokenConfigKeyPartial = "api-refresh-token" // app- or org-scoped API token key
 	AccountConfigKeyPartial         = "account"           // app-scoped account ID key
@@ -67,14 +68,14 @@ func InitConfig() {
 	}
 }
 
-func RequireUserAuthToken() string {
+func RequireUserAccessToken() string {
 	token := ""
-	if viper.IsSet(AuthTokenConfigKey) {
-		token = viper.GetString(AuthTokenConfigKey)
+	if viper.IsSet(AccessTokenConfigKey) {
+		token = viper.GetString(AccessTokenConfigKey)
 	}
 
 	if token == "" {
-		log.Printf("Authorized API token required in prvd configuration; run 'authenticate'")
+		log.Printf("Authorized API access token required in prvd configuration; run 'authenticate'")
 		os.Exit(1)
 	}
 	return token
@@ -124,11 +125,11 @@ func RequireAPIToken() string {
 	} else if viper.IsSet(orgAPITokenKey) {
 		token = viper.GetString(orgAPITokenKey)
 	} else {
-		token = RequireUserAuthToken()
+		token = RequireUserAccessToken()
 	}
 
 	if token == "" {
-		log.Printf("Authorized API token required in prvd configuration; run 'authenticate'")
+		log.Printf("Authorized API access token required in prvd configuration; run 'authenticate'")
 		os.Exit(1)
 	}
 	return token

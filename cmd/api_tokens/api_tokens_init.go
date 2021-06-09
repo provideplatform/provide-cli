@@ -38,7 +38,7 @@ var apiTokensInitCmd = &cobra.Command{
 func createAPIToken(cmd *cobra.Command, args []string) {
 	RequirePublicJWTVerifiers()
 
-	userToken := common.RequireUserAuthToken()
+	userToken := common.RequireUserAccessToken()
 	params := map[string]interface{}{}
 
 	if scope != "" {

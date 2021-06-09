@@ -26,7 +26,7 @@ func fetchOrganizationDetailsRun(cmd *cobra.Command, args []string) {
 	if common.OrganizationID == "" {
 		generalPrompt(cmd, args, "Details")
 	}
-	token := common.RequireUserAuthToken()
+	token := common.RequireUserAccessToken()
 	params := map[string]interface{}{}
 	organization, err := provide.GetOrganizationDetails(token, common.OrganizationID, params)
 	if err != nil {

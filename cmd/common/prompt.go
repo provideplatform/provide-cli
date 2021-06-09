@@ -81,7 +81,7 @@ func RequireApplication() error {
 	}
 
 	opts := make([]string, 0)
-	apps, _ := ident.ListApplications(RequireUserAuthToken(), map[string]interface{}{})
+	apps, _ := ident.ListApplications(RequireUserAccessToken(), map[string]interface{}{})
 	for _, app := range apps {
 		opts = append(opts, *app.Name)
 	}
@@ -108,7 +108,7 @@ func RequireWorkgroup() error {
 	}
 
 	opts := make([]string, 0)
-	apps, _ := ident.ListApplications(RequireUserAuthToken(), map[string]interface{}{
+	apps, _ := ident.ListApplications(RequireUserAccessToken(), map[string]interface{}{
 		"type": "baseline",
 	})
 	for _, app := range apps {
@@ -216,7 +216,7 @@ func RequireOrganization() error {
 	}
 
 	opts := make([]string, 0)
-	orgs, _ := ident.ListOrganizations(RequireUserAuthToken(), map[string]interface{}{})
+	orgs, _ := ident.ListOrganizations(RequireUserAccessToken(), map[string]interface{}{})
 	for _, org := range orgs {
 		opts = append(opts, *org.Name)
 	}

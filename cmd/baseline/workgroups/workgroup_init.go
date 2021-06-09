@@ -56,7 +56,7 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	}
 	common.AuthorizeOrganizationContext(true)
 
-	token := common.RequireUserAuthToken()
+	token := common.RequireUserAccessToken()
 	application, err := ident.CreateApplication(token, map[string]interface{}{
 		"config": map[string]interface{}{
 			"baselined": true,

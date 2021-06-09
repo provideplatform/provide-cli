@@ -80,7 +80,7 @@ var ResolvedBaselineOrgAddress string // HACK
 func AuthorizeApplicationContext() {
 	RequireWorkgroup()
 
-	token, err := ident.CreateToken(RequireUserAuthToken(), map[string]interface{}{
+	token, err := ident.CreateToken(RequireUserAccessToken(), map[string]interface{}{
 		"scope":          "offline_access",
 		"application_id": ApplicationID,
 	})
@@ -97,7 +97,7 @@ func AuthorizeApplicationContext() {
 func AuthorizeOrganizationContext(persist bool) {
 	RequireOrganization()
 
-	token, err := ident.CreateToken(RequireUserAuthToken(), map[string]interface{}{
+	token, err := ident.CreateToken(RequireUserAccessToken(), map[string]interface{}{
 		"scope":           "offline_access",
 		"organization_id": OrganizationID,
 	})
@@ -401,7 +401,7 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
 			org.Metadata["domain"] = "baseline.local"
 		}
 
-		err = ident.UpdateOrganization(RequireUserAuthToken(), OrganizationID, map[string]interface{}{
+		err = ident.UpdateOrganization(RequireUserAccessToken(), OrganizationID, map[string]interface{}{
 			"metadata": org.Metadata,
 		})
 		if err != nil {
