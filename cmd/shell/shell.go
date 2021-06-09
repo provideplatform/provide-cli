@@ -94,7 +94,11 @@ func shell(cmd *cobra.Command, args []string) {
 	}
 
 	if version == "" {
-		version = "latest" // FIXME- resolve from environment, or disk if this is running in the context of a release `pwd`
+		if common.IsReleaseContext() {
+			version = common.Manifest.Version
+		} else {
+			version = "latest"
+		}
 	}
 
 	defer fmt.Println(shellExitMessage)
@@ -264,10 +268,10 @@ func renderRootBanner() {
 		writer.SetColor(prompt.Cyan, shellOptionDefaultBGColor, true)
 		writer.WriteStr(common.ASCIIBanner)
 
-		if common.IsReleaseContext() {
-			writer.CursorGoTo(shellHeaderRows-1, int(parser.GetWinSize().Col-uint16(len(common.Manifest.Version))))
-			writer.WriteStr(common.Manifest.Version)
-		}
+		// if common.IsReleaseContext() {
+		// 	writer.CursorGoTo(shellHeaderRows-1, int(parser.GetWinSize().Col-uint16(len(common.Manifest.Version))))
+		// 	writer.WriteStr(common.Manifest.Version)
+		// }
 
 		// render single blank link
 		writer.CursorGoTo(shellHeaderRows, 0)
