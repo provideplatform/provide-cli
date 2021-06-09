@@ -196,19 +196,67 @@ func runProxyRun(cmd *cobra.Command, args []string) {
 	)
 
 	if withLocalIdent {
-		images = append(images, identContainerImage)
+		identVersion := "latest"
+		if common.IsReleaseContext() {
+			version, err := common.Manifest.GetImageVersion(identContainerImage)
+			if err != nil {
+				log.Printf("failed to resolve version for pinned container image: %s; %s", identContainerImage, err.Error())
+				os.Exit(1)
+			}
+			identVersion = *version
+		}
+		identImage := fmt.Sprintf("%s:%s", identContainerImage, identVersion)
+		images = append(images, identImage)
+	} else if common.IsReleaseContext() {
+		// TODO: enforce target API major version level using status endpoint at configured identBaseURL/status
 	}
 
 	if withLocalNChain {
-		images = append(images, nchainContainerImage)
+		nchainVersion := "latest"
+		if common.IsReleaseContext() {
+			version, err := common.Manifest.GetImageVersion(nchainContainerImage)
+			if err != nil {
+				log.Printf("failed to resolve version for pinned container image: %s; %s", nchainContainerImage, err.Error())
+				os.Exit(1)
+			}
+			nchainVersion = *version
+		}
+		nchainImage := fmt.Sprintf("%s:%s", nchainContainerImage, nchainVersion)
+		images = append(images, nchainImage)
+	} else if common.IsReleaseContext() {
+		// TODO: enforce target API major version level using status endpoint at configured nchainBaseURL/status
 	}
 
 	if withLocalPrivacy {
-		images = append(images, privacyContainerImage)
+		privacyVersion := "latest"
+		if common.IsReleaseContext() {
+			version, err := common.Manifest.GetImageVersion(privacyContainerImage)
+			if err != nil {
+				log.Printf("failed to resolve version for pinned container image: %s; %s", privacyContainerImage, err.Error())
+				os.Exit(1)
+			}
+			privacyVersion = *version
+		}
+		privacyImage := fmt.Sprintf("%s:%s", privacyContainerImage, privacyVersion)
+		images = append(images, privacyImage)
+	} else if common.IsReleaseContext() {
+		// TODO: enforce target API major version level using status endpoint at configured privacyBaseURL/status
 	}
 
 	if withLocalVault {
-		images = append(images, vaultContainerImage)
+		vaultVersion := "latest"
+		if common.IsReleaseContext() {
+			version, err := common.Manifest.GetImageVersion(vaultContainerImage)
+			if err != nil {
+				log.Printf("failed to resolve version for pinned container image: %s; %s", vaultContainerImage, err.Error())
+				os.Exit(1)
+			}
+			vaultVersion = *version
+		}
+		vaultImage := fmt.Sprintf("%s:%s", vaultContainerImage, vaultVersion)
+		images = append(images, vaultImage)
+	} else if common.IsReleaseContext() {
+		// TODO: enforce target API major version level using status endpoint at configured vaultBaseURL/status
 	}
 
 	if withLocalIdent || withLocalNChain || withLocalPrivacy || withLocalVault {
