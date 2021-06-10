@@ -15,6 +15,8 @@ const releaseRepositoryPackageName = "Provide"
 const releaseRepositorySSHURL = "git@github.com:provideplatform/provide.git"
 const releaseRepositoryHTTPSURL = "https://github.com/provideplatform/provide"
 
+var envProvideBaselineManifest string
+
 var (
 	Application   *ident.Application
 	ApplicationID string

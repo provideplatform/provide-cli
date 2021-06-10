@@ -119,19 +119,21 @@ func ManifestSave(content []byte) {
 			log.Fatal(err2)
 		}
 
-		fmt.Printf("Manifest File Saved to %s", path)
+		fmt.Printf("Manifest File Saved to %s \n", path)
+		envProvideBaselineManifest = path
 	}
 }
 
 func ManifestLoad() bool {
-	if SelectInput(selectInputArgs, manifestLoadLabel) == "Yes" {
-		path := FreeInput("Please specify the path whe	re you would like to load the configuration from", "", MandatoryValidation)
+	fmt.Println(envProvideBaselineManifest)
+	if envProvideBaselineManifest != "" {
+		if SelectInput(selectInputArgs, manifestLoadLabel) == "Yes" {
+			data, _ := ioutil.ReadFile(envProvideBaselineManifest)
+			json.Unmarshal(data, &LoadedManifest)
+			fmt.Println(LoadedManifest.ApiHostname)
 
-		data, _ := ioutil.ReadFile(path)
-		json.Unmarshal(data, &LoadedManifest)
-		fmt.Println(LoadedManifest.ApiHostname)
-
-		return true
+			return true
+		}
 	}
 	return false
 }
