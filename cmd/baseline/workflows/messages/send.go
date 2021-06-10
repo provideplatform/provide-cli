@@ -72,7 +72,7 @@ func sendMessageRun(cmd *cobra.Command, args []string) {
 		params["recipients"] = _recipients
 	}
 
-	baselinedRecord, err := baseline.CreateBusinessObject(common.OrganizationAccessToken, params)
+	baselinedRecord, err := baseline.CreateObject(common.OrganizationAccessToken, params)
 	if err != nil {
 		log.Printf("WARNING: failed to baseline %d-byte payload; %s", len(data), err.Error())
 		os.Exit(1)
