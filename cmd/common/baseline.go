@@ -333,7 +333,6 @@ func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 			return nil
 		}
 		err = json.Unmarshal(raw, &capabilities)
-		return nil
 	}
 
 	var registryArtifact *nchain.CompiledArtifact
