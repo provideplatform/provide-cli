@@ -176,6 +176,7 @@ func RequirePublicJWTVerifiers() {
 				Fingerprint:  fingerprint,
 				PublicKey:    *publicKey,
 				PublicKeyPEM: &key.PublicKey,
+				SSHPublicKey: &sshPublicKey,
 			}
 
 			log.Printf("ident jwt public key configured for verification; fingerprint: %s", fingerprint)

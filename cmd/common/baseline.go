@@ -18,11 +18,11 @@ import (
 
 	"github.com/kthomas/gonnel"
 	"github.com/ory/viper"
-	"github.com/provideservices/provide-go/api"
 	"github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
 	"github.com/provideservices/provide-go/api/vault"
 	util "github.com/provideservices/provide-go/common"
+	commonutil "github.com/provideservices/provide-go/common/util"
 )
 
 //                                         :os/`
@@ -145,6 +145,12 @@ func InitWorkgroupContract() *nchain.Contract {
 		os.Exit(1)
 	}
 
+	compiledArtifact := resolveBaselineRegistryContractArtifact()
+	if compiledArtifact == nil {
+		log.Printf("failed to deploy global baseline organization registry contract")
+		os.Exit(1)
+	}
+
 	log.Printf("deploying global baseline organization registry contract: %s", defaultBaselineRegistryContractName)
 	contract, err := nchain.CreateContract(ApplicationAccessToken, map[string]interface{}{
 		"address":    "0x",
@@ -152,7 +158,7 @@ func InitWorkgroupContract() *nchain.Contract {
 		"network_id": NetworkID,
 		"params": map[string]interface{}{
 			"argv":              []interface{}{},
-			"compiled_artifact": resolveBaselineRegistryContractArtifact(),
+			"compiled_artifact": compiledArtifact,
 			"wallet_id":         wallet.ID,
 		},
 		"type": "registry",
@@ -266,20 +272,6 @@ func RequireOrganizationKeypair(spec string) (*vault.Key, error) {
 	return key, nil
 }
 
-func ResolveCapabilities() (map[string]interface{}, error) {
-	capabilitiesClient := &api.Client{
-		Host:   "s3.amazonaws.com",
-		Scheme: "https",
-		Path:   "static.provide.services/capabilities",
-	}
-	_, capabilities, err := capabilitiesClient.Get("provide-capabilities-manifest.json", map[string]interface{}{})
-	if err != nil {
-		return nil, err
-	}
-
-	return capabilities.(map[string]interface{}), nil
-}
-
 func RequireContract(contractID, contractType *string, printCreationTxLink bool) error {
 	startTime := time.Now()
 	timer := time.NewTicker(requireContractTickerInterval)
@@ -334,7 +326,7 @@ func RequireContract(contractID, contractType *string, printCreationTxLink bool)
 }
 
 func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
-	capabilities, err := ResolveCapabilities()
+	capabilities, err := commonutil.ResolveCapabilitiesManifest()
 	if err != nil {
 		return nil
 	}

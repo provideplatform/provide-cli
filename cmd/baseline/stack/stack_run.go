@@ -419,6 +419,9 @@ func authorizeWorkgroupContext() {
 	if err != nil {
 		log.Printf("failed to resolve global organization registry contract; %s", err.Error())
 		os.Exit(1)
+	} else if len(contracts) == 0 {
+		log.Printf("failed to resolve global organization registry contract")
+		os.Exit(1)
 	}
 
 	if nchainBaselineNetworkID == "" {
