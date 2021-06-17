@@ -328,6 +328,11 @@ func RequireContract(contractID, contractType *string, printCreationTxLink bool)
 func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 	capabilities, err := commonutil.ResolveCapabilitiesManifest()
 	if err != nil {
+		raw, err := os.ReadFile("./provide-capabilities-manifest.json") // HACK!!! this is temporary workaround; we will resolve API client issue
+		if err != nil {
+			return nil
+		}
+		err = json.Unmarshal(raw, &capabilities)
 		return nil
 	}
 
