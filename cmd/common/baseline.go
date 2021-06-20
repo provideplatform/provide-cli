@@ -1,26 +1,24 @@
 package common
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"os/signal"
 	"strings"
 	"sync/atomic"
 	"syscall"
 	"time"
 
-	"github.com/kthomas/gonnel"
 	"github.com/ory/viper"
+	pgrokclient "github.com/provideplatform/pgrok/client"
 	"github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
 	"github.com/provideservices/provide-go/api/vault"
+	"github.com/provideservices/provide-go/common"
 	util "github.com/provideservices/provide-go/common"
 	commonutil "github.com/provideservices/provide-go/common/util"
 )
@@ -59,15 +57,15 @@ const requireContractSleepInterval = time.Second * 1
 const requireContractTickerInterval = time.Second * 5
 const requireContractTimeout = time.Minute * 10
 
-const requireOrganizationAPIEndpointTimeout = time.Second * 5
-const requireOrganizationMessagingEndpointTimeout = time.Second * 5
+const requireOrganizationAPIEndpointTimeout = time.Second * 10
+const requireOrganizationMessagingEndpointTimeout = time.Second * 10
 
 var Tunnel bool
 var APIEndpoint string
 var ExposeAPITunnel bool
 var ExposeMessagingTunnel bool
 var MessagingEndpoint string
-var tunnelClient *gonnel.Client
+var tunnelClient *pgrokclient.Client
 
 var ApplicationAccessToken string
 var OrganizationAccessToken string
@@ -436,13 +434,14 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
 		installSignalHandlers := func() {
 			log.Printf("installing signal handlers")
 			sigs = make(chan os.Signal, 1)
-			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
+			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 			shutdownCtx, cancelF = context.WithCancel(context.Background())
 		}
 
 		shutdown := func() {
 			if atomic.AddUint32(&closing, 1) == 1 {
 				log.Print("shutting down")
+				tunnelClient.Close()
 				cancelF()
 				os.Exit(0)
 			}
@@ -455,85 +454,80 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
 		installSignalHandlers()
 
 		go func() {
-			var out bytes.Buffer
-			cmd := exec.Command("which", "ngrok")
-			cmd.Stdout = &out
-			err := cmd.Run()
-			if err == nil {
-				tunnelClient, err = gonnel.NewClient(gonnel.Options{
-					BinaryPath: strings.Trim(out.String(), "\n"),
+			var err error
+			tunnelClient, err = pgrokclient.Factory()
+			if err != nil {
+				log.Printf("WARNING: failed to initialize tunnel; %s", err.Error())
+				os.Exit(1)
+			}
+
+			if ExposeAPITunnel {
+				tunnelClient.AddTunnel(&pgrokclient.Tunnel{
+					Name:      common.StringOrNil(fmt.Sprintf("%s-api", OrganizationID)),
+					LocalAddr: common.StringOrNil(fmt.Sprintf("127.0.0.1:%d", apiPort)),
 				})
-				if err != nil {
-					log.Printf("WARNING: failed to initialize tunnel; %s", err.Error())
-					os.Exit(1)
+			}
+
+			if ExposeMessagingTunnel {
+				tunnelClient.AddTunnel(&pgrokclient.Tunnel{
+					Name:      common.StringOrNil(fmt.Sprintf("%s-msg", OrganizationID)),
+					LocalAddr: common.StringOrNil(fmt.Sprintf("127.0.0.1:%d", messagingPort)),
+				})
+			}
+
+			err = tunnelClient.ConnectAll()
+			if err != nil {
+				log.Printf("WARNING: failed to initialize tunnel(s); %s", err.Error())
+				os.Exit(1)
+			}
+
+			if ExposeAPITunnel {
+				for tunnelClient.Tunnels[0].RemoteAddr == nil {
+					time.Sleep(time.Millisecond * 10)
 				}
 
-				defer tunnelClient.Close()
+				APIEndpoint = *tunnelClient.Tunnels[0].RemoteAddr
+				log.Printf("established tunnel connection for API endpoint: %s\n", APIEndpoint)
+			}
 
-				done := make(chan bool)
-				go tunnelClient.StartServer(done)
-				<-done
-
-				if ExposeAPITunnel {
-					tunnelClient.AddTunnel(&gonnel.Tunnel{
-						Proto:        gonnel.HTTP,
-						Name:         fmt.Sprintf("%s-api", OrganizationID),
-						LocalAddress: fmt.Sprintf("127.0.0.1:%d", apiPort),
-					})
+			if ExposeMessagingTunnel {
+				for tunnelClient.Tunnels[len(tunnelClient.Tunnels)-1].RemoteAddr == nil {
+					time.Sleep(time.Millisecond * 10)
 				}
 
-				if ExposeMessagingTunnel {
-					tunnelClient.AddTunnel(&gonnel.Tunnel{
-						Proto:        gonnel.TCP,
-						Name:         fmt.Sprintf("%s-msg", OrganizationID),
-						LocalAddress: fmt.Sprintf("127.0.0.1:%d", messagingPort),
-					})
-				}
-
-				err = tunnelClient.ConnectAll()
-				if err != nil {
-					log.Printf("WARNING: failed to initialize tunnel(s); %s", err.Error())
-					os.Exit(1)
-				}
-
-				if ExposeAPITunnel {
-					APIEndpoint = tunnelClient.Tunnel[0].RemoteAddress
-					log.Printf("established tunnel connection for API endpoint: %s\n", APIEndpoint)
-				}
-
-				if ExposeMessagingTunnel {
-					MessagingEndpoint = tunnelClient.Tunnel[len(tunnelClient.Tunnel)-1].RemoteAddress
-					log.Printf("established tunnel connection for messaging endpoint: %s\n", MessagingEndpoint)
-				}
-
-				fmt.Print("Press any key to disconnect...\n")
-				reader := bufio.NewReader(os.Stdin)
-				reader.ReadRune()
-
-				tunnelClient.DisconnectAll()
+				MessagingEndpoint = *tunnelClient.Tunnels[len(tunnelClient.Tunnels)-1].RemoteAddr
+				log.Printf("established tunnel connection for messaging endpoint: %s\n", MessagingEndpoint)
 			}
 		}()
 
 		if ExposeAPITunnel {
-			startTime := time.Now()
-			for APIEndpoint == "" {
-				time.Sleep(time.Millisecond * 50)
-				if startTime.Add(requireOrganizationAPIEndpointTimeout).Before(time.Now()) {
-					log.Printf("WARNING: organization API endpoint tunnel timed out")
-					os.Exit(1)
+			go func() {
+				startTime := time.Now()
+				for APIEndpoint == "" {
+					if startTime.Add(requireOrganizationAPIEndpointTimeout).Before(time.Now()) {
+						log.Printf("WARNING: organization API endpoint tunnel timed out")
+						os.Exit(1)
+					}
+					time.Sleep(time.Millisecond * 10)
 				}
-			}
+			}()
 		}
 
 		if ExposeMessagingTunnel {
-			startTime := time.Now()
-			for MessagingEndpoint == "" {
-				time.Sleep(time.Millisecond * 50)
-				if startTime.Add(requireOrganizationMessagingEndpointTimeout).Before(time.Now()) {
-					log.Printf("WARNING: organization messaging endpoint tunnel timed out")
-					os.Exit(1)
+			go func() {
+				startTime := time.Now()
+				for MessagingEndpoint == "" {
+					if startTime.Add(requireOrganizationMessagingEndpointTimeout).Before(time.Now()) {
+						log.Printf("WARNING: organization messaging endpoint tunnel timed out")
+						os.Exit(1)
+					}
+					time.Sleep(time.Millisecond * 10)
 				}
-			}
+			}()
+		}
+
+		for (ExposeAPITunnel && APIEndpoint == "") || (ExposeMessagingTunnel && MessagingEndpoint == "") {
+			time.Sleep(time.Millisecond * 10)
 		}
 
 		run()
