@@ -15,7 +15,6 @@ require (
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/kthomas/go-pgputil v0.0.0-20200602073402-784e96083943
 	github.com/kthomas/go.uuid v1.2.1-0.20190324131420-28d1fa77e9a4
-	github.com/kthomas/gonnel v0.0.0-20210414063124-930208f711e1
 	github.com/manifoldco/promptui v0.8.0
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-runewidth v0.0.12 // indirect
