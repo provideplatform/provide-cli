@@ -462,17 +462,23 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
 			}
 
 			if ExposeAPITunnel {
-				tunnelClient.AddTunnel(&pgrokclient.Tunnel{
-					Name:      common.StringOrNil(fmt.Sprintf("%s-api", OrganizationID)),
-					LocalAddr: common.StringOrNil(fmt.Sprintf("127.0.0.1:%d", apiPort)),
-				})
+				tunnelClient.AddTunnel(&pgrokclient.TunnelFactory(
+					fmt.Sprintf("%s-api", OrganizationID),
+					fmt.Sprintf("127.0.0.1:%d", apiPort),
+					nil,
+					common.StringOrNil("http"),
+					OrganizationAccessToken,
+				))
 			}
 
 			if ExposeMessagingTunnel {
-				tunnelClient.AddTunnel(&pgrokclient.Tunnel{
-					Name:      common.StringOrNil(fmt.Sprintf("%s-msg", OrganizationID)),
-					LocalAddr: common.StringOrNil(fmt.Sprintf("127.0.0.1:%d", messagingPort)),
-				})
+				tunnelClient.AddTunnel(&pgrokclient.TunnelFactory(
+					fmt.Sprintf("%s-msg", OrganizationID),
+					fmt.Sprintf("127.0.0.1:%d", messagingPort),
+					nil,
+					common.StringOrNil("tcp"),
+					OrganizationAccessToken,
+				))
 			}
 
 			err = tunnelClient.ConnectAll()
