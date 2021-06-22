@@ -14,9 +14,9 @@ import (
 	"time"
 
 	"github.com/ory/viper"
-	pgrokclient "github.com/provideplatform/pgrok/client"
 	"github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
+	"github.com/provideservices/provide-go/api/pgrok"
 	"github.com/provideservices/provide-go/api/vault"
 	"github.com/provideservices/provide-go/common"
 	util "github.com/provideservices/provide-go/common"
@@ -65,7 +65,7 @@ var APIEndpoint string
 var ExposeAPITunnel bool
 var ExposeMessagingTunnel bool
 var MessagingEndpoint string
-var tunnelClient *pgrokclient.Client
+var tunnelClient *pgrok.Client
 
 var ApplicationAccessToken string
 var OrganizationAccessToken string
@@ -455,7 +455,7 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
 
 		go func() {
 			var err error
-			tunnelClient, err = pgrokclient.Factory()
+			tunnelClient, err = pgrok.Factory()
 			if err != nil {
 				log.Printf("WARNING: failed to initialize tunnel; %s", err.Error())
 				os.Exit(1)
