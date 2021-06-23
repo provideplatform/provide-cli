@@ -1,4 +1,4 @@
-module github.com/provideservices/provide-cli
+module github.com/provideplatform/provide-cli
 
 go 1.13
 
