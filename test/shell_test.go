@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	"github.com/provideservices/provide-cli/cmd/shell"
+	"github.com/provideplatform/provide-cli/cmd/shell"
 	"github.com/spf13/cobra"
 )
 

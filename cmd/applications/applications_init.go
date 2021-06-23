@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/provideservices/provide-cli/cmd/accounts"
-	"github.com/provideservices/provide-cli/cmd/common"
-	"github.com/provideservices/provide-cli/cmd/wallets"
+	"github.com/provideplatform/provide-cli/cmd/accounts"
+	"github.com/provideplatform/provide-cli/cmd/common"
+	"github.com/provideplatform/provide-cli/cmd/wallets"
 	provide "github.com/provideservices/provide-go/api/ident"
 
 	"github.com/spf13/cobra"

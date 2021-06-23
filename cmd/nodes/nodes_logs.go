@@ -1,7 +1,7 @@
 package nodes
 
 import (
-	"github.com/provideservices/provide-cli/cmd/common"
+	"github.com/provideplatform/provide-cli/cmd/common"
 	// provide "github.com/provideservices/provide-go/api/nchain"
 
 	"github.com/spf13/cobra"

@@ -5,8 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/provideservices/provide-cli/cmd/common"
-	"github.com/provideservices/provide-cli/cmd/vaults/keys"
+	"github.com/provideplatform/provide-cli/cmd/common"
+	"github.com/provideplatform/provide-cli/cmd/vaults/keys"
 )
 
 var VaultsCmd = &cobra.Command{

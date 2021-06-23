@@ -22,7 +22,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	uuid "github.com/kthomas/go.uuid"
 	"github.com/manifoldco/promptui"
-	"github.com/provideservices/provide-cli/cmd/common"
+	"github.com/provideplatform/provide-cli/cmd/common"
 	"github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
 	"github.com/provideservices/provide-go/api/vault"

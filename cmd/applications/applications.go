@@ -3,7 +3,7 @@ package applications
 import (
 	"os"
 
-	"github.com/provideservices/provide-cli/cmd/common"
+	"github.com/provideplatform/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 

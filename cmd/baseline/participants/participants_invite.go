@@ -12,7 +12,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kthomas/go-pgputil"
 	"github.com/manifoldco/promptui"
-	"github.com/provideservices/provide-cli/cmd/common"
+	"github.com/provideplatform/provide-cli/cmd/common"
 	ident "github.com/provideservices/provide-go/api/ident"
 	"github.com/provideservices/provide-go/api/nchain"
 	"github.com/provideservices/provide-go/api/vault"

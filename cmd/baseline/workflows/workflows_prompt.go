@@ -1,8 +1,8 @@
 package workflows
 
 import (
-	"github.com/provideservices/provide-cli/cmd/baseline/workflows/messages"
-	"github.com/provideservices/provide-cli/cmd/common"
+	"github.com/provideplatform/provide-cli/cmd/baseline/workflows/messages"
+	"github.com/provideplatform/provide-cli/cmd/common"
 
 	"github.com/spf13/cobra"
 )

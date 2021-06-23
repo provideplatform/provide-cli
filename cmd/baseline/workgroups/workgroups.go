@@ -1,8 +1,8 @@
 package workgroups
 
 import (
-	"github.com/provideservices/provide-cli/cmd/baseline/participants"
-	"github.com/provideservices/provide-cli/cmd/common"
+	"github.com/provideplatform/provide-cli/cmd/baseline/participants"
+	"github.com/provideplatform/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
 

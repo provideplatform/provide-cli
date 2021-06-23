@@ -3,10 +3,10 @@ package baseline
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/provideservices/provide-cli/cmd/baseline/stack"
-	"github.com/provideservices/provide-cli/cmd/baseline/workflows"
-	"github.com/provideservices/provide-cli/cmd/baseline/workgroups"
-	"github.com/provideservices/provide-cli/cmd/common"
+	"github.com/provideplatform/provide-cli/cmd/baseline/stack"
+	"github.com/provideplatform/provide-cli/cmd/baseline/workflows"
+	"github.com/provideplatform/provide-cli/cmd/baseline/workgroups"
+	"github.com/provideplatform/provide-cli/cmd/common"
 )
 
 var Optional bool

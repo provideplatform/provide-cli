@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/manifoldco/promptui"
-	"github.com/provideservices/provide-cli/cmd/common"
-	"github.com/provideservices/provide-cli/cmd/shell"
+	"github.com/provideplatform/provide-cli/cmd/common"
+	"github.com/provideplatform/provide-cli/cmd/shell"
 	"github.com/spf13/cobra"
 
 	vault "github.com/provideservices/provide-go/api/vault"
