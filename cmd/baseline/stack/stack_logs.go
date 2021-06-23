@@ -1,14 +1,12 @@
 package stack
 
 import (
-	"context"
 	"log"
 	"os"
 	"sync"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/provideservices/provide-cli/cmd/common"
 
 	"github.com/spf13/cobra"
 )
@@ -32,42 +30,8 @@ func logsProxyRun(cmd *cobra.Command, args []string) {
 	}
 
 	wg := sync.WaitGroup{}
-	logContainers(docker, &wg)
+	common.LogContainers(docker, &wg, name)
 	wg.Wait()
-}
-
-func logContainers(docker *client.Client, wg *sync.WaitGroup) error {
-	for _, container := range listContainers(docker) {
-		if wg != nil {
-			wg.Add(1)
-		}
-
-		containerID := make([]byte, len(container.ID))
-		copy(containerID, container.ID)
-
-		go func() {
-			logContainer(docker, string(containerID))
-			if wg != nil {
-				wg.Done()
-			}
-		}()
-	}
-
-	return nil
-}
-
-func logContainer(docker *client.Client, containerID string) error {
-	out, err := docker.ContainerLogs(context.Background(), containerID, types.ContainerLogsOptions{
-		ShowStderr: true,
-		ShowStdout: true,
-	})
-	if err != nil {
-		return err
-	}
-
-	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
-
-	return nil
 }
 
 func init() {

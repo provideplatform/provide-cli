@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -357,7 +358,7 @@ func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 
 // RequireOrganizationEndpoints fn is the function to call after the tunnel has been established,
 // prior to the runloop and signal handling is installed
-func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
+func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), apiPort, messagingPort int) {
 	run := func() {
 		org, err := ident.GetOrganizationDetails(OrganizationAccessToken, OrganizationID, map[string]interface{}{})
 		if err != nil {
@@ -453,6 +454,16 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
 
 		installSignalHandlers()
 
+		var once sync.Once
+		_tunnelShutdownFn := func(reason *string) {
+			once.Do(func() {
+				if tunnelShutdownFn != nil {
+					tunnelShutdownFn(reason)
+				}
+				shutdown()
+			})
+		}
+
 		go func() {
 			var err error
 			tunnelClient, err = pgrok.Factory()
@@ -468,6 +479,7 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
 					nil,
 					common.StringOrNil("http"),
 					common.StringOrNil(OrganizationAccessToken),
+					_tunnelShutdownFn,
 				)
 				tunnelClient.AddTunnel(tunnel)
 			}
@@ -479,6 +491,7 @@ func RequireOrganizationEndpoints(fn func(), apiPort, messagingPort int) {
 					nil,
 					common.StringOrNil("tcp"),
 					common.StringOrNil(OrganizationAccessToken),
+					_tunnelShutdownFn,
 				)
 				tunnelClient.AddTunnel(tunnel)
 			}

@@ -1,12 +1,11 @@
 package stack
 
 import (
-	"context"
 	"log"
 	"os"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/provideservices/provide-cli/cmd/common"
 
 	"github.com/spf13/cobra"
 )
@@ -29,33 +28,10 @@ func stopProxyRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	purgeContainers(docker)
-	purgeNetwork(docker)
+	common.PurgeContainers(docker, name)
+	common.PurgeNetwork(docker, name)
 
 	log.Printf("%s local baseline instance stopped", name)
-}
-
-func purgeContainers(docker *client.Client) {
-	// log.Printf("purging containers for local baseline instance: %s", name)
-	for _, container := range listContainers(docker) {
-		err := docker.ContainerRemove(context.Background(), container.ID, types.ContainerRemoveOptions{
-			RemoveVolumes: true,
-			Force:         true,
-		})
-
-		if err != nil {
-			log.Printf("WARNING: failed to remove container: %s; %s", container.Names[0], err.Error())
-		}
-	}
-}
-
-func purgeNetwork(docker *client.Client) {
-	networks, _ := docker.NetworkList(context.Background(), types.NetworkListOptions{})
-	for _, ntwrk := range networks {
-		if ntwrk.Name == name {
-			docker.NetworkRemove(context.Background(), ntwrk.ID)
-		}
-	}
 }
 
 func init() {

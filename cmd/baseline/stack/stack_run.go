@@ -16,7 +16,6 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
@@ -177,7 +176,7 @@ func runProxyRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	go purgeContainers(docker)
+	go common.PurgeContainers(docker, name)
 
 	authorizeContext()
 	sorPrompt()
@@ -319,6 +318,13 @@ func runProxyRun(cmd *cobra.Command, args []string) {
 			go runProxyConsumer(docker)
 
 			log.Printf("%s local baseline instance started", name)
+		},
+		func(reason *string) {
+			if reason != nil {
+				log.Printf(*reason)
+				common.PurgeContainers(docker, name)
+				common.PurgeNetwork(docker, name)
+			}
 		},
 		port,
 		natsPort,
@@ -1092,40 +1098,6 @@ func runContainer(
 	}
 
 	return &container, nil
-}
-
-func listContainers(docker *client.Client) []types.Container {
-	containers, err := docker.ContainerList(context.Background(), types.ContainerListOptions{
-		All: true,
-		Filters: filters.NewArgs([]filters.KeyValuePair{
-			{
-				Key:   "name",
-				Value: fmt.Sprintf("%s-api", strings.ReplaceAll(name, " ", "")),
-			},
-			{
-				Key:   "name",
-				Value: fmt.Sprintf("%s-consumer", strings.ReplaceAll(name, " ", "")),
-			},
-			{
-				Key:   "name",
-				Value: fmt.Sprintf("%s-nats", strings.ReplaceAll(name, " ", "")),
-			},
-			{
-				Key:   "name",
-				Value: fmt.Sprintf("%s-nats-streaming", strings.ReplaceAll(name, " ", "")),
-			},
-			{
-				Key:   "name",
-				Value: fmt.Sprintf("%s-redis", strings.ReplaceAll(name, " ", "")),
-			},
-		}...),
-	})
-	if err != nil {
-		log.Printf("failed to list containers; %s", err.Error())
-		os.Exit(1)
-	}
-
-	return containers
 }
 
 func organizationAuthPrompt() {
