@@ -8,9 +8,9 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/cmd/common"
-	ident "github.com/provideservices/provide-go/api/ident"
-	"github.com/provideservices/provide-go/api/nchain"
-	"github.com/provideservices/provide-go/api/vault"
+	ident "github.com/provideplatform/provide-go/api/ident"
+	"github.com/provideplatform/provide-go/api/nchain"
+	"github.com/provideplatform/provide-go/api/vault"
 	"github.com/spf13/cobra"
 )
 

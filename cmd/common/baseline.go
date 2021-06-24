@@ -15,13 +15,13 @@ import (
 	"time"
 
 	"github.com/ory/viper"
-	"github.com/provideservices/provide-go/api/ident"
-	"github.com/provideservices/provide-go/api/nchain"
-	"github.com/provideservices/provide-go/api/pgrok"
-	"github.com/provideservices/provide-go/api/vault"
-	"github.com/provideservices/provide-go/common"
-	util "github.com/provideservices/provide-go/common"
-	commonutil "github.com/provideservices/provide-go/common/util"
+	"github.com/provideplatform/provide-go/api/ident"
+	"github.com/provideplatform/provide-go/api/nchain"
+	"github.com/provideplatform/provide-go/api/pgrok"
+	"github.com/provideplatform/provide-go/api/vault"
+	"github.com/provideplatform/provide-go/common"
+	util "github.com/provideplatform/provide-go/common"
+	commonutil "github.com/provideplatform/provide-go/common/util"
 )
 
 //                                         :os/`

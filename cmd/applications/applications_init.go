@@ -8,7 +8,7 @@ import (
 	"github.com/provideplatform/provide-cli/cmd/accounts"
 	"github.com/provideplatform/provide-cli/cmd/common"
 	"github.com/provideplatform/provide-cli/cmd/wallets"
-	provide "github.com/provideservices/provide-go/api/ident"
+	provide "github.com/provideplatform/provide-go/api/ident"
 
 	"github.com/spf13/cobra"
 )

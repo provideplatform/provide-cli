@@ -10,9 +10,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kthomas/go-pgputil"
 	"github.com/provideplatform/provide-cli/cmd/common"
-	"github.com/provideservices/provide-go/api/ident"
-	provide "github.com/provideservices/provide-go/api/ident"
-	"github.com/provideservices/provide-go/common/util"
+	"github.com/provideplatform/provide-go/api/ident"
+	provide "github.com/provideplatform/provide-go/api/ident"
+	"github.com/provideplatform/provide-go/common/util"
 	"golang.org/x/crypto/ssh"
 
 	"github.com/spf13/cobra"

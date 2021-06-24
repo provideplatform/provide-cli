@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/provideplatform/provide-cli/cmd/common"
-	"github.com/provideservices/provide-go/api/baseline"
-	"github.com/provideservices/provide-go/api/ident"
+	"github.com/provideplatform/provide-go/api/baseline"
+	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/spf13/cobra"
 )
 

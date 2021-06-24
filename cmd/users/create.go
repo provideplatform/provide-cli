@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/provideplatform/provide-cli/cmd/common"
-	provide "github.com/provideservices/provide-go/api/ident"
+	provide "github.com/provideplatform/provide-go/api/ident"
 
 	"github.com/spf13/cobra"
 )

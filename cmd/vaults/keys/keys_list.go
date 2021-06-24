@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/provideplatform/provide-cli/cmd/common"
-	vault "github.com/provideservices/provide-go/api/vault"
+	vault "github.com/provideplatform/provide-go/api/vault"
 
 	"github.com/spf13/cobra"
 )

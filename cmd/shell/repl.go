@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/provideservices/provide-go/common"
+	"github.com/provideplatform/provide-go/common"
 )
 
 const replTickerInterval = 500 * time.Millisecond

@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	provide "github.com/provideservices/provide-go/api"
-	"github.com/provideservices/provide-go/api/ident"
-	"github.com/provideservices/provide-go/common"
+	provide "github.com/provideplatform/provide-go/api"
+	"github.com/provideplatform/provide-go/api/ident"
+	"github.com/provideplatform/provide-go/common"
 )
 
 const releaseRepositoryPackageName = "Provide"

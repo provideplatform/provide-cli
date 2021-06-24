@@ -8,7 +8,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/cmd/api_tokens"
 	"github.com/provideplatform/provide-cli/cmd/common"
-	"github.com/provideservices/provide-go/api/baseline"
+	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/spf13/cobra"
 )
 

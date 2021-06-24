@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/provideplatform/provide-cli/cmd/common"
-	provide "github.com/provideservices/provide-go/api/nchain"
-	providecrypto "github.com/provideservices/provide-go/crypto"
+	provide "github.com/provideplatform/provide-go/api/nchain"
+	providecrypto "github.com/provideplatform/provide-go/crypto"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

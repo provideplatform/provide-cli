@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/provideplatform/provide-cli/cmd/common"
-	provide "github.com/provideservices/provide-go/api/nchain"
+	provide "github.com/provideplatform/provide-go/api/nchain"
 
 	"github.com/spf13/cobra"
 )

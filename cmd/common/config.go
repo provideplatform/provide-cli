@@ -8,7 +8,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	homedir "github.com/mitchellh/go-homedir"
-	"github.com/provideservices/provide-go/api/ident"
+	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/spf13/viper"
 )
 

@@ -9,7 +9,7 @@ import (
 	"github.com/provideplatform/provide-cli/cmd/shell"
 	"github.com/spf13/cobra"
 
-	vault "github.com/provideservices/provide-go/api/vault"
+	vault "github.com/provideplatform/provide-go/api/vault"
 )
 
 var promptArgs []string
