@@ -132,6 +132,7 @@ var privacyAPIScheme string
 
 var sorID string
 var sorURL string
+var sorOrganizationCode string
 
 var vaultAPIHost string
 var vaultAPIScheme string
@@ -576,6 +577,7 @@ func containerEnvironmentFactory() []string {
 		fmt.Sprintf("PROVIDE_ORGANIZATION_ID=%s", common.OrganizationID),
 		fmt.Sprintf("PROVIDE_ORGANIZATION_REFRESH_TOKEN=%s", organizationRefreshToken),
 		fmt.Sprintf("PROVIDE_SOR_IDENTIFIER=%s", sorID),
+		fmt.Sprintf("PROVIDE_SOR_ORGANIZATION_CODE=%s", sorOrganizationCode),
 		fmt.Sprintf("PROVIDE_SOR_URL=%s", sorURL),
 		fmt.Sprintf("PRIVACY_API_SCHEME=%s", privacyAPIScheme),
 		fmt.Sprintf("REDIS_HOSTS=%s", redisHosts),
@@ -1228,6 +1230,7 @@ func init() {
 
 	runBaselineStackCmd.Flags().StringVar(&sorID, "sor", "", "primary internal system of record identifier being baselined")
 	runBaselineStackCmd.Flags().StringVar(&sorURL, "sor-url", "https://", "url of the primary internal system of record being baselined")
+	runBaselineStackCmd.Flags().StringVar(&sorOrganizationCode, "sor-organization-code", "", "organization code specific to the system of record")
 
 	runBaselineStackCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the local baseline API container")
 	runBaselineStackCmd.Flags().IntVar(&port, "port", 8080, "host port on which to expose the local baseline API service")
