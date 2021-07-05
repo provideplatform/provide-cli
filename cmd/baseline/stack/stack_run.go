@@ -594,7 +594,7 @@ func containerEnvironmentFactory() []string {
 			fmt.Sprintf("SAP_API_HOST=%s", sapAPIHost),
 			fmt.Sprintf("SAP_API_SCHEME=%s", sapAPIScheme),
 			fmt.Sprintf("SAP_API_PATH=%s", sapAPIPath),
-			fmt.Sprintf("SAP_API_USERNAE=%s", sapAPIUsername),
+			fmt.Sprintf("SAP_API_USERNAME=%s", sapAPIUsername),
 			fmt.Sprintf("SAP_API_PASSWORD=%s", sapAPIPassword),
 		} {
 			env = append(env, envvar)
@@ -621,7 +621,7 @@ func containerEnvironmentFactory() []string {
 			fmt.Sprintf("SERVICENOW_API_HOST=%s", serviceNowAPIHost),
 			fmt.Sprintf("SERVICENOW_API_SCHEME=%s", serviceNowAPIScheme),
 			fmt.Sprintf("SERVICENOW_API_PATH=%s", serviceNowAPIPath),
-			fmt.Sprintf("SERVICENOW_API_USERNAE=%s", serviceNowAPIUsername),
+			fmt.Sprintf("SERVICENOW_API_USERNAME=%s", serviceNowAPIUsername),
 			fmt.Sprintf("SERVICENOW_API_PASSWORD=%s", serviceNowAPIPassword),
 		} {
 			env = append(env, envvar)
