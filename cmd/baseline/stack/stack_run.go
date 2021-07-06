@@ -537,6 +537,8 @@ func applyFlags() {
 
 	// HACK
 	if jwtSignerPublicKey == "" {
+		fmt.Print(common.VaultID, "\n")
+		fmt.Print(common.OrganizationAccessToken, "\n")
 		keys, err := vault.ListKeys(common.OrganizationAccessToken, common.VaultID, map[string]interface{}{
 			"spec": "RSA-4096",
 		})
@@ -1106,7 +1108,7 @@ func runContainer(
 func organizationAuthPrompt() {
 	prompt := promptui.Prompt{
 		IsConfirm: true,
-		Label:     fmt.Sprintf("Authorize access/refresh token for %s?", *common.Organization.Name),
+		Label:     fmt.Sprintf("Authorize access/refresh token for %s", *common.Organization.Name),
 	}
 
 	result, err := prompt.Run()
@@ -1121,13 +1123,13 @@ func organizationAuthPrompt() {
 }
 
 func tunnelAPIPrompt() {
-	if common.ExposeAPITunnel {
+	if common.ExposeAPITunnel || common.APIEndpoint != "" {
 		return
 	}
 
 	prompt := promptui.Prompt{
 		IsConfirm: true,
-		Label:     "Expose tunnel for the local API?",
+		Label:     "Expose tunnel for the local API",
 	}
 
 	result, err := prompt.Run()
@@ -1142,13 +1144,13 @@ func tunnelAPIPrompt() {
 }
 
 func tunnelMessagingPrompt() {
-	if common.ExposeMessagingTunnel {
+	if common.ExposeMessagingTunnel || common.MessagingEndpoint != "" {
 		return
 	}
 
 	prompt := promptui.Prompt{
 		IsConfirm: true,
-		Label:     "Expose tunnel for the local messaging endpoint?",
+		Label:     "Expose tunnel for the local messaging endpoint",
 	}
 
 	result, err := prompt.Run()
