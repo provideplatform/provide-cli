@@ -55,14 +55,19 @@ func InitConfig() {
 		if err := viper.SafeWriteConfigAs(configPath); err != nil {
 			if os.IsNotExist(err) {
 				err = viper.WriteConfigAs(configPath)
+				if err != nil {
+					fmt.Printf("WARNING: failed to write configuration; %s", err.Error())
+				}
 			}
 		}
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
+	err := viper.ReadInConfig()
+	if err != nil {
+		fmt.Printf("WARNING: failed to read configuration; %s", err.Error())
+	} else {
 		os.Chmod(viper.ConfigFileUsed(), 0600)
 
 		if Verbose {
