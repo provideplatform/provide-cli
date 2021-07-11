@@ -555,7 +555,7 @@ func applyFlags() {
 	}
 }
 
-func containerEnvironmentFactory() []string {
+func containerEnvironmentFactory(listenPort *int) []string {
 	env := make([]string, 0)
 	for _, envvar := range []string{
 		fmt.Sprintf("BASELINE_ORGANIZATION_ADDRESS=%s", baselineOrganizationAddress),
@@ -589,6 +589,10 @@ func containerEnvironmentFactory() []string {
 		fmt.Sprintf("VAULT_SEAL_UNSEAL_KEY=%s", vaultSealUnsealKey),
 	} {
 		env = append(env, envvar)
+	}
+
+	if listenPort != nil {
+		env = append(env, fmt.Sprintf("PORT=%d", *listenPort))
 	}
 
 	if sapAPIHost != "" && sapAPIUsername != "" && sapAPIPassword != "" {
@@ -1033,8 +1037,13 @@ func runContainer(
 		}}
 	}
 
+	var listenPort *int
+	if len(ports) == 1 {
+		listenPort = &ports[0].hostPort
+	}
+
 	containerConfig := &container.Config{
-		Env:      containerEnvironmentFactory(),
+		Env:      containerEnvironmentFactory(listenPort),
 		Hostname: hostname,
 		Image:    image,
 	}
