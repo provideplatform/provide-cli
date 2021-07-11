@@ -1039,7 +1039,7 @@ func runContainer(
 
 	var listenPort *int
 	if len(ports) == 1 {
-		listenPort = &ports[0].hostPort
+		listenPort = &ports[0].containerPort
 	}
 
 	containerConfig := &container.Config{
