@@ -285,40 +285,64 @@ func runProxyRun(cmd *cobra.Command, args []string) {
 			wg.Wait()
 
 			// run local deps
-			go runNATS(docker)
-			go runNATSStreaming(docker)
-			go runRedis(docker)
+			wg.Add(1)
+			go runNATS(docker, wg)
+
+			wg.Add(1)
+			go runNATSStreaming(docker, wg)
+
+			wg.Add(1)
+			go runRedis(docker, wg)
 
 			if withLocalIdent || withLocalNChain || withLocalPrivacy || withLocalVault {
-				go runPostgres(docker)
+				wg.Add(1)
+				go runPostgres(docker, wg)
 			}
 
 			// run optional local containers
 			if withLocalIdent {
-				go runIdentAPI(docker)
-				go runIdentConsumer(docker)
+				wg.Add(1)
+				go runIdentAPI(docker, wg)
+
+				wg.Add(1)
+				go runIdentConsumer(docker, wg)
 			}
 
 			if withLocalNChain {
-				go runNChainAPI(docker)
-				go runNChainConsumer(docker)
-				go runStatsdaemon(docker)
-				go runReachabilitydaemon(docker)
+				wg.Add(1)
+				go runNChainAPI(docker, wg)
+
+				wg.Add(1)
+				go runNChainConsumer(docker, wg)
+
+				wg.Add(1)
+				go runStatsdaemon(docker, wg)
+
+				wg.Add(1)
+				go runReachabilitydaemon(docker, wg)
 			}
 
 			if withLocalPrivacy {
-				go runPrivacyAPI(docker)
-				go runPrivacyConsumer(docker)
+				wg.Add(1)
+				go runPrivacyAPI(docker, wg)
+
+				wg.Add(1)
+				go runPrivacyConsumer(docker, wg)
 			}
 
 			if withLocalVault {
-				go runVaultAPI(docker)
+				wg.Add(1)
+				go runVaultAPI(docker, wg)
 			}
 
 			// run proxy
-			go runProxyAPI(docker)
-			go runProxyConsumer(docker)
+			wg.Add(1)
+			go runProxyAPI(docker, wg)
 
+			wg.Add(1)
+			go runProxyConsumer(docker, wg)
+
+			wg.Wait()
 			log.Printf("%s local baseline instance started", name)
 		},
 		func(reason *string) {
@@ -652,7 +676,7 @@ func containerEnvironmentFactory(listenPort *int) []string {
 	return env
 }
 
-func runProxyAPI(docker *client.Client) {
+func runProxyAPI(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-api", strings.ReplaceAll(name, " ", "")),
@@ -672,9 +696,13 @@ func runProxyAPI(docker *client.Client) {
 		log.Printf("failed to create local baseline API container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func runProxyConsumer(docker *client.Client) {
+func runProxyConsumer(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-consumer", strings.ReplaceAll(name, " ", "")),
@@ -691,9 +719,13 @@ func runProxyConsumer(docker *client.Client) {
 		log.Printf("failed to create local baseline consumer container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func runIdentAPI(docker *client.Client) {
+func runIdentAPI(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-ident-api", strings.ReplaceAll(name, " ", "")),
@@ -713,9 +745,13 @@ func runIdentAPI(docker *client.Client) {
 		log.Printf("failed to create local ident API container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func runIdentConsumer(docker *client.Client) {
+func runIdentConsumer(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-ident-consumer", strings.ReplaceAll(name, " ", "")),
@@ -732,9 +768,13 @@ func runIdentConsumer(docker *client.Client) {
 		log.Printf("failed to create local ident consumer container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func runNChainAPI(docker *client.Client) {
+func runNChainAPI(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-nchain-api", strings.ReplaceAll(name, " ", "")),
@@ -754,9 +794,13 @@ func runNChainAPI(docker *client.Client) {
 		log.Printf("failed to create local nchain API container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func runNChainConsumer(docker *client.Client) {
+func runNChainConsumer(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-nchain-consumer", strings.ReplaceAll(name, " ", "")),
@@ -773,9 +817,13 @@ func runNChainConsumer(docker *client.Client) {
 		log.Printf("failed to create local nchain consumer container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func runStatsdaemon(docker *client.Client) {
+func runStatsdaemon(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-statsdaemon", strings.ReplaceAll(name, " ", "")),
@@ -792,9 +840,13 @@ func runStatsdaemon(docker *client.Client) {
 		log.Printf("failed to create local statsdaemon container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func runReachabilitydaemon(docker *client.Client) {
+func runReachabilitydaemon(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-reachabilitydaemon", strings.ReplaceAll(name, " ", "")),
@@ -811,9 +863,13 @@ func runReachabilitydaemon(docker *client.Client) {
 		log.Printf("failed to create local reachabilitydaemon container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func runPrivacyAPI(docker *client.Client) {
+func runPrivacyAPI(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-privacy-api", strings.ReplaceAll(name, " ", "")),
@@ -833,9 +889,13 @@ func runPrivacyAPI(docker *client.Client) {
 		log.Printf("failed to create local privacy API container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func runPrivacyConsumer(docker *client.Client) {
+func runPrivacyConsumer(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-privacy-consumer", strings.ReplaceAll(name, " ", "")),
@@ -852,9 +912,13 @@ func runPrivacyConsumer(docker *client.Client) {
 		log.Printf("failed to create local privacy consumer container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func runVaultAPI(docker *client.Client) {
+func runVaultAPI(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-vault-api", strings.ReplaceAll(name, " ", "")),
@@ -874,6 +938,10 @@ func runVaultAPI(docker *client.Client) {
 		log.Printf("failed to create local vault API container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
 func writeNATSConfig() {
@@ -886,7 +954,7 @@ func writeNATSConfig() {
 	}
 }
 
-func runNATS(docker *client.Client) {
+func runNATS(docker *client.Client, wg *sync.WaitGroup) {
 	writeNATSConfig()
 
 	_, err := runContainer(
@@ -922,9 +990,13 @@ func runNATS(docker *client.Client) {
 		log.Printf("failed to create local baseline NATS container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func runNATSStreaming(docker *client.Client) {
+func runNATSStreaming(docker *client.Client, wg *sync.WaitGroup) {
 	writeNATSConfig()
 
 	_, err := runContainer(
@@ -955,9 +1027,13 @@ func runNATSStreaming(docker *client.Client) {
 		log.Printf("failed to create local baseline NATS streaming container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func runPostgres(docker *client.Client) {
+func runPostgres(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-postgres", strings.ReplaceAll(name, " ", "")),
@@ -977,9 +1053,13 @@ func runPostgres(docker *client.Client) {
 		log.Printf("failed to create local postgres container; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func runRedis(docker *client.Client) {
+func runRedis(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-redis", strings.ReplaceAll(name, " ", "")),
@@ -998,6 +1078,10 @@ func runRedis(docker *client.Client) {
 	if err != nil {
 		log.Printf("failed to create local baseline redis container; %s", err.Error())
 		os.Exit(1)
+	}
+
+	if wg != nil {
+		wg.Done()
 	}
 }
 
