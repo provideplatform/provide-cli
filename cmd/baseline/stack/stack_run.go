@@ -590,7 +590,7 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("BASELINE_WORKGROUP_ID=%s", baselineWorkgroupID),
 		fmt.Sprintf("IDENT_API_HOST=%s", identAPIHost),
 		fmt.Sprintf("IDENT_API_SCHEME=%s", identAPIScheme),
-		fmt.Sprintf("JWT_SIGNER_PUBLIC_KEY=%s", jwtSignerPublicKey),
+		fmt.Sprintf("JWT_SIGNER_PUBLIC_KEY=%s", strings.ReplaceAll(jwtSignerPublicKey, "\\n", "\n")),
 		fmt.Sprintf("LOG_LEVEL=%s", logLevel),
 		fmt.Sprintf("NATS_CLIENT_PREFIX=%s", name),
 		fmt.Sprintf("NATS_STREAMING_URL=%s", fmt.Sprintf("nats://%s:%d", natsStreamingHostname, natsStreamingContainerPort)),
