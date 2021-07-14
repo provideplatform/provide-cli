@@ -82,6 +82,7 @@ var privacyPort int
 var vaultPort int
 var natsPort int
 var natsWebsocketPort int
+var natsWebsocketTLS bool
 var natsStreamingPort int
 var postgresPort int
 var redisPort int
@@ -946,6 +947,9 @@ func runVaultAPI(docker *client.Client, wg *sync.WaitGroup) {
 
 func writeNATSConfig() {
 	cfg := []byte("max_payload: 100Mb\n")
+	if !natsWebsocketTLS {
+		cfg = []byte("max_payload: 100Mb\nwebsocket {\n    listen: \"0.0.0.0:4221\"\n    no_tls: true\n}\n")
+	}
 	tmp := filepath.Join(os.TempDir(), "nats-server.conf")
 	err := ioutil.WriteFile(tmp, cfg, 0644)
 	if err != nil {
@@ -1333,6 +1337,7 @@ func init() {
 	runBaselineStackCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the local baseline consumer container")
 	runBaselineStackCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the local baseline NATS container")
 	runBaselineStackCmd.Flags().IntVar(&natsPort, "nats-port", 4222, "host port on which to expose the local NATS service")
+	runBaselineStackCmd.Flags().BoolVar(&natsWebsocketTLS, "nats-ws-tls", false, "when true, NATS websocket service uses TLS")
 	runBaselineStackCmd.Flags().IntVar(&natsWebsocketPort, "nats-ws-port", 4221, "host port on which to expose the local NATS websocket service")
 	runBaselineStackCmd.Flags().StringVar(&natsAuthToken, "nats-auth-token", "testtoken", "authorization token for the local baseline NATS service; will be passed as the -auth argument to NATS")
 
