@@ -477,7 +477,7 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 					fmt.Sprintf("%s-api", OrganizationID),
 					fmt.Sprintf("127.0.0.1:%d", apiPort),
 					nil,
-					common.StringOrNil("http"),
+					common.StringOrNil("https"),
 					common.StringOrNil(OrganizationAccessToken),
 					_tunnelShutdownFn,
 				)
