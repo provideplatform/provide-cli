@@ -562,8 +562,6 @@ func applyFlags() {
 
 	// HACK
 	if jwtSignerPublicKey == "" {
-		fmt.Print(common.VaultID, "\n")
-		fmt.Print(common.OrganizationAccessToken, "\n")
 		keys, err := vault.ListKeys(common.OrganizationAccessToken, common.VaultID, map[string]interface{}{
 			"spec": "RSA-4096",
 		})
