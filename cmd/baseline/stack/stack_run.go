@@ -106,7 +106,9 @@ var redisHostname string
 var redisHosts string
 
 var autoRemove bool
+
 var logLevel string
+var syslogEndpoint string
 
 var baselineOrganizationAddress string
 
@@ -606,6 +608,7 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("PROVIDE_SOR_URL=%s", sorURL),
 		fmt.Sprintf("PRIVACY_API_SCHEME=%s", privacyAPIScheme),
 		fmt.Sprintf("REDIS_HOSTS=%s", redisHosts),
+		fmt.Sprintf("SYSLOG_ENDPOINT=%s", syslogEndpoint),
 		fmt.Sprintf("VAULT_API_HOST=%s", vaultAPIHost),
 		fmt.Sprintf("VAULT_API_SCHEME=%s", vaultAPIScheme),
 		fmt.Sprintf("VAULT_REFRESH_TOKEN=%s", vaultRefreshToken),
@@ -1350,7 +1353,9 @@ func init() {
 	runBaselineStackCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisContainerPort), "list of clustered redis hosts in the local baseline stack")
 
 	runBaselineStackCmd.Flags().BoolVar(&autoRemove, "autoremove", false, "when true, containers are automatically pruned upon exit")
+
 	runBaselineStackCmd.Flags().StringVar(&logLevel, "log-level", "DEBUG", "log level to set within the running local baseline stack")
+	runBaselineStackCmd.Flags().StringVar(&syslogEndpoint, "syslog-endpoint", "", "syslog endpoint to which syslog udp packets will be sent")
 
 	runBaselineStackCmd.Flags().StringVar(&jwtSignerPublicKey, "jwt-signer-public-key", "", "PEM-encoded public key of the authorized JWT signer for verifying inbound connection attempts")
 
