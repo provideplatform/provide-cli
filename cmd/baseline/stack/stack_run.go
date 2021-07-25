@@ -142,6 +142,8 @@ var vaultAPIScheme string
 var vaultRefreshToken string
 var vaultSealUnsealKey string
 
+var azureServiceBusConnectionString string
+
 var sapAPIHost string
 var sapAPIScheme string
 var sapAPIUsername string
@@ -619,6 +621,14 @@ func containerEnvironmentFactory(listenPort *int) []string {
 
 	if listenPort != nil {
 		env = append(env, fmt.Sprintf("PORT=%d", *listenPort))
+	}
+
+	if azureServiceBusConnectionString != "" {
+		for _, envvar := range []string{
+			fmt.Sprintf("AZURE_SERVICE_BUS_CONNECTION_STRING=%s", azureServiceBusConnectionString),
+		} {
+			env = append(env, envvar)
+		}
 	}
 
 	if sapAPIHost != "" && sapAPIUsername != "" && sapAPIPassword != "" {
@@ -1413,6 +1423,8 @@ func init() {
 }
 
 func initSORFlags() {
+	runBaselineStackCmd.Flags().StringVar(&azureServiceBusConnectionString, "azure-servicebus-connection-string", "", "azure service bus connection string")
+
 	runBaselineStackCmd.Flags().StringVar(&salesforceAPIHost, "salesforce-api-host", "", "hostname of the Salesforce API service")
 	runBaselineStackCmd.Flags().StringVar(&salesforceAPIScheme, "salesforce-api-scheme", "https", "protocol scheme of the Salesforce API service")
 	runBaselineStackCmd.Flags().StringVar(&salesforceAPIPath, "salesforce-api-path", "", "base path of the Salesforce API service")
