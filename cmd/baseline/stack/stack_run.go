@@ -32,7 +32,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const baselineContainerImage = "provide/baseline"
+const baselineContainerImage = "provide/baselinetest"
 const identContainerImage = "provide/ident"
 const nchainContainerImage = "provide/nchain"
 const privacyContainerImage = "provide/privacy"
@@ -73,6 +73,7 @@ type portMapping struct {
 }
 
 var dockerNetworkID string
+var dockerNetworkOverride string
 var Optional bool
 var name string
 var port int
@@ -276,7 +277,7 @@ func runProxyRun(cmd *cobra.Command, args []string) {
 			err := pullImage(docker, img)
 			if err != nil {
 				log.Printf("failed to pull local baseline container image: %s; %s", img, err.Error())
-				os.Exit(1)
+				//os.Exit(1)
 			}
 			wg.Done()
 		}()
@@ -363,32 +364,49 @@ func runProxyRun(cmd *cobra.Command, args []string) {
 }
 
 func configureNetwork(docker *client.Client) {
-	network, err := docker.NetworkCreate(
-		context.Background(),
-		name,
-		types.NetworkCreate{
-			// CheckDuplicate bool
-			Driver: "bridge",
-			// Scope          string
-			// EnableIPv6     bool
-			IPAM: &network.IPAM{},
-			// Internal       bool
-			// Attachable     bool
-			// Ingress        bool
-			// ConfigOnly     bool
-			// ConfigFrom     *network.ConfigReference
-			// Options        map[string]string
-			// Labels         map[string]string
-		},
-	)
+	if dockerNetworkOverride != "" {
+		networks, err := docker.NetworkList(context.Background(), types.NetworkListOptions{})
 
-	if err != nil {
-		log.Printf("failed to setup docker network; %s", err.Error())
-		os.Exit(1)
+		if err != nil {
+			log.Printf("failed to get docker networks; %s", err.Error())
+			os.Exit(1)
+		}
+
+		for _, network := range networks {
+			if network.Name == dockerNetworkOverride {
+				dockerNetworkID = network.ID
+				log.Printf("configured network for local baseline instance: %s", dockerNetworkOverride)
+				return
+			}
+		}
+	} else {
+		network, err := docker.NetworkCreate(
+			context.Background(),
+			name,
+			types.NetworkCreate{
+				// CheckDuplicate bool
+				Driver: "bridge",
+				// Scope          string
+				// EnableIPv6     bool
+				IPAM: &network.IPAM{},
+				// Internal       bool
+				// Attachable     bool
+				// Ingress        bool
+				// ConfigOnly     bool
+				// ConfigFrom     *network.ConfigReference
+				// Options        map[string]string
+				// Labels         map[string]string
+			},
+		)
+
+		if err != nil {
+			log.Printf("failed to setup docker network; %s", err.Error())
+			os.Exit(1)
+		}
+
+		dockerNetworkID = network.ID
+		log.Printf("configured network for local baseline instance: %s", name)
 	}
-
-	dockerNetworkID = network.ID
-	log.Printf("configured network for local baseline instance: %s", name)
 }
 
 func authorizeContext() {
@@ -1331,7 +1349,7 @@ func init() {
 
 	runBaselineStackCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	// runBaselineStackCmd.MarkFlagRequired("organization")
-
+	runBaselineStackCmd.Flags().StringVar(&dockerNetworkOverride, "network", "", "network name (new network will be created if blank)")
 	runBaselineStackCmd.Flags().StringVar(&common.APIEndpoint, "api-endpoint", "", "local baseline API endpoint for use by one or more authorized systems of record")
 	runBaselineStackCmd.Flags().StringVar(&common.MessagingEndpoint, "messaging-endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
 	runBaselineStackCmd.Flags().BoolVar(&common.Tunnel, "tunnel", false, "when true, a tunnel is established to expose the API and messaging endpoints to the WAN")
