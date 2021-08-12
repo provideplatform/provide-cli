@@ -105,18 +105,18 @@ func startBaseledgerNode(cmd *cobra.Command, args []string) {
 		baseledgerContainerImage,
 	)
 
-	for _, image := range images {
-		img := image
-		wg.Add(1)
-		go func() {
-			err := pullImage(docker, img)
-			if err != nil {
-				log.Printf("failed to pull local baseledger container image: %s; %s", img, err.Error())
-				os.Exit(1)
-			}
-			wg.Done()
-		}()
-	}
+	// for _, image := range images {
+	// 	img := image
+	// 	wg.Add(1)
+	// 	go func() {
+	// 		err := pullImage(docker, img)
+	// 		if err != nil {
+	// 			log.Printf("failed to pull local baseledger container image: %s; %s", img, err.Error())
+	// 			os.Exit(1)
+	// 		}
+	// 		wg.Done()
+	// 	}()
+	// }
 
 	configureNetwork(docker)
 
@@ -204,7 +204,7 @@ func runBaseledger(docker *client.Client, wg *sync.WaitGroup) {
 		fmt.Sprintf("%s-api", strings.ReplaceAll(name, " ", "")),
 		baseledgerRPCHostname,
 		baseledgerContainerImage,
-		&[]string{"./ops/run_api.sh"},
+		&[]string{"./.bin/node"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", baseledgerRPCHostname, rpcContainerPort)},
 		map[string]string{},
