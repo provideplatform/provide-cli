@@ -105,18 +105,18 @@ func startBaseledgerNode(cmd *cobra.Command, args []string) {
 		baseledgerContainerImage,
 	)
 
-	// for _, image := range images {
-	// 	img := image
-	// 	wg.Add(1)
-	// 	go func() {
-	// 		err := pullImage(docker, img)
-	// 		if err != nil {
-	// 			log.Printf("failed to pull local baseledger container image: %s; %s", img, err.Error())
-	// 			os.Exit(1)
-	// 		}
-	// 		wg.Done()
-	// 	}()
-	// }
+	for _, image := range images {
+		img := image
+		wg.Add(1)
+		go func() {
+			err := pullImage(docker, img)
+			if err != nil {
+				log.Printf("failed to pull local baseledger container image: %s; %s", img, err.Error())
+				os.Exit(1)
+			}
+			wg.Done()
+		}()
+	}
 
 	configureNetwork(docker)
 
