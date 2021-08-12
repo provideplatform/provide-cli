@@ -14,14 +14,14 @@ var stopBaselineStackCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "Stop the baseline stack",
 	Long:  `Stop a local baseline stack instance`,
-	Run:   stopProxy,
+	Run:   stopStack,
 }
 
-func stopProxy(cmd *cobra.Command, args []string) {
+func stopStack(cmd *cobra.Command, args []string) {
 	generalPrompt(cmd, args, promptStepStop)
 }
 
-func stopProxyRun(cmd *cobra.Command, args []string) {
+func runStackStop(cmd *cobra.Command, args []string) {
 	docker, err := client.NewEnvClient()
 	if err != nil {
 		log.Printf("failed to initialize docker; %s", err.Error())

@@ -16,9 +16,21 @@ var StackCmd = &cobra.Command{
 	},
 }
 
+var runBaselineStackCmd = &cobra.Command{
+	Use:   "run",
+	Short: "See `prvd baseline stack start --help` instead",
+	Long: `Start a local baseline stack instance and connect to internal systems of record.
+
+See: prvd baseline stack run --help instead. This command is deprecated and will be removed soon.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		generalPrompt(cmd, args, "")
+	},
+}
+
 func init() {
 	StackCmd.AddCommand(logsBaselineStackCmd)
 	StackCmd.AddCommand(runBaselineStackCmd)
+	StackCmd.AddCommand(startBaselineStackCmd)
 	StackCmd.AddCommand(stopBaselineStackCmd)
 	StackCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the optional flags")
 }

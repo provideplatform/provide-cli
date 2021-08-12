@@ -10,11 +10,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const promptStepRun = "Run"
+const promptStepStart = "Start"
 const promptStepStop = "Stop"
 const promptStepLogs = "Logs"
 
-var emptyPromptArgs = []string{promptStepRun, promptStepStop, promptStepLogs}
+var emptyPromptArgs = []string{promptStepStart, promptStepStop, promptStepLogs}
 var emptyPromptLabel = "What would you like to do"
 
 var boolPromptArgs = []string{"No", "Yes"}
@@ -33,7 +33,7 @@ var SoRPromptLabel = "Select a Sor"
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
-	case promptStepRun:
+	case promptStepStart:
 		common.RequireOrganization()
 		if Optional {
 			if name == "" {
@@ -164,7 +164,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				baselineOrganizationAddress = common.FreeInput("Nchain Baseline Network ID", "0x", common.HexValidation)
 			}
 		}
-		runProxyRun(cmd, args)
+		runStackStart(cmd, args)
 	case promptStepStop:
 		if Optional {
 			fmt.Println("Optional Flags:")
@@ -172,7 +172,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				name = common.FreeInput("Name", "", common.NoValidation)
 			}
 		}
-		stopProxyRun(cmd, args)
+		runStackStop(cmd, args)
 	case promptStepLogs:
 		if Optional {
 			fmt.Println("Optional Flags:")
@@ -180,7 +180,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				name = common.FreeInput("Name", "", common.NoValidation)
 			}
 		}
-		logsProxyRun(cmd, args)
+		stackLogsRun(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)
 		generalPrompt(cmd, args, result)

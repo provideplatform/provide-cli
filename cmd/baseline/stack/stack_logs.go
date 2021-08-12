@@ -15,14 +15,14 @@ var logsBaselineStackCmd = &cobra.Command{
 	Use:   "logs",
 	Short: "Print baseline stack logs",
 	Long:  `Print the logs from each container in a local baseline stack instance`,
-	Run:   logsProxy,
+	Run:   stackLogs,
 }
 
-func logsProxy(cmd *cobra.Command, args []string) {
+func stackLogs(cmd *cobra.Command, args []string) {
 	generalPrompt(cmd, args, promptStepLogs)
 }
 
-func logsProxyRun(cmd *cobra.Command, args []string) {
+func stackLogsRun(cmd *cobra.Command, args []string) {
 	docker, err := client.NewEnvClient()
 	if err != nil {
 		log.Printf("failed to initialize docker; %s", err.Error())
