@@ -23,7 +23,7 @@ var runBaselineStackCmd = &cobra.Command{
 
 See: prvd baseline stack run --help instead. This command is deprecated and will be removed soon.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		generalPrompt(cmd, args, "")
+		runStackStart(cmd, args)
 	},
 }
 
