@@ -416,9 +416,10 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 			log.Printf("WARNING: failed to resolve public IP")
 			os.Exit(1)
 		}
-
-		APIEndpoint = fmt.Sprintf("http://%s:%d", *publicIP, apiPort)
-		MessagingEndpoint = fmt.Sprintf("nats://%s:%d", *publicIP, messagingPort)
+		if APIEndpoint == "" && MessagingEndpoint == "" {
+			APIEndpoint = fmt.Sprintf("http://%s:%d", *publicIP, apiPort)
+			MessagingEndpoint = fmt.Sprintf("nats://%s:%d", *publicIP, messagingPort)
+		}
 
 		run()
 	} else {

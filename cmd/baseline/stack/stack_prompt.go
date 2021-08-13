@@ -88,8 +88,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			if natsStreamingPort == 4220 {
 				natsStreamingPort, _ = strconv.Atoi(common.FreeInput("Nats Streaming Port", "4221", common.NumberValidation))
 			}
-			if redisHostname == name+"-reddis" {
-				redisHostname = common.FreeInput("Reddis Host Name", name+"-reddis", common.NoValidation)
+			if redisHostname == name+"-redis" {
+				redisHostname = common.FreeInput("Redis Host Name", name+"-redis", common.NoValidation)
 			}
 			if redisPort == 6379 {
 				redisPort, _ = strconv.Atoi(common.FreeInput("Reddis Port", "6379", common.NumberValidation))
