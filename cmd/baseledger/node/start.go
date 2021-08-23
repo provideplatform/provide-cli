@@ -40,26 +40,34 @@ var baseledgerBlockTime string
 var baseledgerBootstrapPeers string
 var baseledgerChainID string
 var baseledgerFastSync bool
+var baseledgerFastSyncVersion string
 var baseledgerFilterPeers bool
 var baseledgerLogFormat string
 var baseledgerLogLevel string
 var baseledgerMode string
 var baseledgerDBBackend string
-var baseledgerGenesisFilePath string
 var baseledgerGenesisStateURL string
+var baseledgerGenesisURL string
 var baseledgerMempoolCacheSize int
 var baseledgerMempoolSize int
 var baseledgerNetworkName string
 var baseledgerP2PListenAddress string
+var baseledgerP2PMaxConnections int
+var baseledgerP2PMaxPacketMessagePayloadSize int
+var baseledgerP2PPersistentPeerMaxDialPeriod int
 var baseledgerPeerAlias string
 var baseledgerPeerBroadcastAddress string
 var baseledgerPersistentPeers string
 var baseledgerRPCCORSOrigins string
 var baseledgerRPCHostname string
 var baseledgerRPCListenAddress string
+var baseledgerRPCMaxSubscriptionClients int
+var baseledgerRPCMaxClientSubscriptions int
 var baseledgerRPCMaxOpenConnections int
 var baseledgerRPCPort int
 var baseledgerSeeds string
+var baseledgerStakingContractAddress string
+var baseledgerStakingNetwork string
 var baseledgerTxIndexer string
 
 var logLevel string
@@ -73,6 +81,8 @@ var nchainAPIScheme string
 
 var privacyAPIHost string
 var privacyAPIScheme string
+
+var provideRefreshToken string
 
 var vaultAPIHost string
 var vaultAPIScheme string
@@ -166,7 +176,9 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("BASELEDGER_CHAIN_ID=%s", baseledgerChainID),
 		fmt.Sprintf("BASELEDGER_DB_BACKEND=%s", baseledgerDBBackend),
 		fmt.Sprintf("BASELEDGER_FAST_SYNC=%v", baseledgerFastSync),
+		fmt.Sprintf("BASELEDGER_FAST_SYNC_VERSION=%v", baseledgerFastSyncVersion),
 		fmt.Sprintf("BASELEDGER_FILTER_PEERS=%v", baseledgerFilterPeers),
+		fmt.Sprintf("BASELEDGER_GENESIS_URL=%s", baseledgerGenesisURL),
 		fmt.Sprintf("BASELEDGER_GENESIS_STATE_URL=%s", baseledgerGenesisStateURL),
 		fmt.Sprintf("BASELEDGER_LOG_FORMAT=%s", baseledgerLogFormat),
 		fmt.Sprintf("BASELEDGER_LOG_LEVEL=%s", baseledgerLogLevel),
@@ -175,14 +187,23 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("BASELEDGER_MODE=%s", baseledgerMode),
 		fmt.Sprintf("BASELEDGER_NETWORK_NAME=%s", baseledgerNetworkName),
 		fmt.Sprintf("BASELEDGER_P2P_LISTEN_ADDRESS=%s", baseledgerP2PListenAddress),
+		fmt.Sprintf("BASELEDGER_P2P_MAX_CONNECTIONS=%d", baseledgerP2PMaxConnections),
+		fmt.Sprintf("BASELEDGER_P2P_MAX_PACKET_MESSAGE_PAYLOAD_SIZE=%d", baseledgerP2PMaxPacketMessagePayloadSize),
+		fmt.Sprintf("BASELEDGER_P2P_PERSISTENT_PEER_MAX_DIAL_PERIOD=%d", baseledgerP2PPersistentPeerMaxDialPeriod),
 		fmt.Sprintf("BASELEDGER_PEER_ALIAS=%s", baseledgerPeerAlias),
 		fmt.Sprintf("BASELEDGER_PEER_BROADCAST_ADDRESS=%s", baseledgerPeerBroadcastAddress),
 		fmt.Sprintf("BASELEDGER_PERSISTENT_PEERS=%s", baseledgerPersistentPeers),
 		fmt.Sprintf("BASELEDGER_RPC_LISTEN_ADDRESS=%s", baseledgerRPCListenAddress),
 		fmt.Sprintf("BASELEDGER_RPC_CORS_ORIGINS=%s", baseledgerRPCCORSOrigins),
 		fmt.Sprintf("BASELEDGER_RPC_MAX_OPEN_CONNECTIONS=%d", baseledgerRPCMaxOpenConnections),
+		fmt.Sprintf("BASELEDGER_RPC_MAX_SUBSCRIPTION_CLIENTS=%d", baseledgerRPCMaxSubscriptionClients),
+		fmt.Sprintf("BASELEDGER_RPC_MAX_CLIENT_SUBSCRIPTIONS=%d", baseledgerRPCMaxClientSubscriptions),
 		fmt.Sprintf("BASELEDGER_SEEDS=%s", baseledgerSeeds),
+		fmt.Sprintf("BASELEDGER_STAKING_CONTRACT_ADDRESS=%s", baseledgerStakingContractAddress),
+		fmt.Sprintf("BASELEDGER_STAKING_NETWORK=%s", baseledgerStakingNetwork),
 		fmt.Sprintf("BASELEDGER_TX_INDEXER=%s", baseledgerTxIndexer),
+
+		fmt.Sprintf("PROVIDE_REFRESH_TOKEN=%s", provideRefreshToken),
 
 		fmt.Sprintf("VAULT_ID=%s", vaultID),
 		fmt.Sprintf("VAULT_KEY_ID=%s", vaultKeyID),
@@ -347,12 +368,16 @@ func init() {
 	startBaseledgerNodeCmd.Flags().BoolVar(&baseledgerFastSync, "fast-sync", true, "when true, block synchronization and commit verification is parallelized")
 	startBaseledgerNodeCmd.Flags().BoolVar(&baseledgerFilterPeers, "filter-peers", false, "when true, baseledger network peers are filtered by way of delegation to the ABCI")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerGenesisStateURL, "genesis-state-url", "https://s3.amazonaws.com/static.provide.services/capabilities/baseledger-genesis-state.json", "url of the genesis state JSON")
+	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerGenesisURL, "genesis-url", "", "url of the network genesis JSON; fetched via peer RPC if left blank")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerLogFormat, "log-format", "plain", "log format to set within the local baseledger node")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerLogLevel, "log-level", "DEBUG", "log level to set within the local baseledger node")
 	startBaseledgerNodeCmd.Flags().IntVar(&baseledgerMempoolCacheSize, "mempool-cache-size", 256, "number of cached transactions to allow in the mempool at any given time")
 	startBaseledgerNodeCmd.Flags().IntVar(&baseledgerMempoolSize, "mempool-size", 1024, "number of transactions to allow in the mempool at any given time")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerMode, "mode", "full", "mode in which to run the baseledger node (i.e., validator, full or seed)")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerP2PListenAddress, "p2p-listen-address", "tcp://0.0.0.0:33333", "peer-to-peer listen address")
+	startBaseledgerNodeCmd.Flags().IntVar(&baseledgerP2PMaxConnections, "p2p-max-connections", 1024, "maximum number of inbound and outbound peer-to-peer connections")
+	startBaseledgerNodeCmd.Flags().IntVar(&baseledgerP2PMaxPacketMessagePayloadSize, "p2p-max-packet-size", 1024, "maximum size, in bytes, of peer-to-peer message packets")
+	startBaseledgerNodeCmd.Flags().IntVar(&baseledgerP2PPersistentPeerMaxDialPeriod, "p2p-max-persistent-peer-dial-period", 1024, "maximum pause when redialing a persistent peer (if zero, exponential backoff is used)")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerPeerAlias, "peer-alias", "prvd", "node alias to advertise to other peers in the network")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerPeerBroadcastAddress, "peer-broadcast-address", "", "address to advertise to other nodes in the network")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerPersistentPeers, "persistent-peers", "", "comma-delimited list of persistent peers")
@@ -361,7 +386,11 @@ func init() {
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerRPCListenAddress, "rpc-listen-address", "tcp://0.0.0.0:1337", "listen address for the local baseledger RPC service")
 	startBaseledgerNodeCmd.Flags().IntVar(&baseledgerRPCMaxOpenConnections, "rpc-max-open-connections", 1024, "maximum number of open RPC connections")
 	startBaseledgerNodeCmd.Flags().IntVar(&baseledgerRPCPort, "rpc-port", 1337, "host port on which to expose the local baseledger RPC service")
+	startBaseledgerNodeCmd.Flags().IntVar(&baseledgerRPCMaxSubscriptionClients, "rpc-max-subscription-clients", 1024, "maximum number of concurrent subscription clients")
+	startBaseledgerNodeCmd.Flags().IntVar(&baseledgerRPCMaxClientSubscriptions, "rpc-max-client-subscriptions", 1024, "maximum number of subscriptions allowed per client")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerSeeds, "seeds", "", "comma-delimited list of seed nodes")
+	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerStakingContractAddress, "staking-contract-address", "", "address of the staking contract on the named --staking-network")
+	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerStakingNetwork, "staking-network", "ropsten", "name of the staking network")
 	startBaseledgerNodeCmd.Flags().StringVar(&syslogEndpoint, "syslog-endpoint", "", "syslog endpoint to which syslog udp packets will be sent")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerTxIndexer, "tx-indexer", "kv", "transaction indexing engine")
 
@@ -375,6 +404,8 @@ func init() {
 
 	startBaseledgerNodeCmd.Flags().StringVar(&privacyAPIHost, "privacy-host", "privacy.provide.services", "hostname of the privacy service")
 	startBaseledgerNodeCmd.Flags().StringVar(&privacyAPIScheme, "privacy-scheme", "https", "protocol scheme of the privacy service")
+
+	startBaseledgerNodeCmd.Flags().StringVar(&provideRefreshToken, "provide-refresh-token", "", "refresh token to vend access tokens for use with the Provide stack")
 
 	startBaseledgerNodeCmd.Flags().StringVar(&vaultAPIHost, "vault-host", "vault.provide.services", "hostname of the vault service")
 	startBaseledgerNodeCmd.Flags().StringVar(&vaultAPIScheme, "vault-scheme", "https", "protocol scheme of the vault service")
