@@ -23,7 +23,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const baseledgerContainerImage = "provide/baseledger"
+const baseledgerContainerImage = "baseledger/node"
 const rpcContainerPort = 1337
 
 type portMapping struct {
@@ -75,6 +75,8 @@ var syslogEndpoint string
 
 var identAPIHost string
 var identAPIScheme string
+
+var natsURL string
 
 var nchainAPIHost string
 var nchainAPIScheme string
@@ -203,6 +205,8 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("BASELEDGER_STAKING_NETWORK=%s", baseledgerStakingNetwork),
 		fmt.Sprintf("BASELEDGER_TX_INDEXER=%s", baseledgerTxIndexer),
 
+		fmt.Sprintf("LOG_LEVEL=%s", logLevel),
+		fmt.Sprintf("NATS_URL=%s", natsURL),
 		fmt.Sprintf("PROVIDE_REFRESH_TOKEN=%s", provideRefreshToken),
 
 		fmt.Sprintf("VAULT_ID=%s", vaultID),
@@ -367,10 +371,10 @@ func init() {
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerDBBackend, "db-backend", "peachtree", "baseledger database backend")
 	startBaseledgerNodeCmd.Flags().BoolVar(&baseledgerFastSync, "fast-sync", true, "when true, block synchronization and commit verification is parallelized")
 	startBaseledgerNodeCmd.Flags().BoolVar(&baseledgerFilterPeers, "filter-peers", false, "when true, baseledger network peers are filtered by way of delegation to the ABCI")
-	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerGenesisStateURL, "genesis-state-url", "https://s3.amazonaws.com/static.provide.services/capabilities/baseledger-genesis-state.json", "url of the genesis state JSON")
-	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerGenesisURL, "genesis-url", "", "url of the network genesis JSON; fetched via peer RPC if left blank")
-	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerLogFormat, "log-format", "plain", "log format to set within the local baseledger node")
-	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerLogLevel, "log-level", "DEBUG", "log level to set within the local baseledger node")
+	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerGenesisStateURL, "genesis-state-url", "", "url of the genesis state JSON")
+	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerGenesisURL, "genesis-url", "http://genesis.peachtree.baseledger.provide.network:1337/genesis", "url of the network genesis JSON; fetched via peer RPC if left blank")
+	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerLogFormat, "tendermint-log-format", "plain", "log format to set within the local baseledger node")
+	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerLogLevel, "tendermint-log-level", "main:debug,abci-client:debug,blockchain:debug,consensus:debug,state:debug,statesync:debug,*:error", "log level to set within the local baseledger node")
 	startBaseledgerNodeCmd.Flags().IntVar(&baseledgerMempoolCacheSize, "mempool-cache-size", 256, "number of cached transactions to allow in the mempool at any given time")
 	startBaseledgerNodeCmd.Flags().IntVar(&baseledgerMempoolSize, "mempool-size", 1024, "number of transactions to allow in the mempool at any given time")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerMode, "mode", "full", "mode in which to run the baseledger node (i.e., validator, full or seed)")
@@ -381,6 +385,7 @@ func init() {
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerPeerAlias, "peer-alias", "prvd", "node alias to advertise to other peers in the network")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerPeerBroadcastAddress, "peer-broadcast-address", "", "address to advertise to other nodes in the network")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerPersistentPeers, "persistent-peers", "", "comma-delimited list of persistent peers")
+	startBaseledgerNodeCmd.Flags().StringVar(&natsURL, "nats-url", "nats://35.174.77.159:4222,nats://35.172.123.165:4222", "NATS cluster url on which to receive staking contract events")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerRPCCORSOrigins, "rpc-cors-origins", "*", "CORS origins for the local baseledger RPC service")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerRPCHostname, "rpc-hostname", fmt.Sprintf("%s-api", name), "hostname for the local baseledger RPC service")
 	startBaseledgerNodeCmd.Flags().StringVar(&baseledgerRPCListenAddress, "rpc-listen-address", "tcp://0.0.0.0:1337", "listen address for the local baseledger RPC service")
@@ -397,6 +402,7 @@ func init() {
 	startBaseledgerNodeCmd.Flags().StringVar(&identAPIHost, "ident-host", "ident.provide.services", "hostname of the ident service")
 	startBaseledgerNodeCmd.Flags().StringVar(&identAPIScheme, "ident-scheme", "https", "protocol scheme of the ident service")
 
+	startBaseledgerNodeCmd.Flags().StringVar(&logLevel, "log-level", "DEBUG", "log level to use in the baseledger node outside of tendermint")
 	startBaseledgerNodeCmd.Flags().StringVar(&name, "name", "baseledger-local", "name of the baseledger node instance")
 
 	startBaseledgerNodeCmd.Flags().StringVar(&nchainAPIHost, "nchain-host", "nchain.provide.services", "hostname of the nchain service")
