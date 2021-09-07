@@ -53,6 +53,7 @@ func init() {
 	vaultsListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter vaults")
 	vaultsListCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier to filter vaults")
 	vaultsListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
-	vaultsListCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
-	vaultsListCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of vaults to retrieve per page")
+	vaultsListCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
+	vaultsListCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
+	vaultsListCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of vaults to retrieve per page")
 }

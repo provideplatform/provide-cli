@@ -14,6 +14,7 @@ import (
 var name string
 var description string
 var optional bool
+var paginate bool
 
 var vaultsInitCmd = &cobra.Command{
 	Use:   "init --name 'My Vault' --description 'not your keys, not your crypto'",
