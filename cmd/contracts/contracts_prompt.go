@@ -1,7 +1,6 @@
 package contracts
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/provideplatform/provide-cli/cmd/common"
@@ -42,16 +41,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		if optional {
 			common.RequireApplication()
 		}
-		if paginate {
-			if page == common.DefaultPage {
-				result := common.FreeInput("Page", fmt.Sprintf("%d", common.DefaultPage), common.MandatoryNumberValidation)
-				page, _ = strconv.ParseUint(result, 10, 64)
-			}
-			if rpp == common.DefaultRpp {
-				result := common.FreeInput("RPP", fmt.Sprintf("%d", common.DefaultRpp), common.MandatoryValidation)
-				rpp, _ = strconv.ParseUint(result, 10, 64)
-			}
-		}
+		page, rpp = common.PromptPagination(paginate, page, rpp)
 	case "":
 		listContracts(cmd, args)
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)
