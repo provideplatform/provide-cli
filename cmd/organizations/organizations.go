@@ -35,4 +35,5 @@ func init() {
 	OrganizationsCmd.AddCommand(organizationsListCmd)
 	OrganizationsCmd.AddCommand(organizationsInitCmd)
 	OrganizationsCmd.AddCommand(organizationsDetailsCmd)
+	OrganizationsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 }

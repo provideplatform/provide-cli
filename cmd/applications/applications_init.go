@@ -20,6 +20,7 @@ var withoutAPIToken bool
 var withoutAccount bool
 var withoutWallet bool
 var optional bool
+var paginate bool
 
 var applicationsInitCmd = &cobra.Command{
 	Use:   "init --name 'my app' --network 024ff1ef-7369-4dee-969c-1918c6edb5d4 [--baseline]",

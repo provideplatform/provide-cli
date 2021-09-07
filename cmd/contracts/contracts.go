@@ -34,5 +34,5 @@ func init() {
 	ContractsCmd.AddCommand(contractsListCmd)
 	ContractsCmd.AddCommand(contractsExecuteCmd)
 	ContractsCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
-
+	ContractsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 }

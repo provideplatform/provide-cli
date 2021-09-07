@@ -54,7 +54,6 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				rpp, _ = strconv.ParseUint(result, 10, 64)
 			}
 		}
-
 		listVaultsRun(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)

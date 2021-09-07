@@ -28,4 +28,5 @@ func init() {
 	APITokensCmd.AddCommand(apiTokensListCmd)
 	APITokensCmd.AddCommand(apiTokensInitCmd)
 	APITokensCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+	APITokensCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 }

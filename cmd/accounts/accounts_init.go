@@ -17,6 +17,7 @@ import (
 var accountName string
 var nonCustodial bool
 var optional bool
+var paginate bool
 
 var accountsInitCmd = &cobra.Command{
 	Use:   "init [--non-custodial|-nc] [--network 024ff1ef-7369-4dee-969c-1918c6edb5d4] [--application 024ff1ef-7369-4dee-969c-1918c6edb5d4] [--organization 024ff1ef-7369-4dee-969c-1918c6edb5d4]",

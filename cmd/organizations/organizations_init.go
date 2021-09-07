@@ -11,6 +11,7 @@ import (
 )
 
 var organizationName string
+var paginate bool
 
 var organizationsInitCmd = &cobra.Command{
 	Use:   "init --name 'Acme Inc.'",

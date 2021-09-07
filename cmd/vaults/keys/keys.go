@@ -28,4 +28,5 @@ Docs: https://docs.provide.services/vault/api-reference/keys`,
 func init() {
 	KeysCmd.AddCommand(keysListCmd)
 	KeysCmd.AddCommand(keysInitCmd)
+	KeysCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 }

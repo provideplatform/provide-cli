@@ -37,4 +37,5 @@ func init() {
 	ConnectorsCmd.AddCommand(connectorsDetailsCmd)
 	ConnectorsCmd.AddCommand(connectorsDeleteCmd)
 	ConnectorsCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+	ConnectorsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 }

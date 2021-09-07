@@ -16,6 +16,7 @@ var contractExecMethod string
 var contractExecValue uint64
 var contractExecParams []interface{}
 var optional bool
+var paginate bool
 
 var contractsExecuteCmd = &cobra.Command{
 	Use:   "execute --contract 0x5E250bB077ec836915155229E83d187715266167 --method vote --argv [] --value 0 --wallet 0x8A70B0C7E9896ac7025279a2Da240aEBD17A0cA3",

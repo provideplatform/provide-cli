@@ -18,6 +18,7 @@ var ipfsAPIPort uint64
 var ipfsGatewayPort uint64
 
 var optional bool
+var paginate bool
 
 var connectorsInitCmd = &cobra.Command{
 	Use:   "init --name 'my storage connector' --type ipfs --network 024ff1ef-7369-4dee-969c-1918c6edb5d4",

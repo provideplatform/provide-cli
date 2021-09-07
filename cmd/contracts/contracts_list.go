@@ -45,6 +45,7 @@ func listContracts(cmd *cobra.Command, args []string) {
 func init() {
 	contractsListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter contracts")
 	contractsListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+	contractsListCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 	contractsListCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
 	contractsListCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of contracts to retrieve per page")
 }
