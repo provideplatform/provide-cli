@@ -18,13 +18,13 @@ var emptyPromptLabel = "What would you like to do"
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepInit:
+		if name == "" {
+			name = common.FreeInput("Vault Name", "", common.NoValidation)
+		}
 		if optional {
 			fmt.Println("Optional Flags:")
 			if description == "" {
 				description = common.FreeInput("Vault Description", "", common.NoValidation)
-			}
-			if name == "" {
-				name = common.FreeInput("Vault Name", "", common.NoValidation)
 			}
 			if common.ApplicationID == "" {
 				common.RequireApplication()
