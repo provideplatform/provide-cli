@@ -293,21 +293,23 @@ func RequireContract(contractID, contractType *string, printCreationTxLink bool)
 				}
 			}
 
-			if err == nil && contract != nil {
+			if err == nil && contract != nil && contract.TransactionID != nil {
 				if !printed && printCreationTxLink {
 					tx, _ := nchain.GetTransactionDetails(ApplicationAccessToken, contract.TransactionID.String(), map[string]interface{}{})
-					etherscanBaseURL := EtherscanBaseURL(tx.NetworkID.String())
-					if etherscanBaseURL != nil {
-						log.Printf("View on Etherscan: %s/tx/%s", *etherscanBaseURL, *tx.Hash) // HACK
+					if tx.Hash != nil {
+						etherscanBaseURL := EtherscanBaseURL(tx.NetworkID.String())
+						if etherscanBaseURL != nil {
+							log.Printf("View on Etherscan: %s/tx/%s", *etherscanBaseURL, *tx.Hash) // HACK
+						}
+						printed = true
 					}
-					printed = true
 				}
 
 				if contract.Address != nil && *contract.Address != "0x" {
 					if Verbose {
 						tx, _ := nchain.GetTransactionDetails(ApplicationAccessToken, contract.TransactionID.String(), map[string]interface{}{})
 						txraw, _ := json.MarshalIndent(tx, "", "  ")
-						log.Printf(string(txraw))
+						log.Printf("%s", string(txraw))
 					}
 
 					return nil
