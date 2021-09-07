@@ -18,6 +18,7 @@ var nonCustodial bool
 var walletName string
 var purpose int
 var optional bool
+var paginate bool
 
 var walletsInitCmd = &cobra.Command{
 	Use:   "init [--non-custodial|-nc]",

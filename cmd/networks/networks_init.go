@@ -17,6 +17,7 @@ var platform string
 var protocolID string
 var networkName string
 var optional bool
+var paginate bool
 
 var networksInitCmd = &cobra.Command{
 	Use:   "init --name 'whiteblock testnet",

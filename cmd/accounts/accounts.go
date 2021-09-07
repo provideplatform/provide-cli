@@ -35,4 +35,5 @@ func init() {
 	AccountsCmd.AddCommand(accountsListCmd)
 	AccountsCmd.AddCommand(accountsInitCmd)
 	AccountsCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+	AccountsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 }

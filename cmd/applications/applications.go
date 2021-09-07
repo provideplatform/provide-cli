@@ -43,4 +43,5 @@ func init() {
 	ApplicationsCmd.AddCommand(applicationsInitCmd)
 	ApplicationsCmd.AddCommand(applicationsDetailsCmd)
 	ApplicationsCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+	ApplicationsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 }

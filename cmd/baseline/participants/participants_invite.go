@@ -27,6 +27,7 @@ var invitorAddress string
 var registryContractAddress string
 var managedTenant bool
 var Optional bool
+var paginate bool
 
 var inviteBaselineWorkgroupParticipantCmd = &cobra.Command{
 	Use:   "invite",

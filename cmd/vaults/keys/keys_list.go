@@ -58,6 +58,7 @@ func init() {
 	keysListCmd.Flags().StringVar(&keytype, "type", "", "key type query; non-matching keys are filtered")
 	keysListCmd.Flags().StringVar(&keyusage, "usage", "", "key usage query; non-matching keys are filtered")
 
+	keysListCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 	keysListCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
 	keysListCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of keys to retrieve per page")
 }

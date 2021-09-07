@@ -25,6 +25,7 @@ var secp256k1KeyID string
 var hdwalletID string
 var rsa4096Key string
 var Optional bool
+var paginate bool
 
 var initBaselineWorkgroupCmd = &cobra.Command{
 	Use:   "init",

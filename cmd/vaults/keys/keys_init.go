@@ -16,6 +16,7 @@ var description string
 var keyspec string
 var keytype string
 var keyusage string
+var paginate bool
 
 var keysInitCmd = &cobra.Command{
 	Use:   "init --name 'My Key' --description 'not your keys, not your crypto'",

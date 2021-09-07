@@ -48,6 +48,7 @@ func listOrganizationsRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
+	organizationsListCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 	organizationsListCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
 	organizationsListCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of organizations to retrieve per page")
 }

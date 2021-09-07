@@ -29,4 +29,5 @@ func init() {
 	WalletsCmd.AddCommand(walletsListCmd)
 	WalletsCmd.AddCommand(walletsInitCmd)
 	WalletsCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+	WalletsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 }

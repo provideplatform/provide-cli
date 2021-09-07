@@ -1,6 +1,9 @@
 package organizations
 
 import (
+	"fmt"
+	"strconv"
+
 	"github.com/provideplatform/provide-cli/cmd/common"
 	"github.com/spf13/cobra"
 )
@@ -19,6 +22,16 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 		organizationName = common.FreeInput("Organization Name", "", common.MandatoryValidation)
 		createOrganizationRun(cmd, args)
 	case promptStepList:
+		if paginate {
+			if page == common.DefaultPage {
+				result := common.FreeInput("Page", fmt.Sprintf("%d", common.DefaultPage), common.MandatoryNumberValidation)
+				page, _ = strconv.ParseUint(result, 10, 64)
+			}
+			if rpp == common.DefaultRpp {
+				result := common.FreeInput("RPP", fmt.Sprintf("%d", common.DefaultRpp), common.MandatoryValidation)
+				rpp, _ = strconv.ParseUint(result, 10, 64)
+			}
+		}
 		listOrganizationsRun(cmd, args)
 	case promptStepDetails:
 		common.RequireOrganization()
