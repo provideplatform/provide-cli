@@ -13,6 +13,9 @@ import (
 
 var public bool
 
+var page uint64
+var rpp uint64
+
 var networksListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Retrieve a list of networks",
@@ -22,7 +25,10 @@ var networksListCmd = &cobra.Command{
 
 func listNetworks(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
-	params := map[string]interface{}{}
+	params := map[string]interface{}{
+		"page": fmt.Sprintf("%d", page),
+		"rpp":  fmt.Sprintf("%d", rpp),
+	}
 	if public {
 		params["public"] = "true"
 	}
@@ -41,4 +47,6 @@ func listNetworks(cmd *cobra.Command, args []string) {
 func init() {
 	networksListCmd.Flags().BoolVarP(&public, "public", "p", false, "filter private networks (false by default)")
 	networksListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+	networksListCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
+	networksListCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of networks to retrieve per page")
 }

@@ -11,6 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var page uint64
+var rpp uint64
+
 var apiTokensListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Retrieve a list of API tokens",
@@ -20,7 +23,10 @@ var apiTokensListCmd = &cobra.Command{
 
 func listAPITokens(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
-	params := map[string]interface{}{}
+	params := map[string]interface{}{
+		"page": fmt.Sprintf("%d", page),
+		"rpp":  fmt.Sprintf("%d", rpp),
+	}
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
 	}
@@ -43,4 +49,6 @@ func listAPITokens(cmd *cobra.Command, args []string) {
 func init() {
 	apiTokensListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter API tokens")
 	apiTokensListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+	apiTokensListCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
+	apiTokensListCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of API tokens to retrieve per page")
 }

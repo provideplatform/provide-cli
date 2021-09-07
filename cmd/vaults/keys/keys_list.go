@@ -11,6 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var page uint64
+var rpp uint64
+
 var keysListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Retrieve a list of keys",
@@ -24,7 +27,10 @@ func listKeys(cmd *cobra.Command, args []string) {
 
 func listKeysRun(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
-	params := map[string]interface{}{}
+	params := map[string]interface{}{
+		"page": fmt.Sprintf("%d", page),
+		"rpp":  fmt.Sprintf("%d", rpp),
+	}
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
 	}
@@ -51,4 +57,7 @@ func init() {
 	keysListCmd.Flags().StringVar(&keyspec, "spec", "", "key spec query; non-matching keys are filtered")
 	keysListCmd.Flags().StringVar(&keytype, "type", "", "key type query; non-matching keys are filtered")
 	keysListCmd.Flags().StringVar(&keyusage, "usage", "", "key usage query; non-matching keys are filtered")
+
+	keysListCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
+	keysListCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of keys to retrieve per page")
 }

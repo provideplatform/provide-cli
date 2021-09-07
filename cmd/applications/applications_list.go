@@ -11,6 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var page uint64
+var rpp uint64
+
 var applicationsListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Retrieve a list of applications",
@@ -20,7 +23,10 @@ var applicationsListCmd = &cobra.Command{
 
 func listApplications(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
-	params := map[string]interface{}{}
+	params := map[string]interface{}{
+		"page": fmt.Sprintf("%d", page),
+		"rpp":  fmt.Sprintf("%d", rpp),
+	}
 	applications, err := provide.ListApplications(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve applications list; %s", err.Error())
@@ -31,4 +37,9 @@ func listApplications(cmd *cobra.Command, args []string) {
 		result := fmt.Sprintf("%s\t%s\n", application.ID.String(), *application.Name)
 		fmt.Print(result)
 	}
+}
+
+func init() {
+	applicationsListCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
+	applicationsListCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of applications to retrieve per page")
 }
