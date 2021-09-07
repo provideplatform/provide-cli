@@ -410,5 +410,19 @@ func SelectInput(args []string, label string) string {
 	}
 
 	return result
+}
 
+func PromptPagination(paginate bool, page uint64, rpp uint64) (uint64, uint64) {
+	if paginate {
+		if page == DefaultPage {
+			result := FreeInput("Page", fmt.Sprintf("%d", DefaultPage), MandatoryNumberValidation)
+			page, _ = strconv.ParseUint(result, 10, 64)
+		}
+		if rpp == DefaultRpp {
+			result := FreeInput("RPP", fmt.Sprintf("%d", DefaultRpp), MandatoryValidation)
+			rpp, _ = strconv.ParseUint(result, 10, 64)
+		}
+	}
+
+	return page, rpp
 }
