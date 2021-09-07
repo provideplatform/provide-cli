@@ -14,6 +14,8 @@ import (
 const releaseRepositoryPackageName = "Provide"
 const releaseRepositorySSHURL = "git@github.com:provideplatform/provide.git"
 const releaseRepositoryHTTPSURL = "https://github.com/provideplatform/provide"
+const DefaultPage = 1
+const DefaultRpp = 25
 
 var (
 	Application   *ident.Application

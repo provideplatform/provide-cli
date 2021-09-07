@@ -40,6 +40,6 @@ func listApplications(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	applicationsListCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
-	applicationsListCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of applications to retrieve per page")
+	applicationsListCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
+	applicationsListCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of applications to retrieve per page")
 }

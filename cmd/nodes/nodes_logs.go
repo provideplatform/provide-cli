@@ -54,7 +54,7 @@ func init() {
 	nodesLogsCmd.Flags().StringVar(&common.NodeID, "node", "", "id of the node")
 	nodesLogsCmd.MarkFlagRequired("node")
 
-	nodesLogsCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
+	nodesLogsCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
 	nodesLogsCmd.MarkFlagRequired("page")
 
 	nodesLogsCmd.Flags().Uint64Var(&rpp, "rpp", 100, "number of log events to retrieve per page")

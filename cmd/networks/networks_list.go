@@ -47,6 +47,6 @@ func listNetworks(cmd *cobra.Command, args []string) {
 func init() {
 	networksListCmd.Flags().BoolVarP(&public, "public", "p", false, "filter private networks (false by default)")
 	networksListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
-	networksListCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
-	networksListCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of networks to retrieve per page")
+	networksListCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
+	networksListCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of networks to retrieve per page")
 }

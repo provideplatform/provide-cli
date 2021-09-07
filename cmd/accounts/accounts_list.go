@@ -49,6 +49,6 @@ func listAccounts(cmd *cobra.Command, args []string) {
 func init() {
 	accountsListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter accounts")
 	accountsListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
-	accountsListCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
-	accountsListCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of accounts to retrieve per page")
+	accountsListCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
+	accountsListCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of accounts to retrieve per page")
 }

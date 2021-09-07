@@ -78,6 +78,6 @@ func listParticipantsRun(cmd *cobra.Command, args []string) {
 func init() {
 	listBaselineWorkgroupParticipantsCmd.Flags().StringVar(&common.ApplicationID, "workgroup", "", "workgroup identifier")
 	listBaselineWorkgroupParticipantsCmd.Flags().BoolVarP(&Optional, "Optional", "", false, "List all the Optional flags")
-	listBaselineWorkgroupParticipantsCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
-	listBaselineWorkgroupParticipantsCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of participants to retrieve per page")
+	listBaselineWorkgroupParticipantsCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
+	listBaselineWorkgroupParticipantsCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of participants to retrieve per page")
 }
