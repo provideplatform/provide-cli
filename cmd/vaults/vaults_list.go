@@ -11,6 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var page uint64
+var rpp uint64
+
 var vaultsListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Retrieve a list of vaults",
@@ -24,7 +27,10 @@ func listVaults(cmd *cobra.Command, args []string) {
 
 func listVaultsRun(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
-	params := map[string]interface{}{}
+	params := map[string]interface{}{
+		"page": fmt.Sprintf("%d", page),
+		"rpp":  fmt.Sprintf("%d", rpp),
+	}
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
 	}
@@ -47,4 +53,6 @@ func init() {
 	vaultsListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter vaults")
 	vaultsListCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier to filter vaults")
 	vaultsListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+	vaultsListCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
+	vaultsListCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of vaults to retrieve per page")
 }

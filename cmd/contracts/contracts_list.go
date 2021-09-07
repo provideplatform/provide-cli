@@ -11,6 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var page uint64
+var rpp uint64
+
 var contractsListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Retrieve a list of contracts",
@@ -19,9 +22,11 @@ var contractsListCmd = &cobra.Command{
 }
 
 func listContracts(cmd *cobra.Command, args []string) {
-
 	token := common.RequireAPIToken()
-	params := map[string]interface{}{}
+	params := map[string]interface{}{
+		"page": fmt.Sprintf("%d", page),
+		"rpp":  fmt.Sprintf("%d", rpp),
+	}
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
 	}
@@ -40,4 +45,6 @@ func listContracts(cmd *cobra.Command, args []string) {
 func init() {
 	contractsListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter contracts")
 	contractsListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+	contractsListCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
+	contractsListCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of contracts to retrieve per page")
 }

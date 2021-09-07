@@ -11,6 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var page uint64
+var rpp uint64
+
 var organizationsListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Retrieve a list of organizations",
@@ -24,7 +27,10 @@ func listOrganizations(cmd *cobra.Command, args []string) {
 
 func listOrganizationsRun(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
-	params := map[string]interface{}{}
+	params := map[string]interface{}{
+		"page": fmt.Sprintf("%d", page),
+		"rpp":  fmt.Sprintf("%d", rpp),
+	}
 	organizations, err := provide.ListOrganizations(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve organizations list; %s", err.Error())
@@ -39,4 +45,9 @@ func listOrganizationsRun(cmd *cobra.Command, args []string) {
 		result := fmt.Sprintf("%s\t%s\t%s\n", organization.ID.String(), *organization.Name, address)
 		fmt.Print(result)
 	}
+}
+
+func init() {
+	organizationsListCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
+	organizationsListCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of organizations to retrieve per page")
 }

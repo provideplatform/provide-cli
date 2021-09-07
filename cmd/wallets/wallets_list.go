@@ -11,6 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var page uint64
+var rpp uint64
+
 var walletsListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Retrieve a list of custodial HD wallets",
@@ -24,7 +27,10 @@ func listWallets(cmd *cobra.Command, args []string) {
 
 func listWalletsRun(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
-	params := map[string]interface{}{}
+	params := map[string]interface{}{
+		"page": fmt.Sprintf("%d", page),
+		"rpp":  fmt.Sprintf("%d", rpp),
+	}
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
 	}
@@ -44,4 +50,6 @@ func listWalletsRun(cmd *cobra.Command, args []string) {
 func init() {
 	walletsListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter HD wallets")
 	walletsListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+	walletsListCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
+	walletsListCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of wallets to retrieve per page")
 }

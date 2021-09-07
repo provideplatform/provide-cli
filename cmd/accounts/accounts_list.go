@@ -10,6 +10,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var page uint64
+var rpp uint64
+
 var accountsListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Retrieve a list of signing identities",
@@ -19,7 +22,10 @@ var accountsListCmd = &cobra.Command{
 
 func listAccounts(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
-	params := map[string]interface{}{}
+	params := map[string]interface{}{
+		"page": fmt.Sprintf("%d", page),
+		"rpp":  fmt.Sprintf("%d", rpp),
+	}
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
 	}
@@ -43,4 +49,6 @@ func listAccounts(cmd *cobra.Command, args []string) {
 func init() {
 	accountsListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter accounts")
 	accountsListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
+	accountsListCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
+	accountsListCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of accounts to retrieve per page")
 }

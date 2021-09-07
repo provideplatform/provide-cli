@@ -10,6 +10,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var page uint64
+var rpp uint64
+
 var listBaselineWorkgroupsCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List baseline workgroups",
@@ -25,6 +28,8 @@ func listWorkgroupsRun(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	applications, err := ident.ListApplications(token, map[string]interface{}{
 		"type": "baseline",
+		"page": fmt.Sprintf("%d", page),
+		"rpp":  fmt.Sprintf("%d", rpp),
 	})
 	if err != nil {
 		log.Printf("failed to retrieve baseline workgroups; %s", err.Error())
@@ -38,5 +43,6 @@ func listWorkgroupsRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-
+	listBaselineWorkgroupsCmd.Flags().Uint64Var(&page, "page", 1, "page number to retrieve")
+	listBaselineWorkgroupsCmd.Flags().Uint64Var(&rpp, "rpp", 25, "number of baseline workgroups to retrieve per page")
 }
