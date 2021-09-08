@@ -54,12 +54,11 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			if !common.ExposeMessagingTunnel {
 				common.ExposeMessagingTunnel = common.SelectInput(boolPromptArgs, tunnelMessagingPromptLabel) == "Yes"
 			}
-			// TODO ... call app flags
 			if sorID == "" {
 				sorID = common.SelectInput(SoRPromptArgs, SoRPromptLabel)
 			}
 			if sorURL == "" {
-				sorURL = common.FreeInput("SoR URL", "", common.NoValidation)
+				sorURL = common.FreeInput("System of Record URL", "", common.NoValidation)
 			}
 			if apiHostname == "" {
 				apiHostname = common.FreeInput("API Hostname", "", common.NoValidation)
@@ -71,37 +70,31 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				consumerHostname = common.FreeInput("Consumer Hostname", name+"-consumer", common.NoValidation)
 			}
 			if natsHostname == name+"-nats" {
-				natsHostname = common.FreeInput("Nats Hostname", name+"-nats", common.NoValidation)
+				natsHostname = common.FreeInput("NATS Hostname", name+"-nats", common.NoValidation)
 			}
 			if natsPort == 4222 {
-				natsPort, _ = strconv.Atoi(common.FreeInput("Nats Port", "4222", common.NumberValidation))
+				natsPort, _ = strconv.Atoi(common.FreeInput("NATS Port", "4222", common.NumberValidation))
 			}
 			if natsWebsocketPort == 4221 {
-				natsWebsocketPort, _ = strconv.Atoi(common.FreeInput("Nats Websocket Port", "4221", common.NumberValidation))
+				natsWebsocketPort, _ = strconv.Atoi(common.FreeInput("NATS Websocket Port", "4221", common.NumberValidation))
 			}
 			if natsAuthToken == "testtoken" {
-				natsAuthToken = common.FreeInput("Nats Auth Token", "testtoken", common.NoValidation)
+				natsAuthToken = common.FreeInput("NATS Auth Token", "testtoken", common.NoValidation)
 			}
-			if natsStreamingHostname == name+"-nats-streaming" {
-				natsStreamingHostname = common.FreeInput("Nats Streaming Token", name+"-nats-streaming", common.NoValidation)
-			}
-			if natsStreamingPort == 4220 {
-				natsStreamingPort, _ = strconv.Atoi(common.FreeInput("Nats Streaming Port", "4221", common.NumberValidation))
-			}
-			if redisHostname == name+"-reddis" {
-				redisHostname = common.FreeInput("Reddis Host Name", name+"-reddis", common.NoValidation)
+			if redisHostname == fmt.Sprintf("%s-redis", name) {
+				redisHostname = common.FreeInput("Redis Host Name", name+"-redis", common.NoValidation)
 			}
 			if redisPort == 6379 {
-				redisPort, _ = strconv.Atoi(common.FreeInput("Reddis Port", "6379", common.NumberValidation))
+				redisPort, _ = strconv.Atoi(common.FreeInput("Redis Port", "6379", common.NumberValidation))
 			}
 			if redisHosts == redisHostname+":"+strconv.Itoa(redisContainerPort) {
-				redisPort, _ = strconv.Atoi(common.FreeInput("Reddis Port", redisHostname+":"+strconv.Itoa(redisContainerPort), common.NoValidation))
+				redisPort, _ = strconv.Atoi(common.FreeInput("Redis Port", redisHostname+":"+strconv.Itoa(redisContainerPort), common.NoValidation))
 			}
 			if !autoRemove {
 				autoRemove = common.SelectInput(boolPromptArgs, autoRemovePromptLabel) == "Yes"
 			}
-			if logLevel == "DEBUG" {
-				logLevel = common.FreeInput("Reddis Host Name", "DEBUG", common.NoValidation)
+			if strings.ToLower(logLevel) == "debug" {
+				logLevel = common.FreeInput("Log Level", "debug", common.NoValidation)
 			}
 			if jwtSignerPublicKey == "" {
 				jwtSignerPublicKey = common.FreeInput("JWT Signer Public Key", "", common.NoValidation)
