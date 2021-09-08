@@ -211,7 +211,7 @@ func RequireOrganizationVault() {
 	}
 
 	// FIXME-- parameterize with --vault or similar?
-	vaults, err := vault.ListVaults(OrganizationAccessToken, map[string]interface{}{
+	vaults, _, err := vault.ListVaults(OrganizationAccessToken, map[string]interface{}{
 		"organization_id": OrganizationID,
 	})
 	if err != nil {

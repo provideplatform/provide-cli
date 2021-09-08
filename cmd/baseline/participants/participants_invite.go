@@ -52,7 +52,7 @@ func inviteParticipantRun(cmd *cobra.Command, args []string) {
 	common.AuthorizeApplicationContext()
 	common.AuthorizeOrganizationContext(false)
 
-	vaults, err := vault.ListVaults(common.OrganizationAccessToken, map[string]interface{}{
+	vaults, _, err := vault.ListVaults(common.OrganizationAccessToken, map[string]interface{}{
 		"organization_id": common.OrganizationID,
 	})
 	if err != nil {

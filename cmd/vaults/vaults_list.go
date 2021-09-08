@@ -37,13 +37,14 @@ func listVaultsRun(cmd *cobra.Command, args []string) {
 	if common.OrganizationID != "" {
 		params["organization_id"] = common.OrganizationID
 	}
-	resp, err := provide.ListVaults(token, params)
+	results, resp, err := provide.ListVaults(token, params)
 	if err != nil {
 		log.Printf("failed to retrieve vaults list; %s", err.Error())
 		os.Exit(1)
 	}
-	for i := range resp {
-		vlt := resp[i]
+	fmt.Printf("Showing record(s) 1-%d out of %s record(s)\n", len(results), resp.TotalCount)
+	for i := range results {
+		vlt := results[i]
 		result := fmt.Sprintf("%s\t%s\t%s\n", vlt.ID.String(), *vlt.Name, *vlt.Description)
 		fmt.Print(result)
 	}

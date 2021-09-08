@@ -243,7 +243,7 @@ func RequireVault() error {
 	}
 
 	opts := make([]string, 0)
-	vaults, _ := vault.ListVaults(RequireAPIToken(), map[string]interface{}{})
+	vaults, _, _ := vault.ListVaults(RequireAPIToken(), map[string]interface{}{})
 	for _, vlt := range vaults {
 		opts = append(opts, *vlt.Name)
 	}
