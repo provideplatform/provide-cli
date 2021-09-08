@@ -39,7 +39,6 @@ const privacyContainerImage = "provide/privacy"
 const vaultContainerImage = "provide/vault"
 const postgresContainerImage = "postgres"
 const natsContainerImage = "provide/nats-server:2.2.3-beta.4-PRVD"
-const natsStreamingContainerImage = "provide/nats-streaming"
 const redisContainerImage = "redis"
 const defaultNatsServerName = "prvd"
 
@@ -63,7 +62,6 @@ const defaultNATSStreamingClusterID = "provide"
 const apiContainerPort = 8080
 const natsContainerPort = 4222
 const natsWebsocketContainerPort = 4221
-const natsStreamingContainerPort = 4222
 const postgresContainerPort = 5432
 const redisContainerPort = 6379
 
@@ -83,7 +81,6 @@ var vaultPort int
 var natsPort int
 var natsWebsocketPort int
 var natsWebsocketTLS bool
-var natsStreamingPort int
 var postgresPort int
 var redisPort int
 
@@ -100,7 +97,6 @@ var privacyConsumerHostname string
 var vaultHostname string
 var natsHostname string
 var natsServerName string
-var natsStreamingHostname string
 var postgresHostname string
 var redisHostname string
 var redisHosts string
@@ -197,7 +193,6 @@ func runStackStart(cmd *cobra.Command, args []string) {
 		images,
 		baselineContainerImage,
 		natsContainerImage,
-		natsStreamingContainerImage,
 		redisContainerImage,
 	)
 
@@ -292,9 +287,6 @@ func runStackStart(cmd *cobra.Command, args []string) {
 			// run local deps
 			wg.Add(1)
 			go runNATS(docker, wg)
-
-			wg.Add(1)
-			go runNATSStreaming(docker, wg)
 
 			wg.Add(1)
 			go runRedis(docker, wg)
@@ -549,11 +541,6 @@ func applyFlags() {
 	}
 
 	// HACK
-	if strings.HasSuffix(natsStreamingHostname, "-nats-streaming") {
-		natsStreamingHostname = fmt.Sprintf("%s-nats-streaming", name)
-	}
-
-	// HACK
 	if strings.HasSuffix(redisHostname, "-redis") {
 		redisHostname = fmt.Sprintf("%s-redis", name)
 		redisHosts = fmt.Sprintf("%s:%d", redisHostname, redisContainerPort)
@@ -595,7 +582,7 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("JWT_SIGNER_PUBLIC_KEY=%s", strings.ReplaceAll(jwtSignerPublicKey, "\\n", "\n")),
 		fmt.Sprintf("LOG_LEVEL=%s", logLevel),
 		fmt.Sprintf("NATS_CLIENT_PREFIX=%s", name),
-		fmt.Sprintf("NATS_STREAMING_URL=%s", fmt.Sprintf("nats://%s:%d", natsStreamingHostname, natsStreamingContainerPort)),
+		fmt.Sprintf("NATS_JETSTREAM_URL=%s", fmt.Sprintf("nats://%s:%d", natsHostname, natsContainerPort)),
 		fmt.Sprintf("NATS_TOKEN=%s", natsAuthToken),
 		fmt.Sprintf("NATS_URL=%s", fmt.Sprintf("nats://%s:%d", natsHostname, natsContainerPort)),
 		fmt.Sprintf("NCHAIN_API_HOST=%s", nchainAPIHost),
@@ -1011,43 +998,6 @@ func runNATS(docker *client.Client, wg *sync.WaitGroup) {
 	}
 }
 
-func runNATSStreaming(docker *client.Client, wg *sync.WaitGroup) {
-	writeNATSConfig()
-
-	_, err := runContainer(
-		docker,
-		fmt.Sprintf("%s-nats-streaming", strings.ReplaceAll(name, " ", "")),
-		natsStreamingHostname,
-		natsStreamingContainerImage,
-		nil,
-		&[]string{
-			"--cluster_id", defaultNATSStreamingClusterID,
-			"--auth", natsAuthToken,
-			"--config", "/etc/nats-server.conf",
-			"-SDV",
-		},
-		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsStreamingContainerPort)},
-		map[string]string{
-			filepath.Join(os.TempDir(), "nats-server.conf"): "/etc/nats-server.conf",
-		},
-		[]portMapping{
-			{
-				hostPort:      natsStreamingPort,
-				containerPort: natsStreamingContainerPort,
-			},
-		}...,
-	)
-
-	if err != nil {
-		log.Printf("failed to create local baseline NATS streaming container; %s", err.Error())
-		os.Exit(1)
-	}
-
-	if wg != nil {
-		wg.Done()
-	}
-}
-
 func runPostgres(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
@@ -1351,9 +1301,6 @@ func init() {
 	startBaselineStackCmd.Flags().BoolVar(&natsWebsocketTLS, "nats-ws-tls", false, "when true, NATS websocket service uses TLS")
 	startBaselineStackCmd.Flags().IntVar(&natsWebsocketPort, "nats-ws-port", 4221, "host port on which to expose the local NATS websocket service")
 	startBaselineStackCmd.Flags().StringVar(&natsAuthToken, "nats-auth-token", "testtoken", "authorization token for the local baseline NATS service; will be passed as the -auth argument to NATS")
-
-	startBaselineStackCmd.Flags().StringVar(&natsStreamingHostname, "nats-streaming-hostname", fmt.Sprintf("%s-nats-streaming", name), "hostname for the local baseline NATS streaming container")
-	startBaselineStackCmd.Flags().IntVar(&natsStreamingPort, "nats-streaming-port", 4220, "host port on which to expose the local NATS streaming service")
 
 	startBaselineStackCmd.Flags().StringVar(&postgresHostname, "postgres-hostname", fmt.Sprintf("%s-postgres", name), "hostname for the local postgres container")
 	startBaselineStackCmd.Flags().IntVar(&postgresPort, "postgres-port", 5432, "host port on which to expose the local postgres service")
