@@ -7,8 +7,9 @@ import (
 
 var promptStepCreate = "Create"
 var promptStepAuthenticate = "Authenticate"
+var promptStepShowID = "Show current authorized user's ID"
 
-var emptyPromptArgs = []string{promptStepCreate, promptStepAuthenticate}
+var emptyPromptArgs = []string{promptStepCreate, promptStepAuthenticate, promptStepShowID}
 var emptyPromptLabel = "What would you like to do"
 
 // General Endpoints
@@ -18,6 +19,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		authenticate(cmd, args)
 	case promptStepCreate:
 		create(cmd, args)
+	case promptStepShowID:
+		showid(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)
 		generalPrompt(cmd, args, result)

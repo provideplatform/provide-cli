@@ -25,4 +25,5 @@ var UsersCmd = &cobra.Command{
 
 func init() {
 	UsersCmd.AddCommand(createCmd)
+	UsersCmd.AddCommand(showIDCmd)
 }

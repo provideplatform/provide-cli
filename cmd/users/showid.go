@@ -9,7 +9,7 @@ import (
 )
 
 // ShowIDCmd represents the id command
-var ShowIDCmd = &cobra.Command{
+var showIDCmd = &cobra.Command{
 	Use:   "id",
 	Short: "Prints out the ID of the currently authenticated user",
 	Long:  "Prints out the ID of the currently authenticated user",
