@@ -54,7 +54,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	}
 }
 
-func paginationPrompt(cmd *cobra.Command, args []string, currentStep string, totalCount int) {
+func paginationPrompt(cmd *cobra.Command, args []string, currentStep string, currentCount, totalCount int) {
 	switch step := currentStep; step {
 	case prevPage:
 		{
@@ -68,13 +68,16 @@ func paginationPrompt(cmd *cobra.Command, args []string, currentStep string, tot
 		}
 	case "":
 		prompts := []string{}
-		if int(page*rpp) < totalCount {
+		if int(page*rpp) > totalCount && page == 1 {
+			return
+		}
+		if currentCount < totalCount {
 			prompts = append(prompts, nextPage)
 		}
 		if page > 1 {
 			prompts = append(prompts, prevPage)
 		}
 		result := common.SelectInput(prompts, "")
-		paginationPrompt(cmd, args, result, totalCount)
+		paginationPrompt(cmd, args, result, currentCount, totalCount)
 	}
 }

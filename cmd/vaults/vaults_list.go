@@ -63,7 +63,7 @@ func listVaultsRun(cmd *cobra.Command, args []string) {
 		result := fmt.Sprintf("%s\t%s\t%s\n", vlt.ID.String(), *vlt.Name, *vlt.Description)
 		fmt.Print(result)
 	}
-	paginationPrompt(cmd, args, "", totalCount)
+	paginationPrompt(cmd, args, "", secondRecordCount, totalCount)
 }
 
 func init() {
