@@ -1,6 +1,7 @@
 package common
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -30,6 +31,7 @@ const (
 	AccountConfigKeyPartial         = "account"           // app-scoped account ID key
 	OrganizationConfigKeyPartial    = "organization"      // app-scoped organization ID key
 	WalletConfigKeyPartial          = "wallet"            // app-scoped HD wallet ID key
+	UserInfoConfigKey               = "prvd-user-info"    // details of the currently auth'd user
 )
 
 var CfgFile string
@@ -76,32 +78,32 @@ func InitConfig() {
 	}
 }
 
-// DecodeUserID parses the user access token to get out the "prvd"->"user_id" field.
-// Requires the user access token be setup already (i.e. authenticate has been called)
-func DecodeUserID() string {
-	rawToken := RequireUserAccessToken()
-
-	var jwtParser jwt.Parser
-	token, _, err := jwtParser.ParseUnverified(rawToken, jwt.MapClaims{})
+func StoreUserDetails(user *ident.User) error {
+	json, err := json.Marshal(user)
 	if err != nil {
-		log.Printf("failed to parse JWT token on behalf of authorized user; %s", err.Error())
-		os.Exit(1)
+		log.Printf("Error storing user details; %s", err)
+		return err
 	}
 
-	claims := token.Claims.(jwt.MapClaims)
-	prvd := claims["prvd"]
-	if prvd == nil {
-		log.Printf("failed to get 'prvd' field from token")
-		os.Exit(1)
+	viper.Set(UserInfoConfigKey, string(json))
+	viper.WriteConfig()
+
+	return nil
+}
+
+func GetUserDetails() (*ident.User, error) {
+	if viper.IsSet(UserInfoConfigKey) {
+		raw := viper.GetString(UserInfoConfigKey)
+		var user ident.User
+		err := json.Unmarshal([]byte(raw), &user)
+		if err != nil {
+			return nil, err
+		}
+
+		return &user, nil
 	}
 
-	if userID, ok := prvd.(map[string]interface{})["user_id"].(string); ok {
-		return userID
-	}
-
-	log.Printf("failed to get 'user_id' field from token")
-	os.Exit(1)
-	return ""
+	return nil, fmt.Errorf("no user details stored, please authorize")
 }
 
 func RequireUserAccessToken() string {

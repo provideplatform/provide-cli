@@ -40,7 +40,11 @@ func authenticate(cmd *cobra.Command, args []string) {
 	}
 
 	log.Print("Authentication successful")
-	log.Printf("User ID: %s", common.DecodeUserID())
+
+	if resp.User != nil {
+		common.StoreUserDetails(resp.User)
+		log.Printf("User ID: %s", resp.User.ID)
+	}
 }
 
 func cacheAPIToken(token string) {
