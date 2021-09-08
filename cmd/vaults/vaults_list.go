@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/provideplatform/provide-cli/cmd/common"
 	provide "github.com/provideplatform/provide-go/api/vault"
@@ -42,6 +43,7 @@ func listVaultsRun(cmd *cobra.Command, args []string) {
 		log.Printf("failed to retrieve vaults list; %s", err.Error())
 		os.Exit(1)
 	}
+	totalCount, _ := strconv.Atoi(resp.TotalCount)
 	// TODO: better conditions logic here...
 	firstRecordCount := 1
 	if page > 1 {
@@ -52,7 +54,7 @@ func listVaultsRun(cmd *cobra.Command, args []string) {
 		secondRecordCount = secondRecordCount - 1
 	}
 	if len(results) != 0 {
-		fmt.Printf("Showing record(s) %d-%d out of %s record(s)\n", firstRecordCount, secondRecordCount, resp.TotalCount)
+		fmt.Printf("Showing record(s) %d-%d out of %d record(s)\n", firstRecordCount, secondRecordCount, totalCount)
 	} else {
 		fmt.Println("No more records found")
 	}
@@ -61,6 +63,7 @@ func listVaultsRun(cmd *cobra.Command, args []string) {
 		result := fmt.Sprintf("%s\t%s\t%s\n", vlt.ID.String(), *vlt.Name, *vlt.Description)
 		fmt.Print(result)
 	}
+	paginationPrompt(cmd, args, "", totalCount)
 }
 
 func init() {
