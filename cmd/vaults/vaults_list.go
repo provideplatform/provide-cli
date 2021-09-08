@@ -42,7 +42,20 @@ func listVaultsRun(cmd *cobra.Command, args []string) {
 		log.Printf("failed to retrieve vaults list; %s", err.Error())
 		os.Exit(1)
 	}
-	fmt.Printf("Showing record(s) 1-%d out of %s record(s)\n", len(results), resp.TotalCount)
+	// TODO: better conditions logic here...
+	firstRecordCount := 1
+	if page > 1 {
+		firstRecordCount = int(rpp) * int(page-1)
+	}
+	secondRecordCount := firstRecordCount + len(results)
+	if firstRecordCount == 1 {
+		secondRecordCount = secondRecordCount - 1
+	}
+	if len(results) != 0 {
+		fmt.Printf("Showing record(s) %d-%d out of %s record(s)\n", firstRecordCount, secondRecordCount, resp.TotalCount)
+	} else {
+		fmt.Println("No more records found")
+	}
 	for i := range results {
 		vlt := results[i]
 		result := fmt.Sprintf("%s\t%s\t%s\n", vlt.ID.String(), *vlt.Name, *vlt.Description)
