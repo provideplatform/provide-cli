@@ -76,6 +76,34 @@ func InitConfig() {
 	}
 }
 
+// DecodeUserID parses the user access token to get out the "prvd"->"user_id" field.
+// Requires the user access token be setup already (i.e. authenticate has been called)
+func DecodeUserID() string {
+	rawToken := RequireUserAccessToken()
+
+	var jwtParser jwt.Parser
+	token, _, err := jwtParser.ParseUnverified(rawToken, jwt.MapClaims{})
+	if err != nil {
+		log.Printf("failed to parse JWT token on behalf of authorized user; %s", err.Error())
+		os.Exit(1)
+	}
+
+	claims := token.Claims.(jwt.MapClaims)
+	prvd := claims["prvd"]
+	if prvd == nil {
+		log.Printf("failed to get 'prvd' field from token")
+		os.Exit(1)
+	}
+
+	if userID, ok := prvd.(map[string]interface{})["user_id"].(string); ok {
+		return userID
+	}
+
+	log.Printf("failed to get 'user_id' field from token")
+	os.Exit(1)
+	return ""
+}
+
 func RequireUserAccessToken() string {
 	token := ""
 	if viper.IsSet(AccessTokenConfigKey) {
@@ -217,28 +245,16 @@ func BuildConfigKeyWithUser(keyPartial, userID string) string {
 }
 
 func isTokenExpired(bearerToken string) bool {
-	token, err := jwt.Parse(bearerToken, func(_jwtToken *jwt.Token) (interface{}, error) {
-		// uncomment when enabling local verification
-		// var kid *string
-		// if kidhdr, ok := _jwtToken.Header["kid"].(string); ok {
-		// 	kid = &kidhdr
-		// }
 
-		// publicKey, _, _, _ := util.ResolveJWTKeypair(kid)
-		// if publicKey == nil {
-		// 	msg := "failed to resolve a valid JWT verification key"
-		// 	if kid != nil {
-		// 		msg = fmt.Sprintf("%s; invalid kid specified in header: %s", msg, *kid)
-		// 	} else {
-		// 		msg = fmt.Sprintf("%s; no default verification key configured", msg)
-		// 	}
-		// 	return nil, fmt.Errorf(msg)
-		// }
-
-		return nil, nil
-	})
+	var jwtParser jwt.Parser
+	token, _, err := jwtParser.ParseUnverified(bearerToken, jwt.MapClaims{})
+	if err != nil {
+		log.Printf("failed to parse JWT token on behalf of authorized user; %s", err.Error())
+		os.Exit(1)
+	}
 
 	if err != nil {
+		log.Printf("isTokenExpired err: %s", err)
 		return false
 	}
 

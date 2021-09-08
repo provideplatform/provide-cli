@@ -51,6 +51,7 @@ func init() {
 	rootCmd.AddCommand(api_tokens.APITokensCmd)
 	rootCmd.AddCommand(applications.ApplicationsCmd)
 	rootCmd.AddCommand(users.AuthenticateCmd)
+	rootCmd.AddCommand(users.ShowIDCmd)
 	rootCmd.AddCommand(baseledger.BaseledgerCmd)
 	rootCmd.AddCommand(baseline.BaselineCmd)
 	rootCmd.AddCommand(connectors.ConnectorsCmd)
