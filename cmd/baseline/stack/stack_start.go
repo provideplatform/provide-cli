@@ -966,9 +966,10 @@ func runNATS(docker *client.Client, wg *sync.WaitGroup) {
 		natsContainerImage,
 		nil,
 		&[]string{
+			"--js",
+			"--server_name", natsServerName,
 			"--auth", natsAuthToken,
 			"--config", "/etc/nats-server.conf",
-			"--name", natsServerName,
 			"--port", fmt.Sprintf("%d", natsContainerPort),
 			"-DVV",
 		},
