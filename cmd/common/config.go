@@ -103,7 +103,7 @@ func GetUserDetails() (*ident.User, error) {
 		return &user, nil
 	}
 
-	return nil, fmt.Errorf("no user details stored, please authenticate")
+	return nil, fmt.Errorf("please authenticate to retrieve your user info")
 }
 
 func RequireUserAccessToken() string {
