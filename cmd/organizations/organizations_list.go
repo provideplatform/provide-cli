@@ -31,7 +31,7 @@ func listOrganizationsRun(cmd *cobra.Command, args []string) {
 		"page": fmt.Sprintf("%d", page),
 		"rpp":  fmt.Sprintf("%d", rpp),
 	}
-	organizations, err := provide.ListOrganizations(token, params)
+	organizations, _, err := provide.ListOrganizations(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve organizations list; %s", err.Error())
 		os.Exit(1)

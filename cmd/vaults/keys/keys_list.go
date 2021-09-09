@@ -37,7 +37,7 @@ func listKeysRun(cmd *cobra.Command, args []string) {
 	if common.OrganizationID != "" {
 		params["organization_id"] = common.OrganizationID
 	}
-	resp, err := vault.ListKeys(token, common.VaultID, params)
+	resp, _, err := vault.ListKeys(token, common.VaultID, params)
 	if err != nil {
 		log.Printf("failed to retrieve keys list; %s", err.Error())
 		os.Exit(1)

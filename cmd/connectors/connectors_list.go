@@ -31,7 +31,7 @@ func listConnectors(cmd *cobra.Command, args []string) {
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
 	}
-	connectors, err := provide.ListConnectors(token, params)
+	connectors, _, err := provide.ListConnectors(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve connectors list; %s", err.Error())
 		os.Exit(1)

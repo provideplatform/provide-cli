@@ -30,7 +30,7 @@ func listAPITokens(cmd *cobra.Command, args []string) {
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
 	}
-	resp, err := provide.ListTokens(token, params)
+	resp, _, err := provide.ListTokens(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve API tokens list; %s", err.Error())
 		os.Exit(1)

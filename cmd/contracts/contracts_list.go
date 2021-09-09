@@ -30,7 +30,7 @@ func listContracts(cmd *cobra.Command, args []string) {
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
 	}
-	contracts, err := provide.ListContracts(token, params)
+	contracts, _, err := provide.ListContracts(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve contracts list; %s", err.Error())
 		os.Exit(1)

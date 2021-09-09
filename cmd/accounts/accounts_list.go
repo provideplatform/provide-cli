@@ -29,7 +29,7 @@ func listAccounts(cmd *cobra.Command, args []string) {
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
 	}
-	resp, err := provide.ListAccounts(token, params)
+	resp, _, err := provide.ListAccounts(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve accounts list; %s", err.Error())
 		os.Exit(1)

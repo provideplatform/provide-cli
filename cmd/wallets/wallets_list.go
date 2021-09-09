@@ -34,7 +34,7 @@ func listWalletsRun(cmd *cobra.Command, args []string) {
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
 	}
-	resp, err := provide.ListWallets(token, params)
+	resp, _, err := provide.ListWallets(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve wallets list; %s", err.Error())
 		os.Exit(1)

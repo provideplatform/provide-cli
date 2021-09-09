@@ -60,7 +60,7 @@ func inviteParticipantRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	keys, err := vault.ListKeys(common.OrganizationAccessToken, vaults[0].ID.String(), map[string]interface{}{
+	keys, _, err := vault.ListKeys(common.OrganizationAccessToken, vaults[0].ID.String(), map[string]interface{}{
 		"spec": "secp256k1",
 	})
 	if err != nil {
@@ -68,7 +68,7 @@ func inviteParticipantRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	contracts, _ := nchain.ListContracts(common.ApplicationAccessToken, map[string]interface{}{
+	contracts, _, _ := nchain.ListContracts(common.ApplicationAccessToken, map[string]interface{}{
 		"type": "organization-registry",
 	})
 	if err != nil {
@@ -115,7 +115,7 @@ func inviteParticipantRun(cmd *cobra.Command, args []string) {
 }
 
 func vendJWT(vaultID string, params map[string]interface{}) string {
-	keys, err := vault.ListKeys(common.OrganizationAccessToken, vaultID, map[string]interface{}{
+	keys, _, err := vault.ListKeys(common.OrganizationAccessToken, vaultID, map[string]interface{}{
 		"spec": "RSA-4096",
 	})
 	if err != nil {

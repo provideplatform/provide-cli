@@ -28,6 +28,18 @@ const requireWorkgroupSelectLabel = "Select a workgroup"
 
 var commands map[string]*cobra.Command
 
+var prevPage = "<< Prev Page"
+var nextPage = ">> Next Page"
+
+// TODO: just a tmp step for now, idea is to pass this info to generic fn without fn ends up having lot of params
+type PaginationPromptInfo struct {
+	Page                  *uint64
+	IsFirstPage           bool
+	IsLastPage            bool
+	AreAllRecordsReturned bool
+	RunPageCmd            func(cmd *cobra.Command, args []string)
+}
+
 func normaliseCmd(cmd *cobra.Command, args []string) (string, string) {
 	flag, _ := regexp.Compile("\\[(.*)")
 	r, _ := regexp.Compile("\\--(.*)")
@@ -81,7 +93,7 @@ func RequireApplication() error {
 	}
 
 	opts := make([]string, 0)
-	apps, _ := ident.ListApplications(RequireUserAccessToken(), map[string]interface{}{})
+	apps, _, _ := ident.ListApplications(RequireUserAccessToken(), map[string]interface{}{})
 	for _, app := range apps {
 		opts = append(opts, *app.Name)
 	}
@@ -108,7 +120,7 @@ func RequireWorkgroup() error {
 	}
 
 	opts := make([]string, 0)
-	apps, _ := ident.ListApplications(RequireUserAccessToken(), map[string]interface{}{
+	apps, _, _ := ident.ListApplications(RequireUserAccessToken(), map[string]interface{}{
 		"type": "baseline",
 	})
 	for _, app := range apps {
@@ -136,7 +148,7 @@ func RequireConnector(params map[string]interface{}) error {
 	}
 
 	opts := make([]string, 0)
-	connectors, _ := nchain.ListConnectors(RequireAPIToken(), params)
+	connectors, _, _ := nchain.ListConnectors(RequireAPIToken(), params)
 	for _, connector := range connectors {
 		opts = append(opts, *connector.Name)
 	}
@@ -162,7 +174,7 @@ func RequireNetwork() error {
 	}
 
 	opts := make([]string, 0)
-	networks, _ := nchain.ListNetworks(RequireAPIToken(), map[string]interface{}{})
+	networks, _, _ := nchain.ListNetworks(RequireAPIToken(), map[string]interface{}{})
 	for _, network := range networks {
 		opts = append(opts, *network.Name)
 	}
@@ -188,7 +200,7 @@ func RequirePublicNetwork() error {
 	}
 
 	opts := make([]string, 0)
-	networks, _ := nchain.ListNetworks(RequireAPIToken(), map[string]interface{}{
+	networks, _, _ := nchain.ListNetworks(RequireAPIToken(), map[string]interface{}{
 		"public": "true",
 	})
 	for _, network := range networks {
@@ -216,7 +228,7 @@ func RequireOrganization() error {
 	}
 
 	opts := make([]string, 0)
-	orgs, _ := ident.ListOrganizations(RequireUserAccessToken(), map[string]interface{}{})
+	orgs, _, _ := ident.ListOrganizations(RequireUserAccessToken(), map[string]interface{}{})
 	for _, org := range orgs {
 		opts = append(opts, *org.Name)
 	}
@@ -269,7 +281,7 @@ func RequireAccount(params map[string]interface{}) error {
 	}
 
 	opts := make([]string, 0)
-	accounts, _ := nchain.ListAccounts(RequireAPIToken(), params)
+	accounts, _, _ := nchain.ListAccounts(RequireAPIToken(), params)
 	for _, acct := range accounts {
 		opts = append(opts, *acct.PublicKey)
 	}
@@ -295,7 +307,7 @@ func RequireWallet() error {
 	}
 
 	opts := make([]string, 0)
-	wallets, _ := nchain.ListWallets(RequireAPIToken(), map[string]interface{}{})
+	wallets, _, _ := nchain.ListWallets(RequireAPIToken(), map[string]interface{}{})
 	for _, wallet := range wallets {
 		opts = append(opts, *wallet.PublicKey)
 	}
@@ -425,4 +437,32 @@ func PromptPagination(paginate bool, page uint64, rpp uint64) (uint64, uint64) {
 	}
 
 	return page, rpp
+}
+
+func AutoPromptPagination(cmd *cobra.Command, args []string, currentStep string, promptInfo *PaginationPromptInfo) {
+	switch step := currentStep; step {
+	case prevPage:
+		{
+			*promptInfo.Page = *promptInfo.Page - 1
+			promptInfo.RunPageCmd(cmd, args)
+		}
+	case nextPage:
+		{
+			*promptInfo.Page = *promptInfo.Page + 1
+			promptInfo.RunPageCmd(cmd, args)
+		}
+	case "":
+		prompts := []string{}
+		if promptInfo.AreAllRecordsReturned {
+			return
+		}
+		if !promptInfo.IsLastPage {
+			prompts = append(prompts, nextPage)
+		}
+		if !promptInfo.IsFirstPage {
+			prompts = append(prompts, prevPage)
+		}
+		result := SelectInput(prompts, "")
+		AutoPromptPagination(cmd, args, result, promptInfo)
+	}
 }

@@ -186,7 +186,7 @@ func RegisterWorkgroupOrganization(applicationID string) {
 		"organization_id": OrganizationID,
 	})
 	if err != nil {
-		orgs, err := ident.ListApplicationOrganizations(ApplicationAccessToken, applicationID, map[string]interface{}{
+		orgs, _, err := ident.ListApplicationOrganizations(ApplicationAccessToken, applicationID, map[string]interface{}{
 			"organization_id": OrganizationID,
 		})
 		if err == nil {
@@ -245,7 +245,7 @@ func RequireOrganizationKeypair(spec string) (*vault.Key, error) {
 	}
 
 	// FIXME-- parameterize each key i.e. --secp256k1-key or similar?
-	keys, err := vault.ListKeys(OrganizationAccessToken, VaultID, map[string]interface{}{
+	keys, _, err := vault.ListKeys(OrganizationAccessToken, VaultID, map[string]interface{}{
 		"spec": spec,
 	})
 	if err != nil {
@@ -285,7 +285,7 @@ func RequireContract(contractID, contractType *string, printCreationTxLink bool)
 			if contractID != nil {
 				contract, err = nchain.GetContractDetails(ApplicationAccessToken, *contractID, map[string]interface{}{})
 			} else if contractType != nil {
-				contracts, _ := nchain.ListContracts(ApplicationAccessToken, map[string]interface{}{
+				contracts, _, _ := nchain.ListContracts(ApplicationAccessToken, map[string]interface{}{
 					"type": contractType,
 				})
 				if len(contracts) > 0 {

@@ -32,7 +32,7 @@ func listNetworks(cmd *cobra.Command, args []string) {
 	if public {
 		params["public"] = "true"
 	}
-	networks, err := provide.ListNetworks(token, params)
+	networks, _, err := provide.ListNetworks(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve networks list; %s", err.Error())
 		os.Exit(1)

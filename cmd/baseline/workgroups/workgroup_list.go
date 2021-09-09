@@ -26,7 +26,7 @@ func listWorkgroups(cmd *cobra.Command, args []string) {
 
 func listWorkgroupsRun(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
-	applications, err := ident.ListApplications(token, map[string]interface{}{
+	applications, _, err := ident.ListApplications(token, map[string]interface{}{
 		"type": "baseline",
 		"page": fmt.Sprintf("%d", page),
 		"rpp":  fmt.Sprintf("%d", rpp),

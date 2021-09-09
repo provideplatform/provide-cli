@@ -44,26 +44,20 @@ func listVaultsRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 	totalCount, _ := strconv.Atoi(resp.TotalCount)
-	// TODO: better conditions logic here...
-	firstRecordCount := 1
-	if page > 1 {
-		firstRecordCount = int(rpp) * int(page-1)
-	}
-	secondRecordCount := firstRecordCount + len(results)
-	if firstRecordCount == 1 {
-		secondRecordCount = secondRecordCount - 1
-	}
-	if len(results) != 0 {
-		fmt.Printf("Showing record(s) %d-%d out of %d record(s)\n", firstRecordCount, secondRecordCount, totalCount)
-	} else {
-		fmt.Println("No more records found")
-	}
+	currentCount := common.GetAndPrintCurrentCount(totalCount, int(rpp), int(page), len(results))
 	for i := range results {
 		vlt := results[i]
 		result := fmt.Sprintf("%s\t%s\t%s\n", vlt.ID.String(), *vlt.Name, *vlt.Description)
 		fmt.Print(result)
 	}
-	paginationPrompt(cmd, args, "", secondRecordCount, totalCount)
+	promptInfo := &common.PaginationPromptInfo{
+		IsFirstPage:           page == 1,
+		IsLastPage:            currentCount >= totalCount,
+		AreAllRecordsReturned: int(page*rpp) > totalCount && page == 1,
+		Page:                  &page,
+		RunPageCmd:            listVaultsRun,
+	}
+	common.AutoPromptPagination(cmd, args, "", promptInfo)
 }
 
 func init() {

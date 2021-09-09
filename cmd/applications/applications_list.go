@@ -27,7 +27,7 @@ func listApplications(cmd *cobra.Command, args []string) {
 		"page": fmt.Sprintf("%d", page),
 		"rpp":  fmt.Sprintf("%d", rpp),
 	}
-	applications, err := provide.ListApplications(token, params)
+	applications, _, err := provide.ListApplications(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve applications list; %s", err.Error())
 		os.Exit(1)

@@ -28,7 +28,7 @@ func listParticipantsRun(cmd *cobra.Command, args []string) {
 	common.AuthorizeApplicationContext()
 	common.AuthorizeOrganizationContext(false)
 
-	participants, err := ident.ListApplicationOrganizations(common.OrganizationAccessToken, common.ApplicationID, map[string]interface{}{
+	participants, _, err := ident.ListApplicationOrganizations(common.OrganizationAccessToken, common.ApplicationID, map[string]interface{}{
 		"type": "baseline",
 		"page": fmt.Sprintf("%d", page),
 		"rpp":  fmt.Sprintf("%d", rpp),
@@ -38,7 +38,7 @@ func listParticipantsRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	invitations, err := ident.ListApplicationInvitations(common.ApplicationAccessToken, common.ApplicationID, map[string]interface{}{})
+	invitations, _, err := ident.ListApplicationInvitations(common.ApplicationAccessToken, common.ApplicationID, map[string]interface{}{})
 	if err != nil {
 		// log.Printf("failed to retrieve invited baseline workgroup participants; %s", err.Error())
 		// os.Exit(1)
