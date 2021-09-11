@@ -31,13 +31,10 @@ var commands map[string]*cobra.Command
 var prevPage = "<< Prev Page"
 var nextPage = ">> Next Page"
 
-// TODO: just a tmp step for now, idea is to pass this info to generic fn without fn ends up having lot of params
-type PaginationPromptInfo struct {
-	Page                  *uint64
-	IsFirstPage           bool
-	IsLastPage            bool
-	AreAllRecordsReturned bool
-	RunPageCmd            func(cmd *cobra.Command, args []string)
+type PaginationPrompt struct {
+	Pagination  *Pagination
+	CurrentStep string
+	RunPageCmd  func(cmd *cobra.Command, args []string)
 }
 
 func normaliseCmd(cmd *cobra.Command, args []string) (string, string) {
@@ -439,30 +436,30 @@ func PromptPagination(paginate bool, page uint64, rpp uint64) (uint64, uint64) {
 	return page, rpp
 }
 
-func AutoPromptPagination(cmd *cobra.Command, args []string, currentStep string, promptInfo *PaginationPromptInfo) {
-	switch step := currentStep; step {
+func AutoPromptPagination(cmd *cobra.Command, args []string, paginationPrompt *PaginationPrompt) {
+	switch step := paginationPrompt.CurrentStep; step {
 	case prevPage:
 		{
-			*promptInfo.Page = *promptInfo.Page - 1
-			promptInfo.RunPageCmd(cmd, args)
+			paginationPrompt.Pagination.PrevPage()
+			paginationPrompt.RunPageCmd(cmd, args)
 		}
 	case nextPage:
 		{
-			*promptInfo.Page = *promptInfo.Page + 1
-			promptInfo.RunPageCmd(cmd, args)
+			paginationPrompt.Pagination.NextPage()
+			paginationPrompt.RunPageCmd(cmd, args)
 		}
 	case "":
 		prompts := []string{}
-		if promptInfo.AreAllRecordsReturned {
+		if paginationPrompt.Pagination.AreAllRecordsReturned() {
 			return
 		}
-		if !promptInfo.IsLastPage {
+		if !paginationPrompt.Pagination.IsLastPage() {
 			prompts = append(prompts, nextPage)
 		}
-		if !promptInfo.IsFirstPage {
+		if !paginationPrompt.Pagination.IsFirstPage() {
 			prompts = append(prompts, prevPage)
 		}
-		result := SelectInput(prompts, "")
-		AutoPromptPagination(cmd, args, result, promptInfo)
+		paginationPrompt.CurrentStep = SelectInput(prompts, "")
+		AutoPromptPagination(cmd, args, paginationPrompt)
 	}
 }

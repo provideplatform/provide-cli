@@ -94,19 +94,3 @@ func IsReleaseRepositoryContext() bool {
 
 	return false
 }
-
-func GetAndPrintCurrentCount(totalCount, rpp, page, resultsLength int) int {
-	firstRecordIndex := 1
-	currentCount := resultsLength
-	if page > 1 {
-		firstRecordIndex = rpp * (page - 1)
-		currentCount += firstRecordIndex
-	}
-	if resultsLength != 0 {
-		fmt.Printf("Showing record(s) %d-%d out of %d record(s)\n", firstRecordIndex, currentCount, totalCount)
-	} else {
-		fmt.Println("No more records found")
-	}
-
-	return currentCount
-}
