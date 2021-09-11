@@ -11,8 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var page uint64
-var rpp uint64
+var pagination *common.Pagination
 
 var keysListCmd = &cobra.Command{
 	Use:   "list",
@@ -28,8 +27,8 @@ func listKeys(cmd *cobra.Command, args []string) {
 func listKeysRun(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
-		"page": fmt.Sprintf("%d", page),
-		"rpp":  fmt.Sprintf("%d", rpp),
+		"page": fmt.Sprintf("%d", pagination.Page),
+		"rpp":  fmt.Sprintf("%d", pagination.Rpp),
 	}
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
@@ -37,19 +36,28 @@ func listKeysRun(cmd *cobra.Command, args []string) {
 	if common.OrganizationID != "" {
 		params["organization_id"] = common.OrganizationID
 	}
-	resp, _, err := vault.ListKeys(token, common.VaultID, params)
+	results, resp, err := vault.ListKeys(token, common.VaultID, params)
 	if err != nil {
 		log.Printf("failed to retrieve keys list; %s", err.Error())
 		os.Exit(1)
 	}
-	for i := range resp {
-		vlt := resp[i]
+	pagination.UpdateCountsAndPrintCurrentInterval(resp.TotalCount, len(results))
+	for i := range results {
+		vlt := results[i]
 		result := fmt.Sprintf("%s\t%s\t%s\n", vlt.ID.String(), *vlt.Name, *vlt.Description)
 		fmt.Print(result)
 	}
+
+	paginationPrompt := &common.PaginationPrompt{
+		Pagination:  pagination,
+		CurrentStep: "",
+		RunPageCmd:  listKeysRun,
+	}
+	common.AutoPromptPagination(cmd, args, paginationPrompt)
 }
 
 func init() {
+	pagination = &common.Pagination{}
 	keysListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter keys")
 	keysListCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier to filter keys")
 	keysListCmd.Flags().StringVar(&common.VaultID, "vault", "", "identifier of the vault")
@@ -59,6 +67,6 @@ func init() {
 	keysListCmd.Flags().StringVar(&keyusage, "usage", "", "key usage query; non-matching keys are filtered")
 
 	keysListCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
-	keysListCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
-	keysListCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of keys to retrieve per page")
+	keysListCmd.Flags().IntVar(&pagination.Page, "page", common.DefaultPage, "page number to retrieve")
+	keysListCmd.Flags().IntVar(&pagination.Rpp, "rpp", common.DefaultRpp, "number of keys to retrieve per page")
 }

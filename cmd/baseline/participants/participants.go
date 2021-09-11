@@ -20,5 +20,4 @@ func init() {
 	ParticipantsCmd.AddCommand(inviteBaselineWorkgroupParticipantCmd)
 	ParticipantsCmd.AddCommand(listBaselineWorkgroupParticipantsCmd)
 	ParticipantsCmd.Flags().BoolVarP(&Optional, "Optional", "", false, "List all the Optional flags")
-	ParticipantsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 }

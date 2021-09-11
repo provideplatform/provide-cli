@@ -49,7 +49,7 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 				common.RequireApplication()
 			}
 		}
-		page, rpp = common.PromptPagination(paginate, page, rpp)
+		common.PromptPagination(paginate, pagination)
 		listWalletsRun(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)

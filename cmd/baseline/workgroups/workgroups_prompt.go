@@ -36,7 +36,7 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 		}
 		initWorkgroupRun(cmd, args)
 	case promptStepList:
-		page, rpp = common.PromptPagination(paginate, page, rpp)
+		common.PromptPagination(paginate, pagination)
 		listWorkgroupsRun(cmd, args)
 	case promptStepJoin:
 		if Optional {

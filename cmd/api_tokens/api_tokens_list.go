@@ -11,8 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var page uint64
-var rpp uint64
+var pagination *common.Pagination
 
 var apiTokensListCmd = &cobra.Command{
 	Use:   "list",
@@ -24,13 +23,13 @@ var apiTokensListCmd = &cobra.Command{
 func listAPITokens(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
-		"page": fmt.Sprintf("%d", page),
-		"rpp":  fmt.Sprintf("%d", rpp),
+		"page": fmt.Sprintf("%d", pagination.Page),
+		"rpp":  fmt.Sprintf("%d", pagination.Rpp),
 	}
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
 	}
-	resp, _, err := provide.ListTokens(token, params)
+	results, resp, err := provide.ListTokens(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve API tokens list; %s", err.Error())
 		os.Exit(1)
@@ -39,17 +38,26 @@ func listAPITokens(cmd *cobra.Command, args []string) {
 	// 	log.Printf("Failed to retrieve API tokens list; received status: %d", status)
 	// 	os.Exit(1)
 	// }
-	for i := range resp {
-		apiToken := resp[i]
+	pagination.UpdateCountsAndPrintCurrentInterval(resp.TotalCount, len(results))
+	for i := range results {
+		apiToken := results[i]
 		result := fmt.Sprintf("%s\t%s\n", apiToken.ID.String(), *apiToken.Token)
 		fmt.Print(result)
 	}
+
+	paginationPrompt := &common.PaginationPrompt{
+		Pagination:  pagination,
+		CurrentStep: "",
+		RunPageCmd:  listAPITokens,
+	}
+	common.AutoPromptPagination(cmd, args, paginationPrompt)
 }
 
 func init() {
+	pagination = &common.Pagination{}
 	apiTokensListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter API tokens")
 	apiTokensListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 	apiTokensListCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
-	apiTokensListCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
-	apiTokensListCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of API tokens to retrieve per page")
+	apiTokensListCmd.Flags().IntVar(&pagination.Page, "page", common.DefaultPage, "page number to retrieve")
+	apiTokensListCmd.Flags().IntVar(&pagination.Rpp, "rpp", common.DefaultRpp, "number of API tokens to retrieve per page")
 }

@@ -43,7 +43,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 				common.RequireOrganization()
 			}
 		}
-		page, rpp = common.PromptPagination(paginate, page, rpp)
+		// page, rpp = common.PromptPagination(paginate, page, rpp)
 		listVaultsRun(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)

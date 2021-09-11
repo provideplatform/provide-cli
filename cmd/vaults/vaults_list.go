@@ -12,6 +12,7 @@ import (
 )
 
 var pagination *common.Pagination
+
 var vaultsListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Retrieve a list of vaults",

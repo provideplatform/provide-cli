@@ -7,8 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var page uint64
-var rpp uint64
+var pagination *common.Pagination
 
 var nodesLogsCmd = &cobra.Command{
 	Use:   "logs",
@@ -48,15 +47,16 @@ func nodeLogsRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
+	pagination = &common.Pagination{}
 	nodesLogsCmd.Flags().StringVar(&common.NetworkID, "network", "", "network id")
 	nodesLogsCmd.MarkFlagRequired("network")
 
 	nodesLogsCmd.Flags().StringVar(&common.NodeID, "node", "", "id of the node")
 	nodesLogsCmd.MarkFlagRequired("node")
 
-	nodesLogsCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
+	nodesLogsCmd.Flags().IntVar(&pagination.Page, "page", common.DefaultPage, "page number to retrieve")
 	nodesLogsCmd.MarkFlagRequired("page")
 
-	nodesLogsCmd.Flags().Uint64Var(&rpp, "rpp", 100, "number of log events to retrieve per page")
+	nodesLogsCmd.Flags().IntVar(&pagination.Rpp, "rpp", 100, "number of log events to retrieve per page")
 	nodesLogsCmd.MarkFlagRequired("rpp")
 }
