@@ -41,7 +41,7 @@ func (p *Pagination) UpdateCountsAndPrintCurrentInterval(totalCount string, resu
 		start = p.Rpp * (p.Page - 1)
 		end += start
 	}
-	if start == end {
+	if start >= end {
 		fmt.Println("No records found at this page")
 	} else {
 		fmt.Printf("Showing record(s) %d-%d out of %d record(s)\n", start, end, p.TotalCount)
