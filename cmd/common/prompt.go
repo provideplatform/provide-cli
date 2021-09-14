@@ -162,7 +162,7 @@ func RequireNetwork() error {
 	}
 
 	opts := make([]string, 0)
-	networks, _ := nchain.ListNetworks(RequireAPIToken(), map[string]interface{}{})
+	networks, _ := nchain.ListNetworks(RequireUserAccessToken(), map[string]interface{}{})
 	for _, network := range networks {
 		opts = append(opts, *network.Name)
 	}
@@ -188,7 +188,7 @@ func RequirePublicNetwork() error {
 	}
 
 	opts := make([]string, 0)
-	networks, _ := nchain.ListNetworks(RequireAPIToken(), map[string]interface{}{
+	networks, _ := nchain.ListNetworks(RequireUserAccessToken(), map[string]interface{}{
 		"public": "true",
 	})
 	for _, network := range networks {
