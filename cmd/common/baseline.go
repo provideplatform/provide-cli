@@ -300,6 +300,8 @@ func RequireContract(contractID, contractType *string, printCreationTxLink bool)
 						etherscanBaseURL := EtherscanBaseURL(tx.NetworkID.String())
 						if etherscanBaseURL != nil {
 							log.Printf("View on Etherscan: %s/tx/%s", *etherscanBaseURL, *tx.Hash) // HACK
+						} else {
+							log.Printf("Transaction hash: %s", *tx.Hash)
 						}
 						printed = true
 					}
