@@ -684,6 +684,7 @@ func runProxyAPI(docker *client.Client, wg *sync.WaitGroup) {
 		&[]string{"./ops/run_api.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", apiHostname, apiContainerPort)},
+		nil,
 		map[string]string{},
 		[]portMapping{{
 			hostPort:      port,
@@ -710,6 +711,7 @@ func runProxyConsumer(docker *client.Client, wg *sync.WaitGroup) {
 		&[]string{"./ops/run_consumer.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", apiHostname, port)},
+		nil,
 		map[string]string{},
 		[]portMapping{}...,
 	)
@@ -733,6 +735,7 @@ func runIdentAPI(docker *client.Client, wg *sync.WaitGroup) {
 		&[]string{"./ops/run_api.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", identHostname, apiContainerPort)},
+		nil,
 		map[string]string{},
 		[]portMapping{{
 			hostPort:      identPort,
@@ -759,6 +762,7 @@ func runIdentConsumer(docker *client.Client, wg *sync.WaitGroup) {
 		&[]string{"./ops/run_consumer.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", identHostname, apiContainerPort)},
+		nil,
 		map[string]string{},
 		[]portMapping{}...,
 	)
@@ -782,6 +786,7 @@ func runNChainAPI(docker *client.Client, wg *sync.WaitGroup) {
 		&[]string{"./ops/run_api.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, apiContainerPort)},
+		nil,
 		map[string]string{},
 		[]portMapping{{
 			hostPort:      nchainPort,
@@ -808,6 +813,7 @@ func runNChainConsumer(docker *client.Client, wg *sync.WaitGroup) {
 		&[]string{"./ops/run_consumer.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, apiContainerPort)},
+		nil,
 		map[string]string{},
 		[]portMapping{}...,
 	)
@@ -831,6 +837,7 @@ func runStatsdaemon(docker *client.Client, wg *sync.WaitGroup) {
 		&[]string{"./ops/run_statsdaemon.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, apiContainerPort)},
+		nil,
 		map[string]string{},
 		[]portMapping{}...,
 	)
@@ -854,6 +861,7 @@ func runReachabilitydaemon(docker *client.Client, wg *sync.WaitGroup) {
 		&[]string{"./ops/run_reachabilitydaemon.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, apiContainerPort)},
+		nil,
 		map[string]string{},
 		[]portMapping{}...,
 	)
@@ -877,6 +885,7 @@ func runPrivacyAPI(docker *client.Client, wg *sync.WaitGroup) {
 		&[]string{"./ops/run_api.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", privacyHostname, apiContainerPort)},
+		nil,
 		map[string]string{},
 		[]portMapping{{
 			hostPort:      privacyPort,
@@ -903,6 +912,7 @@ func runPrivacyConsumer(docker *client.Client, wg *sync.WaitGroup) {
 		&[]string{"./ops/run_consumer.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", privacyHostname, apiContainerPort)},
+		nil,
 		map[string]string{},
 		[]portMapping{}...,
 	)
@@ -926,6 +936,7 @@ func runVaultAPI(docker *client.Client, wg *sync.WaitGroup) {
 		&[]string{"./ops/run_api.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", vaultHostname, apiContainerPort)},
+		nil,
 		map[string]string{},
 		[]portMapping{{
 			hostPort:      vaultPort,
@@ -974,6 +985,7 @@ func runNATS(docker *client.Client, wg *sync.WaitGroup) {
 			"-DVV",
 		},
 		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsContainerPort)},
+		nil,
 		map[string]string{
 			filepath.Join(os.TempDir(), "nats-server.conf"): "/etc/nats-server.conf",
 		},
@@ -1008,6 +1020,12 @@ func runPostgres(docker *client.Client, wg *sync.WaitGroup) {
 		nil,
 		nil,
 		&[]string{"CMD", "pg_isready", "-U", "prvd", "-d", "prvd"},
+		&[]string{
+			// FIXME -- allow user to set these....
+			"POSTGRES_DB=prvd",
+			"POSTGRES_USER=prvd",
+			"POSTGRES_PASSWORD=prvdp455",
+		},
 		map[string]string{},
 		[]portMapping{{
 			hostPort:      postgresPort,
@@ -1034,6 +1052,7 @@ func runRedis(docker *client.Client, wg *sync.WaitGroup) {
 		nil,
 		nil,
 		&[]string{"CMD", "redis-cli", "ping"},
+		nil,
 		map[string]string{},
 		[]portMapping{{
 			hostPort:      redisPort,
@@ -1073,7 +1092,7 @@ func pullImage(docker *client.Client, image string) error {
 func runContainer(
 	docker *client.Client,
 	name, hostname, image string,
-	entrypoint, cmd, healthcheck *[]string,
+	entrypoint, cmd, healthcheck, env *[]string,
 	mounts map[string]string,
 	ports ...portMapping,
 ) (*container.ContainerCreateCreatedBody, error) {
@@ -1092,8 +1111,15 @@ func runContainer(
 		listenPort = &ports[0].containerPort
 	}
 
+	var environment []string
+	if env != nil {
+		environment = *env
+	} else {
+		environment = containerEnvironmentFactory(listenPort)
+	}
+
 	containerConfig := &container.Config{
-		Env:      containerEnvironmentFactory(listenPort),
+		Env:      environment,
 		Hostname: hostname,
 		Image:    image,
 	}

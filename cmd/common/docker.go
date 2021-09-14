@@ -32,11 +32,47 @@ func ListContainers(docker *client.Client, stack string) []types.Container {
 			},
 			{
 				Key:   "name",
-				Value: fmt.Sprintf("%s-nats-streaming", strings.ReplaceAll(stack, " ", "")),
+				Value: fmt.Sprintf("%s-postgres", strings.ReplaceAll(stack, " ", "")),
 			},
 			{
 				Key:   "name",
 				Value: fmt.Sprintf("%s-redis", strings.ReplaceAll(stack, " ", "")),
+			},
+			{
+				Key:   "name",
+				Value: fmt.Sprintf("%s-ident", strings.ReplaceAll(stack, " ", "")),
+			},
+			{
+				Key:   "name",
+				Value: fmt.Sprintf("%s-ident-consumer", strings.ReplaceAll(stack, " ", "")),
+			},
+			{
+				Key:   "name",
+				Value: fmt.Sprintf("%s-nchain-api", strings.ReplaceAll(stack, " ", "")),
+			},
+			{
+				Key:   "name",
+				Value: fmt.Sprintf("%s-nchain-consumer", strings.ReplaceAll(stack, " ", "")),
+			},
+			{
+				Key:   "name",
+				Value: fmt.Sprintf("%s-privacy-api", strings.ReplaceAll(stack, " ", "")),
+			},
+			{
+				Key:   "name",
+				Value: fmt.Sprintf("%s-privacy-consumer", strings.ReplaceAll(stack, " ", "")),
+			},
+			{
+				Key:   "name",
+				Value: fmt.Sprintf("%s-reachabilitydaemon", strings.ReplaceAll(stack, " ", "")),
+			},
+			{
+				Key:   "name",
+				Value: fmt.Sprintf("%s-statsdaemon", strings.ReplaceAll(stack, " ", "")),
+			},
+			{
+				Key:   "name",
+				Value: fmt.Sprintf("%s-vault", strings.ReplaceAll(stack, " ", "")),
 			},
 		}...),
 	})
