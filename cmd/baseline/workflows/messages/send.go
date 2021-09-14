@@ -53,7 +53,7 @@ func sendMessageRun(cmd *cobra.Command, args []string) {
 	if recipients != "" {
 		_recipients := make([]*baseline.Participant, 0)
 		for _, id := range strings.Split(recipients, ",") {
-			orgs, err := ident.ListApplicationOrganizations(common.ApplicationAccessToken, common.ApplicationID, map[string]interface{}{
+			orgs, _, err := ident.ListApplicationOrganizations(common.ApplicationAccessToken, common.ApplicationID, map[string]interface{}{
 				"organization_id": id,
 			})
 			if err != nil {

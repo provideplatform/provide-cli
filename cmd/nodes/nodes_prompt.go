@@ -61,14 +61,14 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			common.NodeID = common.FreeInput("Node ID", "", common.MandatoryValidation)
 		}
 		// Validation Number
-		if page == 1 {
+		if pagination.Page == 1 {
 			result := common.FreeInput("Page", "1", common.MandatoryNumberValidation)
-			page, _ = strconv.ParseUint(result, 10, 64)
+			pagination.Page, _ = strconv.Atoi(result)
 		}
 		// Validation Number
-		if rpp == 100 {
+		if pagination.Rpp == 100 {
 			result := common.FreeInput("RPP", "100", common.MandatoryValidation)
-			rpp, _ = strconv.ParseUint(result, 10, 64)
+			pagination.Rpp, _ = strconv.Atoi(result)
 		}
 		nodeLogsRun(cmd, args)
 	case "":

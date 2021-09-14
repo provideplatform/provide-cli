@@ -12,8 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var page uint64
-var rpp uint64
+var pagination *common.Pagination
 
 var connectorsListCmd = &cobra.Command{
 	Use:   "list",
@@ -25,13 +24,13 @@ var connectorsListCmd = &cobra.Command{
 func listConnectors(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
-		"page": fmt.Sprintf("%d", page),
-		"rpp":  fmt.Sprintf("%d", rpp),
+		"page": fmt.Sprintf("%d", pagination.Page),
+		"rpp":  fmt.Sprintf("%d", pagination.Rpp),
 	}
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
 	}
-	connectors, err := provide.ListConnectors(token, params)
+	connectors, resp, err := provide.ListConnectors(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve connectors list; %s", err.Error())
 		os.Exit(1)
@@ -40,6 +39,7 @@ func listConnectors(cmd *cobra.Command, args []string) {
 	// 	log.Printf("Failed to retrieve connectors list; received status: %d", status)
 	// 	os.Exit(1)
 	// }
+	pagination.UpdateCountsAndPrintCurrentInterval(resp.TotalCount, len(connectors))
 	for i := range connectors {
 		connector := connectors[i]
 		var config map[string]interface{}
@@ -50,12 +50,20 @@ func listConnectors(cmd *cobra.Command, args []string) {
 		}
 		fmt.Printf("%s\n", result)
 	}
+
+	paginationPrompt := &common.PaginationPrompt{
+		Pagination:  pagination,
+		CurrentStep: "",
+		RunPageCmd:  listConnectors,
+	}
+	common.AutoPromptPagination(cmd, args, paginationPrompt)
 }
 
 func init() {
+	pagination = &common.Pagination{}
 	connectorsListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter connectors")
 	connectorsListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 	connectorsListCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
-	connectorsListCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
-	connectorsListCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of connectors to retrieve per page")
+	connectorsListCmd.Flags().IntVar(&pagination.Page, "page", common.DefaultPage, "page number to retrieve")
+	connectorsListCmd.Flags().IntVar(&pagination.Rpp, "rpp", common.DefaultRpp, "number of connectors to retrieve per page")
 }

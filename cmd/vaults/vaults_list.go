@@ -11,8 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var page uint64
-var rpp uint64
+var pagination *common.Pagination
 
 var vaultsListCmd = &cobra.Command{
 	Use:   "list",
@@ -28,8 +27,8 @@ func listVaults(cmd *cobra.Command, args []string) {
 func listVaultsRun(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
-		"page": fmt.Sprintf("%d", page),
-		"rpp":  fmt.Sprintf("%d", rpp),
+		"page": fmt.Sprintf("%d", pagination.Page),
+		"rpp":  fmt.Sprintf("%d", pagination.Rpp),
 	}
 	if common.ApplicationID != "" {
 		params["application_id"] = common.ApplicationID
@@ -37,23 +36,32 @@ func listVaultsRun(cmd *cobra.Command, args []string) {
 	if common.OrganizationID != "" {
 		params["organization_id"] = common.OrganizationID
 	}
-	resp, err := provide.ListVaults(token, params)
+	results, resp, err := provide.ListVaults(token, params)
 	if err != nil {
 		log.Printf("failed to retrieve vaults list; %s", err.Error())
 		os.Exit(1)
 	}
-	for i := range resp {
-		vlt := resp[i]
+	pagination.UpdateCountsAndPrintCurrentInterval(resp.TotalCount, len(results))
+	for i := range results {
+		vlt := results[i]
 		result := fmt.Sprintf("%s\t%s\t%s\n", vlt.ID.String(), *vlt.Name, *vlt.Description)
 		fmt.Print(result)
 	}
+
+	paginationPrompt := &common.PaginationPrompt{
+		Pagination:  pagination,
+		CurrentStep: "",
+		RunPageCmd:  listVaultsRun,
+	}
+	common.AutoPromptPagination(cmd, args, paginationPrompt)
 }
 
 func init() {
+	pagination = &common.Pagination{}
 	vaultsListCmd.Flags().StringVar(&common.ApplicationID, "application", "", "application identifier to filter vaults")
 	vaultsListCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier to filter vaults")
 	vaultsListCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 	vaultsListCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
-	vaultsListCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
-	vaultsListCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of vaults to retrieve per page")
+	vaultsListCmd.Flags().IntVar(&pagination.Page, "page", common.DefaultPage, "page number to retrieve")
+	vaultsListCmd.Flags().IntVar(&pagination.Rpp, "rpp", common.DefaultRpp, "number of vaults to retrieve per page")
 }

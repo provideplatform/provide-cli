@@ -101,7 +101,7 @@ func promptList(cmd *cobra.Command, args []string) {
 	if common.OrganizationID == "" {
 		organizationidFlagPrompt()
 	}
-	page, rpp = common.PromptPagination(paginate, page, rpp)
+	common.PromptPagination(paginate, pagination)
 }
 
 func optionalFlagsList(cmd *cobra.Command, args []string) {

@@ -28,6 +28,15 @@ const requireWorkgroupSelectLabel = "Select a workgroup"
 
 var commands map[string]*cobra.Command
 
+var prevPage = "<< Prev Page"
+var nextPage = ">> Next Page"
+
+type PaginationPrompt struct {
+	Pagination  *Pagination
+	CurrentStep string
+	RunPageCmd  func(cmd *cobra.Command, args []string)
+}
+
 func normaliseCmd(cmd *cobra.Command, args []string) (string, string) {
 	flag, _ := regexp.Compile("\\[(.*)")
 	r, _ := regexp.Compile("\\--(.*)")
@@ -81,7 +90,7 @@ func RequireApplication() error {
 	}
 
 	opts := make([]string, 0)
-	apps, _ := ident.ListApplications(RequireUserAccessToken(), map[string]interface{}{})
+	apps, _, _ := ident.ListApplications(RequireUserAccessToken(), map[string]interface{}{})
 	for _, app := range apps {
 		opts = append(opts, *app.Name)
 	}
@@ -108,7 +117,7 @@ func RequireWorkgroup() error {
 	}
 
 	opts := make([]string, 0)
-	apps, _ := ident.ListApplications(RequireUserAccessToken(), map[string]interface{}{
+	apps, _, _ := ident.ListApplications(RequireUserAccessToken(), map[string]interface{}{
 		"type": "baseline",
 	})
 	for _, app := range apps {
@@ -136,7 +145,7 @@ func RequireConnector(params map[string]interface{}) error {
 	}
 
 	opts := make([]string, 0)
-	connectors, _ := nchain.ListConnectors(RequireAPIToken(), params)
+	connectors, _, _ := nchain.ListConnectors(RequireAPIToken(), params)
 	for _, connector := range connectors {
 		opts = append(opts, *connector.Name)
 	}
@@ -162,7 +171,7 @@ func RequireNetwork() error {
 	}
 
 	opts := make([]string, 0)
-	networks, _ := nchain.ListNetworks(RequireAPIToken(), map[string]interface{}{})
+	networks, _, _ := nchain.ListNetworks(RequireAPIToken(), map[string]interface{}{})
 	for _, network := range networks {
 		opts = append(opts, *network.Name)
 	}
@@ -188,7 +197,7 @@ func RequirePublicNetwork() error {
 	}
 
 	opts := make([]string, 0)
-	networks, _ := nchain.ListNetworks(RequireAPIToken(), map[string]interface{}{
+	networks, _, _ := nchain.ListNetworks(RequireAPIToken(), map[string]interface{}{
 		"public": "true",
 	})
 	for _, network := range networks {
@@ -216,7 +225,7 @@ func RequireOrganization() error {
 	}
 
 	opts := make([]string, 0)
-	orgs, _ := ident.ListOrganizations(RequireUserAccessToken(), map[string]interface{}{})
+	orgs, _, _ := ident.ListOrganizations(RequireUserAccessToken(), map[string]interface{}{})
 	for _, org := range orgs {
 		opts = append(opts, *org.Name)
 	}
@@ -243,7 +252,7 @@ func RequireVault() error {
 	}
 
 	opts := make([]string, 0)
-	vaults, _ := vault.ListVaults(RequireAPIToken(), map[string]interface{}{})
+	vaults, _, _ := vault.ListVaults(RequireAPIToken(), map[string]interface{}{})
 	for _, vlt := range vaults {
 		opts = append(opts, *vlt.Name)
 	}
@@ -269,7 +278,7 @@ func RequireAccount(params map[string]interface{}) error {
 	}
 
 	opts := make([]string, 0)
-	accounts, _ := nchain.ListAccounts(RequireAPIToken(), params)
+	accounts, _, _ := nchain.ListAccounts(RequireAPIToken(), params)
 	for _, acct := range accounts {
 		opts = append(opts, *acct.PublicKey)
 	}
@@ -295,7 +304,7 @@ func RequireWallet() error {
 	}
 
 	opts := make([]string, 0)
-	wallets, _ := nchain.ListWallets(RequireAPIToken(), map[string]interface{}{})
+	wallets, _, _ := nchain.ListWallets(RequireAPIToken(), map[string]interface{}{})
 	for _, wallet := range wallets {
 		opts = append(opts, *wallet.PublicKey)
 	}
@@ -412,17 +421,43 @@ func SelectInput(args []string, label string) string {
 	return result
 }
 
-func PromptPagination(paginate bool, page uint64, rpp uint64) (uint64, uint64) {
+func PromptPagination(paginate bool, pagination *Pagination) {
 	if paginate {
-		if page == DefaultPage {
+		if pagination.Page == DefaultPage {
 			result := FreeInput("Page", fmt.Sprintf("%d", DefaultPage), MandatoryNumberValidation)
-			page, _ = strconv.ParseUint(result, 10, 64)
+			pagination.Page, _ = strconv.Atoi(result)
 		}
-		if rpp == DefaultRpp {
+		if pagination.Rpp == DefaultRpp {
 			result := FreeInput("RPP", fmt.Sprintf("%d", DefaultRpp), MandatoryValidation)
-			rpp, _ = strconv.ParseUint(result, 10, 64)
+			pagination.Rpp, _ = strconv.Atoi(result)
 		}
 	}
+}
 
-	return page, rpp
+func AutoPromptPagination(cmd *cobra.Command, args []string, paginationPrompt *PaginationPrompt) {
+	switch step := paginationPrompt.CurrentStep; step {
+	case prevPage:
+		{
+			paginationPrompt.Pagination.PrevPage()
+			paginationPrompt.RunPageCmd(cmd, args)
+		}
+	case nextPage:
+		{
+			paginationPrompt.Pagination.NextPage()
+			paginationPrompt.RunPageCmd(cmd, args)
+		}
+	case "":
+		prompts := []string{}
+		if paginationPrompt.Pagination.AreAllRecordsReturned() {
+			return
+		}
+		if !paginationPrompt.Pagination.IsLastPage() {
+			prompts = append(prompts, nextPage)
+		}
+		if !paginationPrompt.Pagination.IsFirstPage() {
+			prompts = append(prompts, prevPage)
+		}
+		paginationPrompt.CurrentStep = SelectInput(prompts, "")
+		AutoPromptPagination(cmd, args, paginationPrompt)
+	}
 }

@@ -56,7 +56,7 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 		common.RequireApplication()
 		fetchApplicationDetails(cmd, args)
 	case promptStepList:
-		page, rpp = common.PromptPagination(paginate, page, rpp)
+		common.PromptPagination(paginate, pagination)
 		listApplications(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)

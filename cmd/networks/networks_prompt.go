@@ -41,7 +41,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			result := common.SelectInput(publicPromptArgs, publicPromptLabel)
 			public = result == "Yes"
 		}
-		page, rpp = common.PromptPagination(paginate, page, rpp)
+		common.PromptPagination(paginate, pagination)
 		listNetworks(cmd, args)
 	case promptStepDisable:
 		common.RequireNetwork()

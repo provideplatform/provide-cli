@@ -11,8 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var page uint64
-var rpp uint64
+var pagination *common.Pagination
 
 var applicationsListCmd = &cobra.Command{
 	Use:   "list",
@@ -24,23 +23,32 @@ var applicationsListCmd = &cobra.Command{
 func listApplications(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
-		"page": fmt.Sprintf("%d", page),
-		"rpp":  fmt.Sprintf("%d", rpp),
+		"page": fmt.Sprintf("%d", pagination.Page),
+		"rpp":  fmt.Sprintf("%d", pagination.Rpp),
 	}
-	applications, err := provide.ListApplications(token, params)
+	applications, resp, err := provide.ListApplications(token, params)
 	if err != nil {
 		log.Printf("Failed to retrieve applications list; %s", err.Error())
 		os.Exit(1)
 	}
+	pagination.UpdateCountsAndPrintCurrentInterval(resp.TotalCount, len(applications))
 	for i := range applications {
 		application := applications[i]
 		result := fmt.Sprintf("%s\t%s\n", application.ID.String(), *application.Name)
 		fmt.Print(result)
 	}
+
+	paginationPrompt := &common.PaginationPrompt{
+		Pagination:  pagination,
+		CurrentStep: "",
+		RunPageCmd:  listApplications,
+	}
+	common.AutoPromptPagination(cmd, args, paginationPrompt)
 }
 
 func init() {
-	applicationsListCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
-	applicationsListCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of applications to retrieve per page")
+	pagination = &common.Pagination{}
+	applicationsListCmd.Flags().IntVar(&pagination.Page, "page", common.DefaultPage, "page number to retrieve")
+	applicationsListCmd.Flags().IntVar(&pagination.Rpp, "rpp", common.DefaultRpp, "number of applications to retrieve per page")
 	applicationsListCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 }

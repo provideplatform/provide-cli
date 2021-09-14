@@ -442,7 +442,7 @@ func authorizeWorkgroupContext() {
 		os.Exit(1)
 	}
 
-	contracts, err := nchain.ListContracts(workgroupAccessToken, map[string]interface{}{
+	contracts, _, err := nchain.ListContracts(workgroupAccessToken, map[string]interface{}{
 		"type": "organization-registry",
 	})
 	if err != nil {
@@ -553,7 +553,7 @@ func applyFlags() {
 
 	// HACK
 	if jwtSignerPublicKey == "" {
-		keys, err := vault.ListKeys(common.OrganizationAccessToken, common.VaultID, map[string]interface{}{
+		keys, _, err := vault.ListKeys(common.OrganizationAccessToken, common.VaultID, map[string]interface{}{
 			"spec": "RSA-4096",
 		})
 		if err != nil {

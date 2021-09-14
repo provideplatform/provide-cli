@@ -46,7 +46,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		if optional {
 			common.RequireApplication()
 		}
-		page, rpp = common.PromptPagination(paginate, page, rpp)
+		common.PromptPagination(paginate, pagination)
 		listConnectors(cmd, args)
 	case promptStepDetails:
 		common.RequireConnector(map[string]interface{}{})

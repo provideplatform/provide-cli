@@ -48,7 +48,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			fmt.Println("Optional Flags:")
 			common.RequireApplication()
 		}
-		page, rpp = common.PromptPagination(paginate, page, rpp)
+		common.PromptPagination(paginate, pagination)
 		listAccounts(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)

@@ -10,8 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var page uint64
-var rpp uint64
+var pagination *common.Pagination
 
 var listBaselineWorkgroupsCmd = &cobra.Command{
 	Use:   "list",
@@ -26,24 +25,33 @@ func listWorkgroups(cmd *cobra.Command, args []string) {
 
 func listWorkgroupsRun(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
-	applications, err := ident.ListApplications(token, map[string]interface{}{
+	applications, resp, err := ident.ListApplications(token, map[string]interface{}{
 		"type": "baseline",
-		"page": fmt.Sprintf("%d", page),
-		"rpp":  fmt.Sprintf("%d", rpp),
+		"page": fmt.Sprintf("%d", pagination.Page),
+		"rpp":  fmt.Sprintf("%d", pagination.Rpp),
 	})
 	if err != nil {
 		log.Printf("failed to retrieve baseline workgroups; %s", err.Error())
 		os.Exit(1)
 	}
+	pagination.UpdateCountsAndPrintCurrentInterval(resp.TotalCount, len(applications))
 	for i := range applications {
 		workgroup := applications[i]
 		result := fmt.Sprintf("%s\t%s\n", workgroup.ID.String(), *workgroup.Name)
 		fmt.Print(result)
 	}
+
+	paginationPrompt := &common.PaginationPrompt{
+		Pagination:  pagination,
+		CurrentStep: "",
+		RunPageCmd:  listWorkgroupsRun,
+	}
+	common.AutoPromptPagination(cmd, args, paginationPrompt)
 }
 
 func init() {
-	listBaselineWorkgroupsCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
-	listBaselineWorkgroupsCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of baseline workgroups to retrieve per page")
+	pagination = &common.Pagination{}
+	listBaselineWorkgroupsCmd.Flags().IntVar(&pagination.Page, "page", common.DefaultPage, "page number to retrieve")
+	listBaselineWorkgroupsCmd.Flags().IntVar(&pagination.Rpp, "rpp", common.DefaultRpp, "number of baseline workgroups to retrieve per page")
 	listBaselineWorkgroupsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 }

@@ -19,7 +19,7 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 		organizationName = common.FreeInput("Organization Name", "", common.MandatoryValidation)
 		createOrganizationRun(cmd, args)
 	case promptStepList:
-		page, rpp = common.PromptPagination(paginate, page, rpp)
+		common.PromptPagination(paginate, pagination)
 		listOrganizationsRun(cmd, args)
 	case promptStepDetails:
 		common.RequireOrganization()

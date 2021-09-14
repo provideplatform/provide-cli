@@ -41,7 +41,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		if optional {
 			common.RequireApplication()
 		}
-		page, rpp = common.PromptPagination(paginate, page, rpp)
+		common.PromptPagination(paginate, pagination)
 	case "":
 		listContracts(cmd, args)
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)
