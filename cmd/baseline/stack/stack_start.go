@@ -955,9 +955,9 @@ func runVaultAPI(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func writeNATSConfig() {
-	cfg := []byte("max_payload: 100Mb\n")
+	cfg := []byte("max_payload: 100Mb\nmax_pending: 104857600\n")
 	if !natsWebsocketTLS {
-		cfg = []byte("max_payload: 100Mb\nwebsocket {\n    listen: \"0.0.0.0:4221\"\n    no_tls: true\n}\n")
+		cfg = []byte("max_payload: 100Mb\nmax_pending: 104857600\nwebsocket {\n    listen: \"0.0.0.0:4221\"\n    no_tls: true\n}\n")
 	}
 	tmp := filepath.Join(os.TempDir(), "nats-server.conf")
 	err := ioutil.WriteFile(tmp, cfg, 0644)
