@@ -38,7 +38,7 @@ const nchainContainerImage = "provide/nchain"
 const privacyContainerImage = "provide/privacy"
 const vaultContainerImage = "provide/vault"
 const postgresContainerImage = "postgres"
-const natsContainerImage = "provide/nats-server:2.2.3-beta.4-PRVD"
+const natsContainerImage = "provide/nats-server:2.5.0-PRVD"
 const redisContainerImage = "redis"
 const defaultNatsServerName = "prvd"
 
