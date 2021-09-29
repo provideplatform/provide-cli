@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -41,6 +42,8 @@ const postgresContainerImage = "postgres"
 const natsContainerImage = "provide/nats-server:2.5.0-PRVD"
 const redisContainerImage = "redis"
 const defaultNatsServerName = "prvd"
+const defaultNatsReachabilityTimeout = time.Second * 5
+const defaultRedisReachabilityTimeout = time.Second * 5
 
 const defaultJWTSignerPublicKey = `-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAullT/WoZnxecxKwQFlwE
@@ -288,8 +291,30 @@ func runStackStart(cmd *cobra.Command, args []string) {
 			wg.Add(1)
 			go runNATS(docker, wg)
 
+			// FIXME-- DRY this up...
+			natsReachable := false
+			for !natsReachable {
+				host := fmt.Sprintf("localhost:%v", natsPort)
+				conn, err := net.DialTimeout("tcp", host, defaultNatsReachabilityTimeout)
+				if err == nil {
+					conn.Close()
+					natsReachable = true
+				}
+			}
+
 			wg.Add(1)
 			go runRedis(docker, wg)
+
+			// FIXME-- DRY this up...
+			redisReachable := false
+			for !redisReachable {
+				host := fmt.Sprintf("localhost:%v", redisPort)
+				conn, err := net.DialTimeout("tcp", host, defaultRedisReachabilityTimeout)
+				if err == nil {
+					conn.Close()
+					redisReachable = true
+				}
+			}
 
 			if withLocalIdent || withLocalNChain || withLocalPrivacy || withLocalVault {
 				wg.Add(1)
