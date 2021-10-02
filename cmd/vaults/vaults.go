@@ -33,7 +33,6 @@ Docs: https://docs.provide.services/vault`,
 func init() {
 	VaultsCmd.AddCommand(vaultsListCmd)
 	VaultsCmd.AddCommand(vaultsInitCmd)
-
 	VaultsCmd.AddCommand(keys.KeysCmd)
 	VaultsCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
 	VaultsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")

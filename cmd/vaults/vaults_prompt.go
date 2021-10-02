@@ -4,13 +4,15 @@ import (
 	"fmt"
 
 	"github.com/provideplatform/provide-cli/cmd/common"
+	"github.com/provideplatform/provide-cli/cmd/vaults/keys"
 	"github.com/spf13/cobra"
 )
 
 const promptStepInit = "Initialize"
 const promptStepList = "List"
+const promptKeys = "Keys"
 
-var emptyPromptArgs = []string{promptStepInit, promptStepList}
+var emptyPromptArgs = []string{promptStepInit, promptStepList, promptKeys}
 var emptyPromptLabel = "What would you like to do"
 
 // General Endpoints
@@ -45,6 +47,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		}
 		page, rpp = common.PromptPagination(paginate, page, rpp)
 		listVaultsRun(cmd, args)
+	case promptKeys:
+		keys.KeysCmd.Run(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)
 		generalPrompt(cmd, args, result)
