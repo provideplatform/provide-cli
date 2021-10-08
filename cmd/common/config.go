@@ -247,17 +247,11 @@ func BuildConfigKeyWithUser(keyPartial, userID string) string {
 }
 
 func isTokenExpired(bearerToken string) bool {
-
 	var jwtParser jwt.Parser
 	token, _, err := jwtParser.ParseUnverified(bearerToken, jwt.MapClaims{})
 	if err != nil {
 		log.Printf("failed to parse JWT token on behalf of authorized user; %s", err.Error())
 		os.Exit(1)
-	}
-
-	if err != nil {
-		log.Printf("isTokenExpired err: %s", err)
-		return false
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
