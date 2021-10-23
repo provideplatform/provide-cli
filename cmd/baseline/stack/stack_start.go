@@ -176,7 +176,7 @@ func startStack(cmd *cobra.Command, args []string) {
 }
 
 func runStackStart(cmd *cobra.Command, args []string) {
-	docker, err := client.NewEnvClient()
+	docker, err := client.NewClientWithOpts()
 	if err != nil {
 		log.Printf("failed to initialize docker; %s", err.Error())
 		os.Exit(1)
@@ -596,7 +596,7 @@ func applyFlags() {
 
 func containerEnvironmentFactory(listenPort *int) []string {
 	env := make([]string, 0)
-	for _, envvar := range []string{
+	env = append(env,
 		fmt.Sprintf("BASELINE_ORGANIZATION_ADDRESS=%s", baselineOrganizationAddress),
 		fmt.Sprintf("BASELINE_ORGANIZATION_MESSAGING_ENDPOINT=%s", common.MessagingEndpoint),
 		fmt.Sprintf("BASELINE_ORGANIZATION_PROXY_ENDPOINT=%s", common.APIEndpoint),
@@ -627,43 +627,33 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("VAULT_API_SCHEME=%s", vaultAPIScheme),
 		fmt.Sprintf("VAULT_REFRESH_TOKEN=%s", vaultRefreshToken),
 		fmt.Sprintf("VAULT_SEAL_UNSEAL_KEY=%s", vaultSealUnsealKey),
-	} {
-		env = append(env, envvar)
-	}
+	)
 
 	if listenPort != nil {
 		env = append(env, fmt.Sprintf("PORT=%d", *listenPort))
 	}
 
 	if azureServiceBusConnectionString != "" {
-		for _, envvar := range []string{
-			fmt.Sprintf("AZURE_SERVICE_BUS_CONNECTION_STRING=%s", azureServiceBusConnectionString),
-		} {
-			env = append(env, envvar)
-		}
+		env = append(env, fmt.Sprintf("AZURE_SERVICE_BUS_CONNECTION_STRING=%s", azureServiceBusConnectionString))
 	}
 
 	if sapAPIHost != "" && sapAPIUsername != "" && sapAPIPassword != "" {
-		for _, envvar := range []string{
+		env = append(env,
 			fmt.Sprintf("SAP_API_HOST=%s", sapAPIHost),
 			fmt.Sprintf("SAP_API_SCHEME=%s", sapAPIScheme),
 			fmt.Sprintf("SAP_API_PATH=%s", sapAPIPath),
 			fmt.Sprintf("SAP_API_USERNAME=%s", sapAPIUsername),
 			fmt.Sprintf("SAP_API_PASSWORD=%s", sapAPIPassword),
-		} {
-			env = append(env, envvar)
-		}
+		)
 	} else if sorID == "sap" && sorURL != "" {
 		_url, err := url.Parse(sorURL)
 		if err != nil {
 			log.Printf("WARNING: system of record url invalid; %s", err.Error())
 		}
-		for _, envvar := range []string{
+		env = append(env,
 			fmt.Sprintf("SAP_API_HOST=%s", _url.Host),
 			fmt.Sprintf("SAP_API_SCHEME=%s", _url.Scheme),
-		} {
-			env = append(env, envvar)
-		}
+		)
 
 		if _url.Path != "" {
 			env = append(env, fmt.Sprintf("SAP_API_PATH=%s", strings.TrimLeft(_url.Path, "/")))
@@ -671,26 +661,22 @@ func containerEnvironmentFactory(listenPort *int) []string {
 	}
 
 	if serviceNowAPIHost != "" && serviceNowAPIUsername != "" && serviceNowAPIPassword != "" {
-		for _, envvar := range []string{
+		env = append(env,
 			fmt.Sprintf("SERVICENOW_API_HOST=%s", serviceNowAPIHost),
 			fmt.Sprintf("SERVICENOW_API_SCHEME=%s", serviceNowAPIScheme),
 			fmt.Sprintf("SERVICENOW_API_PATH=%s", serviceNowAPIPath),
 			fmt.Sprintf("SERVICENOW_API_USERNAME=%s", serviceNowAPIUsername),
 			fmt.Sprintf("SERVICENOW_API_PASSWORD=%s", serviceNowAPIPassword),
-		} {
-			env = append(env, envvar)
-		}
+		)
 	} else if sorID == "servicenow" || sorID == "snow" && sorURL != "" {
 		_url, err := url.Parse(sorURL)
 		if err != nil {
 			log.Printf("WARNING: system of record url invalid; %s", err.Error())
 		}
-		for _, envvar := range []string{
+		env = append(env,
 			fmt.Sprintf("SERVICENOW_API_HOST=%s", _url.Host),
 			fmt.Sprintf("SERVICENOW_API_SCHEME=%s", _url.Scheme),
-		} {
-			env = append(env, envvar)
-		}
+		)
 
 		if _url.Path != "" {
 			env = append(env, fmt.Sprintf("SERVICENOW_API_PATH=%s", strings.TrimLeft(_url.Path, "/")))

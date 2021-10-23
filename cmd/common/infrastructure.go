@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 const InfrastructureTargetAWS = "aws"
@@ -77,7 +77,7 @@ func requireAWSCredentials() (string, string) {
 	}
 
 	fmt.Print("AWS Secret Access Key: ")
-	secretAccessKeyBytes, err := terminal.ReadPassword(0)
+	secretAccessKeyBytes, err := term.ReadPassword(0)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
@@ -94,6 +94,16 @@ func requireAWSCredentials() (string, string) {
 func requireAzureCredentials() (string, string, string, string) {
 	fmt.Print("Azure Tenant ID: ")
 	reader := bufio.NewReader(os.Stdin)
+	tenantID, err := reader.ReadString('\n')
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+	tenantID = strings.Trim(tenantID, "\n")
+	if tenantID == "" {
+		log.Println("Failed to read Azure tenant ID from stdin")
+		os.Exit(1)
+	}
 
 	fmt.Print("Azure Subscription ID: ")
 	reader = bufio.NewReader(os.Stdin)
@@ -105,17 +115,6 @@ func requireAzureCredentials() (string, string, string, string) {
 	subscriptionID = strings.Trim(subscriptionID, "\n")
 	if subscriptionID == "" {
 		log.Println("Failed to read Azure subscription ID from stdin")
-		os.Exit(1)
-	}
-
-	tenantID, err := reader.ReadString('\n')
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-	tenantID = strings.Trim(tenantID, "\n")
-	if tenantID == "" {
-		log.Println("Failed to read Azure tenant ID from stdin")
 		os.Exit(1)
 	}
 
@@ -133,7 +132,7 @@ func requireAzureCredentials() (string, string, string, string) {
 	}
 
 	fmt.Print("Azure Client Secret: ")
-	clientSecretBytes, err := terminal.ReadPassword(0)
+	clientSecretBytes, err := term.ReadPassword(0)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)

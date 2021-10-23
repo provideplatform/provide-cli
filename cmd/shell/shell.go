@@ -131,7 +131,7 @@ func refresh(cmd *cobra.Command, msg []byte) {
 	renderRootBanner()
 	defaultCursorPosition()
 
-	if msg != nil && len(msg) > 0 {
+	if len(msg) > 0 {
 		write(msg, false)
 		writeRaw([]byte("\n"), true)
 	}

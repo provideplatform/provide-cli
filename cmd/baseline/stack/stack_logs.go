@@ -23,7 +23,7 @@ func stackLogs(cmd *cobra.Command, args []string) {
 }
 
 func stackLogsRun(cmd *cobra.Command, args []string) {
-	docker, err := client.NewEnvClient()
+	docker, err := client.NewClientWithOpts()
 	if err != nil {
 		log.Printf("failed to initialize docker; %s", err.Error())
 		os.Exit(1)

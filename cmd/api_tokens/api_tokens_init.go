@@ -10,7 +10,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kthomas/go-pgputil"
 	"github.com/provideplatform/provide-cli/cmd/common"
-	"github.com/provideplatform/provide-go/api/ident"
 	provide "github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/common/util"
 	"golang.org/x/crypto/ssh"
@@ -157,7 +156,7 @@ func createAPIToken(cmd *cobra.Command, args []string) {
 func RequirePublicJWTVerifiers() {
 	jwtKeypairs = map[string]*util.JWTKeypair{}
 
-	keys, err := ident.GetJWKs()
+	keys, err := provide.GetJWKs()
 	if err != nil {
 		log.Printf("failed to resolve ident jwt keys; %s", err.Error())
 	} else {

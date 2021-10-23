@@ -101,7 +101,7 @@ var startBaseledgerNodeCmd = &cobra.Command{
 }
 
 func startBaseledgerNode(cmd *cobra.Command, args []string) {
-	docker, err := client.NewEnvClient()
+	docker, err := client.NewClientWithOpts()
 	if err != nil {
 		log.Printf("failed to initialize docker; %s", err.Error())
 		os.Exit(1)
@@ -171,7 +171,7 @@ func configureNetwork(docker *client.Client) {
 
 func containerEnvironmentFactory(listenPort *int) []string {
 	env := make([]string, 0)
-	for _, envvar := range []string{
+	env = append(env,
 		fmt.Sprintf("BASELEDGER_ABCI_CONNECTION_TYPE=%s", baseledgerABCIConnectionType),
 		fmt.Sprintf("BASELEDGER_BLOCK_TIME=%s", baseledgerBlockTime),
 		fmt.Sprintf("BASELEDGER_BOOTSTRAP_PEERS=%s", baseledgerBootstrapPeers),
@@ -212,9 +212,7 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("VAULT_ID=%s", vaultID),
 		fmt.Sprintf("VAULT_KEY_ID=%s", vaultKeyID),
 		fmt.Sprintf("VAULT_REFRESH_TOKEN=%s", vaultRefreshToken),
-	} {
-		env = append(env, envvar)
-	}
+	)
 
 	if listenPort != nil {
 		env = append(env, fmt.Sprintf("PORT=%d", *listenPort))

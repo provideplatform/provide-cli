@@ -72,7 +72,7 @@ func nodeSecurityConfigFactory() map[string]interface{} {
 			"path": common.HealthCheckPath,
 		}
 	}
-	if healthCheck != nil && len(healthCheck) > 0 {
+	if len(healthCheck) > 0 {
 		cfg["health_check"] = healthCheck
 	}
 

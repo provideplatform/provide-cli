@@ -23,8 +23,9 @@ import (
 var name string
 var email string
 var permissions int
-var invitorAddress string
-var registryContractAddress string
+
+// var invitorAddress string
+// var registryContractAddress string
 var managedTenant bool
 var Optional bool
 var paginate bool

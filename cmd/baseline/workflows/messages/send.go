@@ -81,7 +81,7 @@ func sendMessageRun(cmd *cobra.Command, args []string) {
 	log.Printf("baselined record: %v", baselinedRecord.(map[string]interface{})["baseline_id"].(string))
 	if common.Verbose {
 		raw, _ := json.MarshalIndent(baselinedRecord, "", "  ")
-		log.Printf(string(raw))
+		log.Println(string(raw))
 	}
 
 }

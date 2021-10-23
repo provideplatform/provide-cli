@@ -22,7 +22,7 @@ func stopStack(cmd *cobra.Command, args []string) {
 }
 
 func runStackStop(cmd *cobra.Command, args []string) {
-	docker, err := client.NewEnvClient()
+	docker, err := client.NewClientWithOpts()
 	if err != nil {
 		log.Printf("failed to initialize docker; %s", err.Error())
 		os.Exit(1)

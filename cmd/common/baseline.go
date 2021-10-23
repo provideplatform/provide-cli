@@ -20,7 +20,6 @@ import (
 	"github.com/provideplatform/provide-go/api/pgrok"
 	"github.com/provideplatform/provide-go/api/vault"
 	"github.com/provideplatform/provide-go/common"
-	util "github.com/provideplatform/provide-go/common"
 	commonutil "github.com/provideplatform/provide-go/common/util"
 )
 
@@ -167,7 +166,7 @@ func InitWorkgroupContract() *nchain.Contract {
 		os.Exit(1)
 	}
 
-	err = RequireContract(util.StringOrNil(contract.ID.String()), nil, true)
+	err = RequireContract(common.StringOrNil(contract.ID.String()), nil, true)
 	if err != nil {
 		log.Printf("failed to initialize registry contract; %s", err.Error())
 		os.Exit(1)
@@ -177,7 +176,7 @@ func InitWorkgroupContract() *nchain.Contract {
 }
 
 func RegisterWorkgroupOrganization(applicationID string) {
-	err := RequireContract(nil, util.StringOrNil("organization-registry"), false)
+	err := RequireContract(nil, common.StringOrNil("organization-registry"), false)
 	if err != nil {
 		log.Printf("failed to initialize registry contract; %s", err.Error())
 		os.Exit(1)
@@ -415,7 +414,7 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 	}
 
 	if !ExposeAPITunnel && !ExposeMessagingTunnel {
-		publicIP, err := util.ResolvePublicIP()
+		publicIP, err := common.ResolvePublicIP()
 		if err != nil {
 			log.Printf("WARNING: failed to resolve public IP")
 			os.Exit(1)

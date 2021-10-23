@@ -29,8 +29,8 @@ const requireWorkgroupSelectLabel = "Select a workgroup"
 var commands map[string]*cobra.Command
 
 func normaliseCmd(cmd *cobra.Command, args []string) (string, string) {
-	flag, _ := regexp.Compile("\\[(.*)")
-	r, _ := regexp.Compile("\\--(.*)")
+	flag, _ := regexp.Compile(`\[(.*)]`)
+	r, _ := regexp.Compile(`\--(.*)`)
 	usedCommand := strings.Split(cmd.UseLine(), flag.FindString(cmd.UseLine()))
 	normalisedCommand := strings.TrimSpace(strings.Join(usedCommand, ""))
 	argsLine := strings.TrimSpace(strings.Join(args, " "))

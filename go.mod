@@ -29,4 +29,5 @@ require (
 	github.com/spf13/viper v1.7.1
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
+	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 )

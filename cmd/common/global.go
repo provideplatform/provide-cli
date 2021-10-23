@@ -2,7 +2,6 @@ package common
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"strings"
 
@@ -61,7 +60,7 @@ func EtherscanBaseURL(networkID string) *string {
 
 // resolveReleaseContext attempts to parse a Provide release manifest.json
 func resolveReleaseContext() {
-	path := fmt.Sprintf("./manifest.json")
+	path := "./manifest.json"
 	if _, err := os.Stat(path); err == nil {
 		manifestJSON, err := os.ReadFile(path)
 		if err != nil {
@@ -82,7 +81,7 @@ func IsReleaseContext() bool {
 
 // IsReleaseRepositoryContext is not yet used...
 func IsReleaseRepositoryContext() bool {
-	path := fmt.Sprintf("./.git/config")
+	path := "./.git/config"
 	if _, err := os.Stat(path); err == nil {
 		cfg, err := os.ReadFile(path)
 		if err != nil {
