@@ -42,7 +42,7 @@ func listOrganizationsRun(cmd *cobra.Command, args []string) {
 		if addr, addrOk := organization.Metadata["address"].(string); addrOk {
 			address = addr
 		}
-		result := fmt.Sprintf("%s\t%s\t%s\n", organization.ID.String(), *organization.Name, address)
+		result := fmt.Sprintf("%s\t%s\t%s\n", *organization.ID, *organization.Name, address)
 		fmt.Print(result)
 	}
 }

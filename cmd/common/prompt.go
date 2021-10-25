@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
+	"github.com/ockam-network/did"
 	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/nchain"
 	"github.com/provideplatform/provide-go/api/vault"
@@ -229,7 +230,7 @@ func RequireOrganization() error {
 	}
 
 	Organization = orgs[i]
-	OrganizationID = orgs[i].ID.String()
+	OrganizationID = *orgs[i].ID
 	return nil
 }
 
@@ -314,6 +315,17 @@ func RequireWallet() error {
 var MandatoryValidation = func(input string) error {
 	if len(input) < 1 {
 		return errors.New("password must have more than 6 characters")
+	}
+	return nil
+}
+
+var MandatoryDIDValidation = func(input string) error {
+	if len(input) < 1 {
+		return errors.New("field can't be nil")
+	}
+	_, err := did.Parse(input)
+	if err != nil {
+		return errors.New("invalid DID")
 	}
 	return nil
 }
