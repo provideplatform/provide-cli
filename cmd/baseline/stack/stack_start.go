@@ -1188,6 +1188,7 @@ func runContainer(
 		containerConfig,
 		&container.HostConfig{
 			AutoRemove:   autoRemove,
+			ExtraHosts:   []string{"host.docker.internal:host-gateway"},
 			Mounts:       mountedVolumes,
 			NetworkMode:  "bridge",
 			PortBindings: portBinding,
