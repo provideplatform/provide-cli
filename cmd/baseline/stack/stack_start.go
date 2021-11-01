@@ -276,10 +276,15 @@ func runStackStart(cmd *cobra.Command, args []string) {
 		img := image
 		wg.Add(1)
 		go func() {
-			err := pullImage(docker, img)
-			if err != nil {
-				log.Printf("failed to pull local baseline container image: %s; %s", img, err.Error())
-				os.Exit(1)
+			log.Printf("image eq: '%s'", img)
+			if img != "provide/baseline" {
+				err := pullImage(docker, img)
+				if err != nil {
+						log.Printf("failed to pull local baseline container image: %s; %s", img, err.Error())
+						os.Exit(1)
+				}
+			} else {
+				log.Printf("skipping %s pull from dockerhub", img)
 			}
 			wg.Done()
 		}()
