@@ -185,9 +185,13 @@ func runStackStart(cmd *cobra.Command, args []string) {
 	go common.PurgeContainers(docker, name)
 
 	authorizeContext()
+	log.Printf("context authorized")
 	sorPrompt()
+	log.Printf("sorID: %s", sorID)
 	tunnelAPIPrompt()
+	log.Printf("expose API tunnel: %t", common.ExposeAPITunnel)
 	tunnelMessagingPrompt()
+	log.Printf("expose messaging tunnel: %t", common.ExposeMessagingTunnel)
 
 	wg := &sync.WaitGroup{}
 
@@ -199,6 +203,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 		redisContainerImage,
 	)
 
+	log.Printf("withLocalIdent: %t, withLocalNChain: %t, withLocalPrivacy: %t, withLocalVault: %t", withLocalIdent, withLocalNChain, withLocalPrivacy, withLocalVault)
 	if withLocalIdent {
 		identVersion := "latest"
 		if common.IsReleaseContext() {
@@ -295,6 +300,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 			natsReachable := false
 			for !natsReachable {
 				host := fmt.Sprintf("localhost:%v", natsPort)
+				log.Printf("%s", host)
 				conn, err := net.DialTimeout("tcp", host, defaultNatsReachabilityTimeout)
 				if err == nil {
 					conn.Close()
@@ -309,6 +315,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 			redisReachable := false
 			for !redisReachable {
 				host := fmt.Sprintf("localhost:%v", redisPort)
+				log.Printf("%s", host)
 				conn, err := net.DialTimeout("tcp", host, defaultRedisReachabilityTimeout)
 				if err == nil {
 					conn.Close()
