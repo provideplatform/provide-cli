@@ -9,10 +9,10 @@ clean:
 
 build: clean mod
 	go fmt ./...
-	go build -v -o ./.bin/prvd .
+	CGO_CFLAGS=-Wno-undef-prefix go build -v -o ./.bin/prvd .
 
 install: clean
-	go install ./...
+	CGO_CFLAGS=-Wno-undef-prefix go install ./...
 	mkdir -p "${GOPATH}/bin"
 	mv "${GOPATH}/bin/provide-cli" "${GOPATH}/bin/prvd"
 

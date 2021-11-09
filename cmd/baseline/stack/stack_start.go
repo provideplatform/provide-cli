@@ -101,7 +101,10 @@ var privacyConsumerHostname string
 var vaultHostname string
 var natsHostname string
 var natsServerName string
+var postgresDatabase string
 var postgresHostname string
+var postgresPassword string
+var postgresUser string
 var redisHostname string
 var redisHosts string
 
@@ -304,20 +307,6 @@ func runStackStart(cmd *cobra.Command, args []string) {
 			}
 
 			wg.Add(1)
-			go runRedis(docker, wg)
-
-			// FIXME-- DRY this up...
-			redisReachable := false
-			for !redisReachable {
-				host := fmt.Sprintf("localhost:%v", redisPort)
-				conn, err := net.DialTimeout("tcp", host, defaultRedisReachabilityTimeout)
-				if err == nil {
-					conn.Close()
-					redisReachable = true
-				}
-			}
-
-			wg.Add(1)
 			go runPostgres(docker, wg)
 
 			// FIXME-- DRY this up...
@@ -328,6 +317,20 @@ func runStackStart(cmd *cobra.Command, args []string) {
 				if err == nil {
 					conn.Close()
 					postgresReachable = true
+				}
+			}
+
+			wg.Add(1)
+			go runRedis(docker, wg)
+
+			// FIXME-- DRY this up...
+			redisReachable := false
+			for !redisReachable {
+				host := fmt.Sprintf("localhost:%v", redisPort)
+				conn, err := net.DialTimeout("tcp", host, defaultRedisReachabilityTimeout)
+				if err == nil {
+					conn.Close()
+					redisReachable = true
 				}
 			}
 
@@ -612,6 +615,13 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("BASELINE_ORGANIZATION_PROXY_ENDPOINT=%s", common.APIEndpoint),
 		fmt.Sprintf("BASELINE_REGISTRY_CONTRACT_ADDRESS=%s", baselineRegistryContractAddress),
 		fmt.Sprintf("BASELINE_WORKGROUP_ID=%s", baselineWorkgroupID),
+		fmt.Sprintf("DATABASE_HOST=%s", postgresHostname),
+		fmt.Sprintf("DATABASE_PORT=%d", postgresPort),
+		fmt.Sprintf("DATABASE_USER=%s", postgresUser),
+		fmt.Sprintf("DATABASE_PASSWORD=%s", postgresPassword),
+		fmt.Sprintf("DATABASE_NAME=%s", postgresDatabase),
+		fmt.Sprintf("DATABASE_SUPERUSER=%s", "prvd"),
+		fmt.Sprintf("DATABASE_SUPERUSER_PASSWORD=%s", "prvdp455"),
 		fmt.Sprintf("IDENT_API_HOST=%s", identAPIHost),
 		fmt.Sprintf("IDENT_API_SCHEME=%s", identAPIScheme),
 		fmt.Sprintf("JWT_SIGNER_PUBLIC_KEY=%s", strings.ReplaceAll(jwtSignerPublicKey, "\\n", "\n")),
@@ -1019,7 +1029,7 @@ func runNATS(docker *client.Client, wg *sync.WaitGroup) {
 			"--port", fmt.Sprintf("%d", natsContainerPort),
 			"-DVV",
 		},
-		&[]string{"CMD", "/usr/local/bin/await_tcp.sh", fmt.Sprintf("localhost:%d", natsContainerPort)},
+		&[]string{"CMD", "nc", "-zv", "localhost", fmt.Sprintf("%d", natsContainerPort)},
 		nil,
 		map[string]string{
 			filepath.Join(os.TempDir(), "nats-server.conf"): "/etc/nats-server.conf",
@@ -1364,8 +1374,11 @@ func init() {
 	startBaselineStackCmd.Flags().IntVar(&natsWebsocketPort, "nats-ws-port", 4221, "host port on which to expose the local NATS websocket service")
 	startBaselineStackCmd.Flags().StringVar(&natsAuthToken, "nats-auth-token", "testtoken", "authorization token for the local baseline NATS service; will be passed as the -auth argument to NATS")
 
+	startBaselineStackCmd.Flags().StringVar(&postgresDatabase, "postgres-database", "baseline", "name for the local postgres database")
 	startBaselineStackCmd.Flags().StringVar(&postgresHostname, "postgres-hostname", fmt.Sprintf("%s-postgres", name), "hostname for the local postgres container")
 	startBaselineStackCmd.Flags().IntVar(&postgresPort, "postgres-port", 5432, "host port on which to expose the local postgres service")
+	startBaselineStackCmd.Flags().StringVar(&postgresUser, "postgres-user", "baseline", "name for the local postgres user")
+	startBaselineStackCmd.Flags().StringVar(&postgresPassword, "postgres-password", "prvdp455", "password for the local postgres user")
 
 	startBaselineStackCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the local baseline redis container")
 	startBaselineStackCmd.Flags().IntVar(&redisPort, "redis-port", 6379, "host port on which to expose the local redis service")
