@@ -369,10 +369,10 @@ func runStackStart(cmd *cobra.Command, args []string) {
 
 			// run proxy
 			wg.Add(1)
-			go runProxyAPI(docker, wg)
+			go runBaselineAPI(docker, wg)
 
 			wg.Add(1)
-			go runProxyConsumer(docker, wg)
+			go runBaselineConsumer(docker, wg)
 
 			wg.Wait()
 			log.Printf("%s local baseline instance started", name)
@@ -710,7 +710,7 @@ func containerEnvironmentFactory(listenPort *int) []string {
 	return env
 }
 
-func runProxyAPI(docker *client.Client, wg *sync.WaitGroup) {
+func runBaselineAPI(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-api", strings.ReplaceAll(name, " ", "")),
@@ -737,7 +737,7 @@ func runProxyAPI(docker *client.Client, wg *sync.WaitGroup) {
 	}
 }
 
-func runProxyConsumer(docker *client.Client, wg *sync.WaitGroup) {
+func runBaselineConsumer(docker *client.Client, wg *sync.WaitGroup) {
 	_, err := runContainer(
 		docker,
 		fmt.Sprintf("%s-consumer", strings.ReplaceAll(name, " ", "")),
