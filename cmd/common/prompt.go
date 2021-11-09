@@ -58,18 +58,15 @@ func CacheCommands(cmd *cobra.Command) {
 
 func CmdExists(cmd *cobra.Command, args []string) (bool, string) {
 	command, arguments := normaliseCmd(cmd, args)
-
-	argsCommandNormalised := fmt.Sprintf("%s%s", command, arguments)
-
+	argsCommandNormalised := fmt.Sprintf("%s %s", command, arguments)
 	hashCmd := sha256.Sum256([]byte(argsCommandNormalised))
-
 	return commands[string(hashCmd[:])] != nil, argsCommandNormalised
 }
 
 func CmdExistsOrExit(cmd *cobra.Command, args []string) {
 	exists, command := CmdExists(cmd, args)
 	if !exists {
-		fmt.Println(command + " is not a valid command")
+		fmt.Printf("%s is not a valid command", command)
 		os.Exit(1)
 	}
 }
