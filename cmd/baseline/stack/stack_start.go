@@ -43,6 +43,7 @@ const natsContainerImage = "provide/nats-server:2.5.0-PRVD"
 const redisContainerImage = "redis"
 const defaultNatsServerName = "prvd"
 const defaultNatsReachabilityTimeout = time.Second * 5
+const defaultPostgresReachabilityTimeout = time.Second * 5
 const defaultRedisReachabilityTimeout = time.Second * 5
 
 const defaultJWTSignerPublicKey = `-----BEGIN PUBLIC KEY-----
@@ -316,9 +317,18 @@ func runStackStart(cmd *cobra.Command, args []string) {
 				}
 			}
 
-			if withLocalIdent || withLocalNChain || withLocalPrivacy || withLocalVault {
-				wg.Add(1)
-				go runPostgres(docker, wg)
+			wg.Add(1)
+			go runPostgres(docker, wg)
+
+			// FIXME-- DRY this up...
+			postgresReachable := false
+			for !postgresReachable {
+				host := fmt.Sprintf("localhost:%v", postgresPort)
+				conn, err := net.DialTimeout("tcp", host, defaultPostgresReachabilityTimeout)
+				if err == nil {
+					conn.Close()
+					postgresReachable = true
+				}
 			}
 
 			// run optional local containers
