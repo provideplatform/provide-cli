@@ -200,6 +200,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 		images,
 		baselineContainerImage,
 		natsContainerImage,
+		postgresContainerImage,
 		redisContainerImage,
 	)
 
