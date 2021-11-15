@@ -110,6 +110,7 @@ var redisHosts string
 
 var autoRemove bool
 
+var databaseLogging string
 var logLevel string
 var syslogEndpoint string
 
@@ -623,6 +624,7 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("DATABASE_NAME=%s", postgresDatabase),
 		fmt.Sprintf("DATABASE_SUPERUSER=%s", "prvd"),
 		fmt.Sprintf("DATABASE_SUPERUSER_PASSWORD=%s", "prvdp455"),
+		fmt.Sprintf("DATABASE_LOGGING=%s", databaseLogging),
 		fmt.Sprintf("IDENT_API_HOST=%s", identAPIHost),
 		fmt.Sprintf("IDENT_API_SCHEME=%s", identAPIScheme),
 		fmt.Sprintf("JWT_SIGNER_PUBLIC_KEY=%s", strings.ReplaceAll(jwtSignerPublicKey, "\\n", "\n")),
@@ -1389,6 +1391,7 @@ func init() {
 
 	startBaselineStackCmd.Flags().StringVar(&logLevel, "log-level", "DEBUG", "log level to set within the running local baseline stack")
 	startBaselineStackCmd.Flags().StringVar(&syslogEndpoint, "syslog-endpoint", "", "syslog endpoint to which syslog udp packets will be sent")
+	startBaselineStackCmd.Flags().StringVar(&databaseLogging, "database-logging", "false", "when true, query logging is enabled within the local stack")
 
 	startBaselineStackCmd.Flags().StringVar(&jwtSignerPublicKey, "jwt-signer-public-key", "", "PEM-encoded public key of the authorized JWT signer for verifying inbound connection attempts")
 
