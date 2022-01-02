@@ -1002,23 +1002,35 @@ func runVaultAPI(docker *client.Client, wg *sync.WaitGroup) {
 	}
 }
 
-func writeNATSConfig() {
+func writeNATSConfig() *string {
 	cfg := []byte("max_payload: 100Mb\nmax_pending: 104857600\n")
 	if !natsWebsocketTLS {
 		cfg = []byte("max_payload: 100Mb\nmax_pending: 104857600\nwebsocket {\n    listen: \"0.0.0.0:4221\"\n    no_tls: true\n}\n")
 	}
 	path := strings.Split(os.TempDir(), string(os.PathSeparator))
 	path = append(path, "nats-server.conf")
+	sep := []string{string(os.PathSeparator)}
+	path = append(sep, path...)
 	tmp := filepath.Join(path...)
 	err := ioutil.WriteFile(tmp, cfg, 0644)
 	if err != nil {
 		log.Printf("failed to write local nats-server.conf; %s", err.Error())
 		os.Exit(1)
 	}
+
+	if tmp == "" {
+		return nil
+	}
+	return &tmp
 }
 
 func runNATS(docker *client.Client, wg *sync.WaitGroup) {
-	writeNATSConfig()
+	cfgPath := writeNATSConfig()
+	mountPoints := map[string]string{}
+
+	if cfgPath != nil {
+		mountPoints[*cfgPath] = "/etc/nats-server.conf"
+	}
 
 	_, err := runContainer(
 		docker,
@@ -1036,9 +1048,7 @@ func runNATS(docker *client.Client, wg *sync.WaitGroup) {
 		},
 		&[]string{"CMD", "nc", "-zv", "localhost", fmt.Sprintf("%d", natsContainerPort)},
 		nil,
-		map[string]string{
-			filepath.Join(os.TempDir(), "nats-server.conf"): "/etc/nats-server.conf",
-		},
+		mountPoints,
 		[]portMapping{
 			{
 				hostPort:      natsPort,
