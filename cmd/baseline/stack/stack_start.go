@@ -1007,7 +1007,9 @@ func writeNATSConfig() {
 	if !natsWebsocketTLS {
 		cfg = []byte("max_payload: 100Mb\nmax_pending: 104857600\nwebsocket {\n    listen: \"0.0.0.0:4221\"\n    no_tls: true\n}\n")
 	}
-	tmp := filepath.Join(os.TempDir(), "nats-server.conf")
+	path := strings.Split(os.TempDir(), string(os.PathSeparator))
+	path = append(path, "nats-server.conf")
+	tmp := filepath.Join(path...)
 	err := ioutil.WriteFile(tmp, cfg, 0644)
 	if err != nil {
 		log.Printf("failed to write local nats-server.conf; %s", err.Error())
