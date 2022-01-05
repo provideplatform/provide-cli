@@ -65,6 +65,7 @@ var Tunnel bool
 var APIEndpoint string
 var ExposeAPITunnel bool
 var ExposeMessagingTunnel bool
+var ExposeWebsocketMessagingTunnel bool
 var MessagingEndpoint string
 var tunnelClient *pgrok.Client
 
@@ -362,7 +363,7 @@ func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 
 // RequireOrganizationEndpoints fn is the function to call after the tunnel has been established,
 // prior to the runloop and signal handling is installed
-func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), apiPort, messagingPort int) {
+func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), apiPort, messagingPort, websocketMessagingPort int) {
 	run := func() {
 		org, err := ident.GetOrganizationDetails(OrganizationAccessToken, OrganizationID, map[string]interface{}{})
 		if err != nil {
@@ -494,6 +495,18 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 					fmt.Sprintf("127.0.0.1:%d", messagingPort),
 					nil,
 					common.StringOrNil("tcp"),
+					common.StringOrNil(OrganizationAccessToken),
+					_tunnelShutdownFn,
+				)
+				tunnelClient.AddTunnel(tunnel)
+			}
+
+			if ExposeWebsocketMessagingTunnel {
+				tunnel, _ := tunnelClient.TunnelFactory(
+					fmt.Sprintf("%s-wss", OrganizationID),
+					fmt.Sprintf("127.0.0.1:%d", websocketMessagingPort),
+					nil,
+					common.StringOrNil("https"),
 					common.StringOrNil(OrganizationAccessToken),
 					_tunnelShutdownFn,
 				)

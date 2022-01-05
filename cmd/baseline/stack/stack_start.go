@@ -391,6 +391,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 		},
 		port,
 		natsPort,
+		natsWebsocketPort,
 	)
 }
 
@@ -1374,6 +1375,7 @@ func init() {
 	startBaselineStackCmd.Flags().BoolVar(&common.Tunnel, "tunnel", false, "when true, a tunnel is established to expose the API and messaging endpoints to the WAN")
 	startBaselineStackCmd.Flags().BoolVar(&common.ExposeAPITunnel, "api-tunnel", false, "when true, a tunnel is established to expose the API endpoint to the WAN")
 	startBaselineStackCmd.Flags().BoolVar(&common.ExposeMessagingTunnel, "messaging-tunnel", false, "when true, a tunnel is established to expose the messaging endpoint to the WAN")
+	startBaselineStackCmd.Flags().BoolVar(&common.ExposeWebsocketMessagingTunnel, "websocket-tunnel", false, "when true, a tunnel is established to expose the websocket messaging endpoint to the WAN")
 
 	startBaselineStackCmd.Flags().StringVar(&sorID, "sor", "", "primary internal system of record identifier being baselined")
 	startBaselineStackCmd.Flags().StringVar(&sorURL, "sor-url", "https://", "url of the primary internal system of record being baselined")
