@@ -529,13 +529,13 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 			}
 
 			if ExposeMessagingTunnel {
-				for tunnelClient.Tunnels[len(tunnelClient.Tunnels)-1].RemoteAddr == nil {
-					time.Sleep(time.Millisecond * 10)
-				}
-
 				i := len(tunnelClient.Tunnels) - 1
 				if ExposeWebsocketMessagingTunnel {
 					i--
+				}
+
+				for tunnelClient.Tunnels[i].RemoteAddr == nil {
+					time.Sleep(time.Millisecond * 10)
 				}
 
 				MessagingEndpoint = *tunnelClient.Tunnels[i].RemoteAddr
