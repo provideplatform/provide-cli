@@ -533,7 +533,12 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 					time.Sleep(time.Millisecond * 10)
 				}
 
-				MessagingEndpoint = *tunnelClient.Tunnels[len(tunnelClient.Tunnels)-1].RemoteAddr
+				i := len(tunnelClient.Tunnels) - 1
+				if ExposeWebsocketMessagingTunnel {
+					i--
+				}
+
+				MessagingEndpoint = *tunnelClient.Tunnels[i].RemoteAddr
 				log.Printf("established tunnel connection for messaging endpoint: %s\n", MessagingEndpoint)
 			}
 		}()
