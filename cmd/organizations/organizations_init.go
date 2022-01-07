@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var organizationDID string
 var organizationName string
 var paginate bool
 
@@ -34,6 +35,7 @@ func createOrganization(cmd *cobra.Command, args []string) {
 func createOrganizationRun(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
+		"id":     organizationDID,
 		"name":   organizationName,
 		"config": organizationConfigFactory(),
 	}
@@ -43,11 +45,13 @@ func createOrganizationRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	common.OrganizationID = organization.ID.String()
+	common.OrganizationID = *organization.ID
 	log.Printf("initialized organization: %s\t%s\n", organizationName, common.OrganizationID)
 }
 
 func init() {
+	organizationsInitCmd.Flags().StringVar(&organizationDID, "did", "", "DID of the organization")
+	// organizationsInitCmd.MarkFlagRequired("did")
 	organizationsInitCmd.Flags().StringVar(&organizationName, "name", "", "name of the organization")
 	// organizationsInitCmd.MarkFlagRequired("name")
 }

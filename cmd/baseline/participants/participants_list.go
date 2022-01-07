@@ -60,7 +60,7 @@ func listParticipantsRun(cmd *cobra.Command, args []string) {
 		if msgEndpoint, msgEndpointOk := participant.Metadata["messaging_endpoint"].(string); msgEndpointOk {
 			endpoint = msgEndpoint
 		}
-		result := fmt.Sprintf("%s\t%s\t%s\t%s\n", participant.ID.String(), *participant.Name, address, endpoint)
+		result := fmt.Sprintf("%s\t%s\t%s\t%s\n", *participant.ID, *participant.Name, address, endpoint)
 		fmt.Print(result)
 	}
 
@@ -70,7 +70,7 @@ func listParticipantsRun(cmd *cobra.Command, args []string) {
 
 	for i := range invitations {
 		invitedParticipant := invitations[i]
-		result := fmt.Sprintf("%s\t%s\n", invitedParticipant.ID.String(), invitedParticipant.Email)
+		result := fmt.Sprintf("%s\t%s\n", *invitedParticipant.ID, invitedParticipant.Email)
 		fmt.Print(result)
 	}
 }

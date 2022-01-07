@@ -1,6 +1,7 @@
 package networks
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -39,6 +40,35 @@ func listNetworks(cmd *cobra.Command, args []string) {
 	}
 	for i := range networks {
 		network := networks[i]
+
+		log.Println()
+		log.Printf("Network %s", network.ID.String())
+		if network.ApplicationID != nil {
+			log.Printf("      appId: %s", network.ApplicationID.String())
+		}
+		if network.UserID != nil {
+			log.Printf("     userId: %s", network.UserID)
+		}
+		if network.Name != nil {
+			log.Printf("       name: %s", *network.Name)
+		}
+		if network.Description != nil {
+			log.Printf("       desc: %s", *network.Description)
+		}
+		log.Printf("       enab: %v", network.Enabled)
+		if network.ChainID != nil {
+			log.Printf("    chainId: %s", *network.ChainID)
+		}
+		if network.NetworkID != nil {
+			log.Printf("      netId: %s", network.NetworkID.String())
+		}
+		pretty, err := json.MarshalIndent(network.Config, "", "  ")
+		if err == nil {
+			log.Printf("     config: %s", pretty)
+
+		}
+		log.Println()
+
 		result := fmt.Sprintf("%s\t%s\n", network.ID.String(), *network.Name)
 		fmt.Print(result)
 	}

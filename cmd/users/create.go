@@ -19,18 +19,21 @@ var createCmd = &cobra.Command{
 	Run:   create,
 }
 
+var did string
 var firstName string
 var lastName string
 var email string
 var passwd string
 
 func create(cmd *cobra.Command, args []string) {
+	did = common.FreeInput("DID", "", common.MandatoryDIDValidation)
 	firstName = common.FreeInput("First Name", "", common.MandatoryValidation)
 	lastName = common.FreeInput("Last Name", "", common.MandatoryValidation)
 	email = common.FreeInput("Email", "", common.MandatoryValidation)
 	passwd = common.FreeInput("Password", "", common.MandatoryValidation)
 
 	resp, err := provide.CreateUser("", map[string]interface{}{
+		"id":         did,
 		"email":      email,
 		"password":   passwd,
 		"first_name": firstName,
@@ -47,5 +50,5 @@ func create(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	fmt.Printf("created user: %s", resp.ID.String())
+	fmt.Printf("created user: %s", *resp.ID)
 }
