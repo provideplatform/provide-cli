@@ -14,6 +14,7 @@ import (
 	"github.com/provideplatform/provide-cli/cmd/common"
 	"github.com/provideplatform/provide-cli/cmd/connectors"
 	"github.com/provideplatform/provide-cli/cmd/contracts"
+	"github.com/provideplatform/provide-cli/cmd/info"
 	"github.com/provideplatform/provide-cli/cmd/networks"
 	"github.com/provideplatform/provide-cli/cmd/nodes"
 	"github.com/provideplatform/provide-cli/cmd/organizations"
@@ -62,6 +63,7 @@ func init() {
 	rootCmd.AddCommand(users.UsersCmd)
 	rootCmd.AddCommand(vaults.VaultsCmd)
 	rootCmd.AddCommand(wallets.WalletsCmd)
+	rootCmd.AddCommand(info.InfoCmd)
 
 	common.CacheCommands(rootCmd)
 }

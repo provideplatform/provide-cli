@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// authenticateCmd represents the authenticate command
+// AuthenticateCmd represents the authenticate command
 var AuthenticateCmd = &cobra.Command{
 	Use:   "authenticate",
 	Short: "Authenticate using your credentials",
@@ -34,9 +34,17 @@ func authenticate(cmd *cobra.Command, args []string) {
 		common.CacheAccessRefreshToken(resp.Token)
 	} else if resp.Token.Token != nil {
 		cacheAPIToken(*resp.Token.Token)
+	} else {
+		log.Println("Failed to get token from authentication response.")
+		os.Exit(1)
 	}
 
-	log.Printf("Authentication successful")
+	log.Print("Authentication successful")
+
+	if resp.User != nil {
+		common.StoreUserDetails(resp.User)
+		log.Printf("User ID: %s", resp.User.ID)
+	}
 }
 
 func cacheAPIToken(token string) {

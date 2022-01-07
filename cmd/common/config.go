@@ -1,6 +1,7 @@
 package common
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -30,6 +31,7 @@ const (
 	AccountConfigKeyPartial         = "account"           // app-scoped account ID key
 	OrganizationConfigKeyPartial    = "organization"      // app-scoped organization ID key
 	WalletConfigKeyPartial          = "wallet"            // app-scoped HD wallet ID key
+	UserInfoConfigKey               = "prvd-user-info"    // details of the currently auth'd user
 )
 
 var CfgFile string
@@ -74,6 +76,34 @@ func InitConfig() {
 			fmt.Println("Using configuration:", viper.ConfigFileUsed())
 		}
 	}
+}
+
+func StoreUserDetails(user *ident.User) error {
+	json, err := json.Marshal(user)
+	if err != nil {
+		log.Printf("Error storing user details; %s", err)
+		return err
+	}
+
+	viper.Set(UserInfoConfigKey, string(json))
+	viper.WriteConfig()
+
+	return nil
+}
+
+func GetUserDetails() (*ident.User, error) {
+	if viper.IsSet(UserInfoConfigKey) {
+		raw := viper.GetString(UserInfoConfigKey)
+		var user ident.User
+		err := json.Unmarshal([]byte(raw), &user)
+		if err != nil {
+			return nil, err
+		}
+
+		return &user, nil
+	}
+
+	return nil, fmt.Errorf("please authenticate to retrieve your user info")
 }
 
 func RequireUserAccessToken() string {
@@ -217,29 +247,11 @@ func BuildConfigKeyWithUser(keyPartial, userID string) string {
 }
 
 func isTokenExpired(bearerToken string) bool {
-	token, err := jwt.Parse(bearerToken, func(_jwtToken *jwt.Token) (interface{}, error) {
-		// uncomment when enabling local verification
-		// var kid *string
-		// if kidhdr, ok := _jwtToken.Header["kid"].(string); ok {
-		// 	kid = &kidhdr
-		// }
-
-		// publicKey, _, _, _ := util.ResolveJWTKeypair(kid)
-		// if publicKey == nil {
-		// 	msg := "failed to resolve a valid JWT verification key"
-		// 	if kid != nil {
-		// 		msg = fmt.Sprintf("%s; invalid kid specified in header: %s", msg, *kid)
-		// 	} else {
-		// 		msg = fmt.Sprintf("%s; no default verification key configured", msg)
-		// 	}
-		// 	return nil, fmt.Errorf(msg)
-		// }
-
-		return nil, nil
-	})
-
+	var jwtParser jwt.Parser
+	token, _, err := jwtParser.ParseUnverified(bearerToken, jwt.MapClaims{})
 	if err != nil {
-		return false
+		log.Printf("failed to parse JWT token on behalf of authorized user; %s", err.Error())
+		os.Exit(1)
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
