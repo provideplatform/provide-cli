@@ -47,5 +47,5 @@ func create(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	fmt.Printf("created user: %s", resp.ID.String())
+	fmt.Printf("created user: %s", *resp.ID)
 }

@@ -229,7 +229,9 @@ func RequireOrganization() error {
 	}
 
 	Organization = orgs[i]
-	OrganizationID = orgs[i].ID.String()
+	if orgs[i].ID != nil {
+		OrganizationID = *orgs[i].ID
+	}
 	return nil
 }
 

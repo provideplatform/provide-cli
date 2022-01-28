@@ -43,7 +43,7 @@ func createOrganizationRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	common.OrganizationID = organization.ID.String()
+	common.OrganizationID = *organization.ID
 	log.Printf("initialized organization: %s\t%s\n", organizationName, common.OrganizationID)
 }
 
