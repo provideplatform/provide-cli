@@ -9,6 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/provideplatform/provide-go/api/ident"
+	"github.com/provideplatform/provide-go/common/util"
 	"github.com/spf13/viper"
 )
 
@@ -96,6 +97,8 @@ func RequireUserAccessToken() string {
 }
 
 func refreshToken() {
+	log.Println("REFRESH IT!!!!")
+
 	refreshToken := ""
 	if viper.IsSet(RefreshTokenConfigKey) {
 		refreshToken = viper.GetString(RefreshTokenConfigKey)
@@ -217,36 +220,37 @@ func BuildConfigKeyWithUser(keyPartial, userID string) string {
 }
 
 func isTokenExpired(bearerToken string) bool {
-	token, err := jwt.Parse(bearerToken, func(_jwtToken *jwt.Token) (interface{}, error) {
+	token, _ := jwt.Parse(bearerToken, func(_jwtToken *jwt.Token) (interface{}, error) {
 		// uncomment when enabling local verification
-		// var kid *string
-		// if kidhdr, ok := _jwtToken.Header["kid"].(string); ok {
-		// 	kid = &kidhdr
-		// }
+		var kid *string
+		if kidhdr, ok := _jwtToken.Header["kid"].(string); ok {
+			kid = &kidhdr
+		}
 
-		// publicKey, _, _, _ := util.ResolveJWTKeypair(kid)
-		// if publicKey == nil {
-		// 	msg := "failed to resolve a valid JWT verification key"
-		// 	if kid != nil {
-		// 		msg = fmt.Sprintf("%s; invalid kid specified in header: %s", msg, *kid)
-		// 	} else {
-		// 		msg = fmt.Sprintf("%s; no default verification key configured", msg)
-		// 	}
-		// 	return nil, fmt.Errorf(msg)
-		// }
+		publicKey, _, _, _ := util.ResolveJWTKeypair(kid)
+		if publicKey == nil {
+			msg := "failed to resolve a valid JWT verification key"
+			if kid != nil {
+				msg = fmt.Sprintf("%s; invalid kid specified in header: %s", msg, *kid)
+			} else {
+				msg = fmt.Sprintf("%s; no default verification key configured", msg)
+			}
+			return nil, fmt.Errorf(msg)
+		}
 
-		return nil, nil
+		return publicKey, nil
 	})
 
-	if err != nil {
-		return false
-	}
+	// TODO-- to enable this, enable caching of JWT keypairs locally so the above util.ResolveJWTKeypair(kid) successfully resolves
+	// if err != nil {
+	// 	return false
+	// }
 
 	claims := token.Claims.(jwt.MapClaims)
-	if exp, expOk := claims["exp"].(int64); expOk {
-		expTime := time.Unix(exp, 0)
+	if exp, expOk := claims["exp"].(float64); expOk {
+		expTime := time.Unix(int64(exp), 0)
 		now := time.Now()
-		return expTime.Equal(now) || expTime.After(now)
+		return expTime.Before(now) || expTime.Equal(now)
 	}
 
 	return false
