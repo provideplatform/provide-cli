@@ -109,6 +109,7 @@ var redisHostname string
 var redisHosts string
 
 var autoRemove bool
+var pruneVolumes bool
 
 var databaseLogging string
 var logLevel string
@@ -187,7 +188,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	go common.PurgeContainers(docker, name)
+	go common.PurgeContainers(docker, name, pruneVolumes)
 
 	authorizeContext()
 	sorPrompt()
@@ -385,7 +386,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 		func(reason *string) {
 			if reason != nil {
 				log.Printf(*reason)
-				common.PurgeContainers(docker, name)
+				common.PurgeContainers(docker, name, false)
 				common.PurgeNetwork(docker, name)
 			}
 		},
@@ -1402,6 +1403,7 @@ func init() {
 	startBaselineStackCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisContainerPort), "list of clustered redis hosts in the local baseline stack")
 
 	startBaselineStackCmd.Flags().BoolVar(&autoRemove, "autoremove", false, "when true, containers are automatically pruned upon exit")
+	startBaselineStackCmd.Flags().BoolVar(&pruneVolumes, "prune-volumes", false, "when true, any previously-created volumes are pruned prior to stack initialization")
 
 	startBaselineStackCmd.Flags().StringVar(&logLevel, "log-level", "DEBUG", "log level to set within the running local baseline stack")
 	startBaselineStackCmd.Flags().StringVar(&syslogEndpoint, "syslog-endpoint", "", "syslog endpoint to which syslog udp packets will be sent")

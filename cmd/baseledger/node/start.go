@@ -107,7 +107,7 @@ func startBaseledgerNode(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	go common.PurgeContainers(docker, name)
+	go common.PurgeContainers(docker, name, false)
 
 	wg := &sync.WaitGroup{}
 

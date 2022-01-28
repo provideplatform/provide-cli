@@ -118,10 +118,10 @@ func LogContainer(docker *client.Client, containerID string) error {
 	return nil
 }
 
-func PurgeContainers(docker *client.Client, stack string) {
+func PurgeContainers(docker *client.Client, stack string, purgeVolumes bool) {
 	for _, container := range ListContainers(docker, stack) {
 		err := docker.ContainerRemove(context.Background(), container.ID, types.ContainerRemoveOptions{
-			RemoveVolumes: true,
+			RemoveVolumes: purgeVolumes,
 			Force:         true,
 		})
 

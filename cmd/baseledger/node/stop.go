@@ -24,7 +24,7 @@ func stopBaseledgerNode(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	common.PurgeContainers(docker, name)
+	common.PurgeContainers(docker, name, false)
 	common.PurgeNetwork(docker, name)
 
 	log.Printf("%s local baseledger node stopped", name)
