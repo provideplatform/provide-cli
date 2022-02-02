@@ -97,8 +97,6 @@ func RequireUserAccessToken() string {
 }
 
 func refreshToken() {
-	log.Println("REFRESH IT!!!!")
-
 	refreshToken := ""
 	if viper.IsSet(RefreshTokenConfigKey) {
 		refreshToken = viper.GetString(RefreshTokenConfigKey)
