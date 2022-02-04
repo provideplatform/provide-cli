@@ -109,7 +109,7 @@ var redisHostname string
 var redisHosts string
 
 var autoRemove bool
-var pruneVolumes bool
+var prune bool
 
 var databaseLogging string
 var logLevel string
@@ -188,7 +188,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	go common.PurgeContainers(docker, name, pruneVolumes)
+	go common.PurgeContainers(docker, name, prune)
 
 	authorizeContext()
 	sorPrompt()
@@ -726,7 +726,7 @@ func containerEnvironmentFactory(listenPort *int) []string {
 }
 
 func runBaselineAPI(docker *client.Client, wg *sync.WaitGroup) {
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-api", strings.ReplaceAll(name, " ", "")),
 		apiHostname,
@@ -753,7 +753,7 @@ func runBaselineAPI(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func runBaselineConsumer(docker *client.Client, wg *sync.WaitGroup) {
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-consumer", strings.ReplaceAll(name, " ", "")),
 		consumerHostname,
@@ -777,7 +777,7 @@ func runBaselineConsumer(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func runIdentAPI(docker *client.Client, wg *sync.WaitGroup) {
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-ident-api", strings.ReplaceAll(name, " ", "")),
 		identHostname,
@@ -804,7 +804,7 @@ func runIdentAPI(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func runIdentConsumer(docker *client.Client, wg *sync.WaitGroup) {
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-ident-consumer", strings.ReplaceAll(name, " ", "")),
 		identConsumerHostname,
@@ -828,7 +828,7 @@ func runIdentConsumer(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func runNChainAPI(docker *client.Client, wg *sync.WaitGroup) {
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-nchain-api", strings.ReplaceAll(name, " ", "")),
 		nchainHostname,
@@ -855,7 +855,7 @@ func runNChainAPI(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func runNChainConsumer(docker *client.Client, wg *sync.WaitGroup) {
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-nchain-consumer", strings.ReplaceAll(name, " ", "")),
 		nchainConsumerHostname,
@@ -879,7 +879,7 @@ func runNChainConsumer(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func runStatsdaemon(docker *client.Client, wg *sync.WaitGroup) {
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-statsdaemon", strings.ReplaceAll(name, " ", "")),
 		nchainStatsdaemonHostname,
@@ -903,7 +903,7 @@ func runStatsdaemon(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func runReachabilitydaemon(docker *client.Client, wg *sync.WaitGroup) {
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-reachabilitydaemon", strings.ReplaceAll(name, " ", "")),
 		nchainReachabilitydaemonHostname,
@@ -927,7 +927,7 @@ func runReachabilitydaemon(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func runPrivacyAPI(docker *client.Client, wg *sync.WaitGroup) {
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-privacy-api", strings.ReplaceAll(name, " ", "")),
 		privacyHostname,
@@ -954,7 +954,7 @@ func runPrivacyAPI(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func runPrivacyConsumer(docker *client.Client, wg *sync.WaitGroup) {
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-privacy-consumer", strings.ReplaceAll(name, " ", "")),
 		privacyConsumerHostname,
@@ -978,7 +978,7 @@ func runPrivacyConsumer(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func runVaultAPI(docker *client.Client, wg *sync.WaitGroup) {
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-vault-api", strings.ReplaceAll(name, " ", "")),
 		vaultHostname,
@@ -1034,7 +1034,7 @@ func runNATS(docker *client.Client, wg *sync.WaitGroup) {
 		mountPoints[*cfgPath] = "/etc/nats-server.conf"
 	}
 
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-nats", strings.ReplaceAll(name, " ", "")),
 		natsHostname,
@@ -1074,7 +1074,7 @@ func runNATS(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func runPostgres(docker *client.Client, wg *sync.WaitGroup) {
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-postgres", strings.ReplaceAll(name, " ", "")),
 		postgresHostname,
@@ -1106,7 +1106,7 @@ func runPostgres(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func runRedis(docker *client.Client, wg *sync.WaitGroup) {
-	_, err := runContainer(
+	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-redis", strings.ReplaceAll(name, " ", "")),
 		redisHostname,
@@ -1157,7 +1157,7 @@ func runContainer(
 	entrypoint, cmd, healthcheck, env *[]string,
 	mounts map[string]string,
 	ports ...portMapping,
-) (*container.ContainerCreateCreatedBody, error) {
+) error {
 	log.Printf("running local baseline container image: %s", image)
 	portBinding := nat.PortMap{}
 	for _, mapping := range ports {
@@ -1213,43 +1213,53 @@ func runContainer(
 		})
 	}
 
-	container, err := docker.ContainerCreate(
-		context.Background(),
-		containerConfig,
-		&container.HostConfig{
-			AutoRemove:   autoRemove,
-			Mounts:       mountedVolumes,
-			NetworkMode:  "bridge",
-			PortBindings: portBinding,
-			RestartPolicy: container.RestartPolicy{
-				Name: "unless-stopped",
-			},
-		},
-		&network.NetworkingConfig{},
-		strings.ReplaceAll(name, " ", ""),
-	)
-
-	if err != nil {
-		return nil, err
+	var containerID string
+	for _, container := range common.ListContainers(docker, "") {
+		if strings.ReplaceAll(container.Names[0], "/", "") == name {
+			containerID = container.ID
+		}
 	}
 
-	ctx := context.Background()
-	err = docker.ContainerStart(ctx, container.ID, types.ContainerStartOptions{})
+	if containerID == "" {
+		container, err := docker.ContainerCreate(
+			context.Background(),
+			containerConfig,
+			&container.HostConfig{
+				AutoRemove:   autoRemove,
+				Mounts:       mountedVolumes,
+				NetworkMode:  "bridge",
+				PortBindings: portBinding,
+				RestartPolicy: container.RestartPolicy{
+					Name: "unless-stopped",
+				},
+			},
+			&network.NetworkingConfig{},
+			strings.ReplaceAll(name, " ", ""),
+		)
+
+		if err != nil {
+			return err
+		}
+
+		containerID = container.ID
+	}
+
+	err := docker.ContainerStart(context.Background(), containerID, types.ContainerStartOptions{})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = docker.NetworkConnect(
 		context.Background(),
 		dockerNetworkID,
-		container.ID,
+		containerID,
 		&network.EndpointSettings{},
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &container, nil
+	return nil
 }
 
 func organizationAuthPrompt() {
@@ -1403,7 +1413,7 @@ func init() {
 	startBaselineStackCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisContainerPort), "list of clustered redis hosts in the local baseline stack")
 
 	startBaselineStackCmd.Flags().BoolVar(&autoRemove, "autoremove", false, "when true, containers are automatically pruned upon exit")
-	startBaselineStackCmd.Flags().BoolVar(&pruneVolumes, "prune-volumes", false, "when true, any previously-created volumes are pruned prior to stack initialization")
+	startBaselineStackCmd.Flags().BoolVar(&prune, "prune", false, "when true, previously-created docker resources are pruned prior to stack initialization")
 
 	startBaselineStackCmd.Flags().StringVar(&logLevel, "log-level", "DEBUG", "log level to set within the running local baseline stack")
 	startBaselineStackCmd.Flags().StringVar(&syslogEndpoint, "syslog-endpoint", "", "syslog endpoint to which syslog udp packets will be sent")

@@ -9,7 +9,6 @@ import (
 	"github.com/provideplatform/provide-cli/cmd/accounts"
 	"github.com/provideplatform/provide-cli/cmd/api_tokens"
 	"github.com/provideplatform/provide-cli/cmd/applications"
-	"github.com/provideplatform/provide-cli/cmd/baseledger"
 	"github.com/provideplatform/provide-cli/cmd/baseline"
 	"github.com/provideplatform/provide-cli/cmd/common"
 	"github.com/provideplatform/provide-cli/cmd/connectors"
@@ -51,7 +50,6 @@ func init() {
 	rootCmd.AddCommand(api_tokens.APITokensCmd)
 	rootCmd.AddCommand(applications.ApplicationsCmd)
 	rootCmd.AddCommand(users.AuthenticateCmd)
-	rootCmd.AddCommand(baseledger.BaseledgerCmd)
 	rootCmd.AddCommand(baseline.BaselineCmd)
 	rootCmd.AddCommand(connectors.ConnectorsCmd)
 	rootCmd.AddCommand(contracts.ContractsCmd)

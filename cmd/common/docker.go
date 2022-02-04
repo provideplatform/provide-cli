@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -120,13 +121,22 @@ func LogContainer(docker *client.Client, containerID string) error {
 
 func PurgeContainers(docker *client.Client, stack string, purgeVolumes bool) {
 	for _, container := range ListContainers(docker, stack) {
-		err := docker.ContainerRemove(context.Background(), container.ID, types.ContainerRemoveOptions{
-			RemoveVolumes: purgeVolumes,
-			Force:         true,
-		})
+		if !purgeVolumes {
+			timeout := time.Millisecond * 5000
+			err := docker.ContainerStop(context.Background(), container.ID, &timeout)
 
-		if err != nil {
-			log.Printf("WARNING: failed to remove container: %s; %s", container.Names[0], err.Error())
+			if err != nil {
+				log.Printf("WARNING: failed to stop container: %s; %s", container.Names[0], err.Error())
+			}
+		} else {
+			err := docker.ContainerRemove(context.Background(), container.ID, types.ContainerRemoveOptions{
+				RemoveVolumes: true,
+				Force:         true,
+			})
+
+			if err != nil {
+				log.Printf("WARNING: failed to remove container: %s; %s", container.Names[0], err.Error())
+			}
 		}
 	}
 }
@@ -136,6 +146,17 @@ func PurgeNetwork(docker *client.Client, stack string) {
 	for _, ntwrk := range networks {
 		if ntwrk.Name == stack {
 			docker.NetworkRemove(context.Background(), ntwrk.ID)
+		}
+	}
+}
+
+func StopContainers(docker *client.Client, stack string) {
+	for _, container := range ListContainers(docker, stack) {
+		timeout := time.Millisecond * 5000
+		err := docker.ContainerStop(context.Background(), container.ID, &timeout)
+
+		if err != nil {
+			log.Printf("WARNING: failed to stop container: %s; %s", container.Names[0], err.Error())
 		}
 	}
 }

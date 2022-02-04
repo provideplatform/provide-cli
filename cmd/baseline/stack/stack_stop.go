@@ -28,13 +28,17 @@ func runStackStop(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	common.PurgeContainers(docker, name, pruneVolumes)
-	common.PurgeNetwork(docker, name)
+	if !prune {
+		common.StopContainers(docker, name)
+	} else {
+		common.PurgeContainers(docker, name, true)
+		common.PurgeNetwork(docker, name)
+	}
 
 	log.Printf("%s local baseline instance stopped", name)
 }
 
 func init() {
 	stopBaselineStackCmd.Flags().StringVar(&name, "name", "baseline-local", "name of the baseline stack instance")
-	stopBaselineStackCmd.Flags().BoolVar(&pruneVolumes, "prune-volumes", false, "when true, local volumes are pruned")
+	stopBaselineStackCmd.Flags().BoolVar(&prune, "prune-volumes", false, "when true, local volumes are pruned")
 }
