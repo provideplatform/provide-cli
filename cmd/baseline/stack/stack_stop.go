@@ -40,5 +40,5 @@ func runStackStop(cmd *cobra.Command, args []string) {
 
 func init() {
 	stopBaselineStackCmd.Flags().StringVar(&name, "name", "baseline-local", "name of the baseline stack instance")
-	stopBaselineStackCmd.Flags().BoolVar(&prune, "prune-volumes", false, "when true, local volumes are pruned")
+	stopBaselineStackCmd.Flags().BoolVar(&prune, "prune", false, "when true, previously-created docker resources are pruned prior to stack initialization")
 }
