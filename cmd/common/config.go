@@ -24,13 +24,11 @@ const (
 	// Viper downcases key names, so hyphenating for better readability.
 	// 'Partial' keys are to be combined with the application ID they are associated with.
 	// and NOT used by themselves.
-	AccessTokenConfigKey            = "access-token"      // user-scoped API access token key
-	RefreshTokenConfigKey           = "refresh-token"     // user-scoped API refresh token key
-	APIAccessTokenConfigKeyPartial  = "api-token"         // app- or org-scoped API token key
-	APIRefreshTokenConfigKeyPartial = "api-refresh-token" // app- or org-scoped API token key
-	AccountConfigKeyPartial         = "account"           // app-scoped account ID key
-	OrganizationConfigKeyPartial    = "organization"      // app-scoped organization ID key
-	WalletConfigKeyPartial          = "wallet"            // app-scoped HD wallet ID key
+	AccessTokenConfigKey         = "access-token"  // user-scoped API access token key
+	RefreshTokenConfigKey        = "refresh-token" // user-scoped API refresh token key
+	AccountConfigKeyPartial      = "account"       // app-scoped account ID key
+	OrganizationConfigKeyPartial = "organization"  // app-scoped organization ID key
+	WalletConfigKeyPartial       = "wallet"        // app-scoped HD wallet ID key
 )
 
 var CfgFile string
@@ -89,17 +87,24 @@ func RequireUserAccessToken() string {
 	}
 
 	if isTokenExpired(token) {
-		refreshToken()
+		refreshToken(token, nil)
 		token = viper.GetString(AccessTokenConfigKey)
 	}
 
 	return token
 }
 
-func refreshToken() {
-	refreshToken := ""
-	if viper.IsSet(RefreshTokenConfigKey) {
-		refreshToken = viper.GetString(RefreshTokenConfigKey)
+func refreshToken(token string, id *string) {
+	var refreshTokenKey string
+	if id == nil {
+		refreshTokenKey = RefreshTokenConfigKey
+	} else {
+		refreshTokenKey = BuildConfigKeyWithID(RefreshTokenConfigKey, *id)
+	}
+
+	var refreshToken string
+	if viper.IsSet(refreshTokenKey) {
+		refreshToken = viper.GetString(refreshTokenKey)
 	}
 
 	resp, err := ident.CreateToken(refreshToken, map[string]interface{}{
@@ -111,17 +116,28 @@ func refreshToken() {
 	}
 
 	if resp != nil {
-		CacheAccessRefreshToken(resp)
+		CacheAccessRefreshToken(resp, id)
 	}
 }
 
-func CacheAccessRefreshToken(token *ident.Token) {
+func CacheAccessRefreshToken(token *ident.Token, id *string) {
+	var accessTokenKey string
+	var refreshTokenKey string
+
+	if id == nil {
+		accessTokenKey = AccessTokenConfigKey
+		refreshTokenKey = RefreshTokenConfigKey
+	} else {
+		accessTokenKey = BuildConfigKeyWithID(AccessTokenConfigKey, *id)
+		refreshTokenKey = BuildConfigKeyWithID(RefreshTokenConfigKey, *id)
+	}
+
 	if token.AccessToken != nil {
-		viper.Set(AccessTokenConfigKey, *token.AccessToken)
+		viper.Set(accessTokenKey, *token.AccessToken)
 	}
 
 	if token.RefreshToken != nil {
-		viper.Set(RefreshTokenConfigKey, *token.RefreshToken)
+		viper.Set(refreshTokenKey, *token.RefreshToken)
 	}
 
 	viper.WriteConfig()
@@ -129,7 +145,7 @@ func CacheAccessRefreshToken(token *ident.Token) {
 
 func RequireApplicationToken() string {
 	var token string
-	tokenKey := BuildConfigKeyWithApp(APIAccessTokenConfigKeyPartial, ApplicationID)
+	tokenKey := BuildConfigKeyWithID(AccessTokenConfigKey, ApplicationID)
 	if viper.IsSet(tokenKey) {
 		token = viper.GetString(tokenKey)
 	}
@@ -144,7 +160,7 @@ func RequireApplicationToken() string {
 
 func RequireOrganizationToken() string {
 	var token string
-	tokenKey := BuildConfigKeyWithOrg(APIAccessTokenConfigKeyPartial, OrganizationID)
+	tokenKey := BuildConfigKeyWithID(AccessTokenConfigKey, OrganizationID)
 	if viper.IsSet(tokenKey) {
 		token = viper.GetString(tokenKey)
 	}
@@ -159,62 +175,49 @@ func RequireOrganizationToken() string {
 
 func RequireAPIToken() string {
 	var token string
-	var appAPITokenKey string
-	var orgAPITokenKey string
+	var tokenKey string
+	var id *string
+
 	if ApplicationID != "" {
-		appAPITokenKey = BuildConfigKeyWithApp(APIAccessTokenConfigKeyPartial, ApplicationID)
+		tokenKey = BuildConfigKeyWithID(AccessTokenConfigKey, ApplicationID)
+		id = &ApplicationID
 	} else if OrganizationID != "" {
-		orgAPITokenKey = BuildConfigKeyWithOrg(APIAccessTokenConfigKeyPartial, OrganizationID)
-	}
-	if viper.IsSet(appAPITokenKey) {
-		token = viper.GetString(appAPITokenKey)
-	} else if viper.IsSet(orgAPITokenKey) {
-		token = viper.GetString(orgAPITokenKey)
+		tokenKey = BuildConfigKeyWithID(AccessTokenConfigKey, OrganizationID)
+		id = &OrganizationID
 	} else {
-		token = RequireUserAccessToken()
+		tokenKey = AccessTokenConfigKey
 	}
 
+	requireToken := func() string {
+		if viper.IsSet(tokenKey) {
+			token = viper.GetString(tokenKey)
+			if isTokenExpired(token) {
+				refreshToken(token, id)
+				return viper.GetString(tokenKey)
+			}
+		}
+		return RequireUserAccessToken()
+	}
+
+	token = requireToken()
 	if token == "" {
 		log.Printf("Authorized API access token required in prvd configuration; run 'authenticate'")
 		os.Exit(1)
 	}
+
 	return token
 }
 
-// BuildConfigKeyWithApp combines the given key partial and app ID according to a consistent convention.
-// Returns an empty string if the given appID is empty.
-// Viper's getters likewise return empty strings when passed an empty string.
-func BuildConfigKeyWithApp(keyPartial, appID string) string {
-	if appID == "" {
-		// Development-time debugging.
-		log.Println("An application identifier is required for this operation")
+// BuildConfigKeyWithID combines the given key partial and ID
+// according to a consistent convention. Returns an empty string
+// if the given id is empty. Viper's getters likewise return empty
+// strings when passed an empty string.
+func BuildConfigKeyWithID(keyPartial, id string) string {
+	if id == "" {
+		log.Println("an identifier is required for this operation")
 		return ""
 	}
-	return fmt.Sprintf("%s.%s", appID, keyPartial)
-}
-
-// BuildConfigKeyWithOrg combines the given key partial and org ID according to a consistent convention.
-// Returns an empty string if the given orgID is empty.
-// Viper's getters likewise return empty strings when passed an empty string.
-func BuildConfigKeyWithOrg(keyPartial, orgID string) string {
-	if orgID == "" {
-		// Development-time debugging.
-		log.Println("An organization identifier is required for this operation")
-		return ""
-	}
-	return fmt.Sprintf("%s.%s", orgID, keyPartial)
-}
-
-// BuildConfigKeyWithUser combines the given key partial and user ID according to a consistent convention.
-// Returns an empty string if the given userID is empty.
-// Viper's getters likewise return empty strings when passed an empty string.
-func BuildConfigKeyWithUser(keyPartial, userID string) string {
-	if userID == "" {
-		// Development-time debugging.
-		log.Println("A user identifier is required for this operation")
-		return ""
-	}
-	return fmt.Sprintf("%s.%s", userID, keyPartial)
+	return fmt.Sprintf("%s.%s", id, keyPartial)
 }
 
 func isTokenExpired(bearerToken string) bool {

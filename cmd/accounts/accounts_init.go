@@ -74,7 +74,7 @@ func createManagedAccount(cmd *cobra.Command, args []string) {
 	common.AccountID = account.ID.String()
 	result := fmt.Sprintf("Account %s\t%s\n", account.ID.String(), account.Address)
 	// FIXME-- when account.Name exists... result = fmt.Sprintf("Account %s\t%s - %s\n", *account.Name, account.ID.String(), *account.Address)
-	appAccountKey := common.BuildConfigKeyWithApp(common.AccountConfigKeyPartial, common.ApplicationID)
+	appAccountKey := common.BuildConfigKeyWithID(common.AccountConfigKeyPartial, common.ApplicationID)
 	if !viper.IsSet(appAccountKey) {
 		viper.Set(appAccountKey, account.ID.String())
 		viper.WriteConfig()

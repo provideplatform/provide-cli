@@ -61,8 +61,8 @@ func createAPIToken(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 
-		appAPITokenKey := common.BuildConfigKeyWithApp(common.APIAccessTokenConfigKeyPartial, common.ApplicationID)
-		appAPIRefreshTokenKey := common.BuildConfigKeyWithApp(common.APIRefreshTokenConfigKeyPartial, common.ApplicationID)
+		appAPITokenKey := common.BuildConfigKeyWithID(common.AccessTokenConfigKey, common.ApplicationID)
+		appAPIRefreshTokenKey := common.BuildConfigKeyWithID(common.RefreshTokenConfigKey, common.ApplicationID)
 		var tkn string
 
 		if token.Token != nil {
@@ -95,8 +95,8 @@ func createAPIToken(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 
-		orgAPIAccessTokenKey := common.BuildConfigKeyWithOrg(common.APIAccessTokenConfigKeyPartial, common.OrganizationID)
-		orgAPIRefreshTokenKey := common.BuildConfigKeyWithOrg(common.APIRefreshTokenConfigKeyPartial, common.OrganizationID)
+		orgAPIAccessTokenKey := common.BuildConfigKeyWithID(common.AccessTokenConfigKey, common.OrganizationID)
+		orgAPIRefreshTokenKey := common.BuildConfigKeyWithID(common.RefreshTokenConfigKey, common.OrganizationID)
 
 		if token.AccessToken != nil {
 			fmt.Printf("Access token authorized for organization: %s\t%s\n", common.OrganizationID, *token.AccessToken)
@@ -131,8 +131,8 @@ func createAPIToken(cmd *cobra.Command, args []string) {
 		claims, _ := tkn.Claims.(jwt.MapClaims)
 
 		userID := strings.Split(claims["sub"].(string), ":")[1]
-		userAPIAccessTokenKey := common.BuildConfigKeyWithUser(common.APIAccessTokenConfigKeyPartial, userID)
-		userAPIRefreshTokenKey := common.BuildConfigKeyWithUser(common.APIRefreshTokenConfigKeyPartial, userID)
+		userAPIAccessTokenKey := common.BuildConfigKeyWithID(common.AccessTokenConfigKey, userID)
+		userAPIRefreshTokenKey := common.BuildConfigKeyWithID(common.RefreshTokenConfigKey, userID)
 
 		if token.AccessToken != nil {
 			fmt.Printf("Access token authorized for user: %s\t%s\n", common.OrganizationID, *token.AccessToken)

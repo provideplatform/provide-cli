@@ -31,15 +31,11 @@ func authenticate(cmd *cobra.Command, args []string) {
 	}
 
 	if resp.Token.AccessToken != nil && resp.Token.RefreshToken != nil {
-		common.CacheAccessRefreshToken(resp.Token)
+		common.CacheAccessRefreshToken(resp.Token, nil)
 	} else if resp.Token.Token != nil {
-		cacheAPIToken(*resp.Token.Token)
+		viper.Set(common.AccessTokenConfigKey, *resp.Token.Token)
+		viper.WriteConfig()
 	}
 
 	log.Printf("Authentication successful")
-}
-
-func cacheAPIToken(token string) {
-	viper.Set(common.AccessTokenConfigKey, token)
-	viper.WriteConfig()
 }

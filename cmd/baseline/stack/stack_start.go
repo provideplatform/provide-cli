@@ -433,7 +433,7 @@ func authorizeContext() {
 	common.AuthorizeOrganizationContext(false)
 
 	if organizationRefreshToken == "" {
-		refreshTokenKey := common.BuildConfigKeyWithOrg(common.APIRefreshTokenConfigKeyPartial, common.OrganizationID)
+		refreshTokenKey := common.BuildConfigKeyWithID(common.RefreshTokenConfigKey, common.OrganizationID)
 		if viper.IsSet(refreshTokenKey) {
 			// log.Printf("using cached API refresh token for organization: %s\n", common.OrganizationID)
 			organizationRefreshToken = viper.GetString(refreshTokenKey)

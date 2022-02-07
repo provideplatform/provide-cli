@@ -115,8 +115,8 @@ func AuthorizeOrganizationContext(persist bool) {
 
 		if persist {
 			// FIXME-- DRY this up (also exists in api_tokens_init.go)
-			orgAPIAccessTokenKey := BuildConfigKeyWithOrg(APIAccessTokenConfigKeyPartial, OrganizationID)
-			orgAPIRefreshTokenKey := BuildConfigKeyWithOrg(APIRefreshTokenConfigKeyPartial, OrganizationID)
+			orgAPIAccessTokenKey := BuildConfigKeyWithID(AccessTokenConfigKey, OrganizationID)
+			orgAPIRefreshTokenKey := BuildConfigKeyWithID(RefreshTokenConfigKey, OrganizationID)
 
 			if token.AccessToken != nil {
 				// fmt.Printf("Access token authorized for organization: %s\t%s\n", OrganizationID, *token.AccessToken)

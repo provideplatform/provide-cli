@@ -68,7 +68,7 @@ func createApplication(cmd *cobra.Command, args []string) {
 	// common.ApplicationID = application.ID.String().(string)
 	// applicationToken := token.Token
 
-	// appAPITokenKey := common.BuildConfigKeyWithApp(common.APITokenConfigKeyPartial, common.ApplicationID)
+	// appAPITokenKey := common.BuildConfigKeyWithID(common.APITokenConfigKeyPartial, common.ApplicationID)
 	// if !viper.IsSet(appAPITokenKey) {
 	// 	viper.Set(appAPITokenKey, applicationToken)
 	// 	viper.WriteConfig()
