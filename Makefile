@@ -9,12 +9,13 @@ clean:
 
 build: clean mod
 	go fmt ./...
-	CGO_CFLAGS=-Wno-undef-prefix go build -v -o ./.bin/prvd .
+	CGO_CFLAGS=-Wno-undef-prefix go build -v -o ./.bin/prvd ./cmd/prvd
+	CGO_CFLAGS=-Wno-undef-prefix go build -v -o ./.bin/prvdnetwork ./cmd/prvdnetwork
 
-install: clean
-	CGO_CFLAGS=-Wno-undef-prefix go install ./...
+install: build
 	mkdir -p "${GOPATH}/bin"
-	mv "${GOPATH}/bin/provide-cli" "${GOPATH}/bin/prvd"
+	mv ./.bin/prvd "${GOPATH}/bin/prvd"
+	mv ./.bin/prvdnetwork "${GOPATH}/bin/prvdnetwork"
 
 mod:
 	go mod init 2>/dev/null || true

@@ -21,9 +21,6 @@ _cgo_export.*
 *.test
 *.prof
 
-prvd
-provide-cli
-
 # Mac specific
 .DS_Store
 
