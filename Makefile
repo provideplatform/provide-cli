@@ -16,6 +16,7 @@ install: build
 	mkdir -p "${GOPATH}/bin"
 	mv ./.bin/prvd "${GOPATH}/bin/prvd"
 	mv ./.bin/prvdnetwork "${GOPATH}/bin/prvdnetwork"
+	rm -rf ./.bin
 
 mod:
 	go mod init 2>/dev/null || true
