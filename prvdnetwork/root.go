@@ -6,7 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/provideplatform/provide-cli/prvd/accounts"
 	"github.com/provideplatform/provide-cli/prvd/common"
+	"github.com/provideplatform/provide-cli/prvd/vaults"
 )
 
 var rootCmd = &cobra.Command{
@@ -32,6 +34,14 @@ func init() {
 
 	rootCmd.PersistentFlags().BoolVarP(&common.Verbose, "verbose", "v", false, "enable verbose output")
 	rootCmd.PersistentFlags().StringVarP(&common.CfgFile, "config", "c", "", "config file (default is $HOME/.provide-cli.yaml)")
+
+	rootCmd.AddCommand(accounts.AccountsCmd)
+	// rootCmd.AddCommand(baseline.BaselineCmd)
+	// rootCmd.AddCommand(networks.NetworksCmd)
+	// rootCmd.AddCommand(nodes.NodesCmd)
+	// rootCmd.AddCommand(shell.ShellCmd)
+	rootCmd.AddCommand(vaults.VaultsCmd)
+	// rootCmd.AddCommand(wallets.WalletsCmd)
 
 	common.CacheCommands(rootCmd)
 }

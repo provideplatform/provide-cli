@@ -386,8 +386,13 @@ func runStackStart(cmd *cobra.Command, args []string) {
 		func(reason *string) {
 			if reason != nil {
 				log.Printf(*reason)
-				common.PurgeContainers(docker, name, false)
-				common.PurgeNetwork(docker, name)
+
+				if !prune {
+					common.StopContainers(docker, name)
+				} else {
+					common.PurgeContainers(docker, name, true)
+					common.PurgeNetwork(docker, name)
+				}
 			}
 		},
 		port,
