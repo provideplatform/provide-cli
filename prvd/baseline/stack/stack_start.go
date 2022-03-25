@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
-	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -25,6 +24,7 @@ import (
 	uuid "github.com/kthomas/go.uuid"
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
+	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/nchain"
 	"github.com/provideplatform/provide-go/api/vault"
@@ -382,6 +382,8 @@ func runStackStart(cmd *cobra.Command, args []string) {
 
 			wg.Wait()
 			log.Printf("%s local baseline instance started", name)
+
+			requireBPISubjectAccount()
 		},
 		func(reason *string) {
 			if reason != nil {
@@ -399,6 +401,132 @@ func runStackStart(cmd *cobra.Command, args []string) {
 		natsPort,
 		natsWebsocketPort,
 	)
+}
+
+func sorConfigFactory() map[string]interface{} {
+	sor := map[string]interface{}{}
+	// TODO-- write the SOR configuration...
+
+	// fmt.Sprintf("PROVIDE_SOR_IDENTIFIER=%s", sorID),
+	// fmt.Sprintf("PROVIDE_SOR_ORGANIZATION_CODE=%s", sorOrganizationCode),
+	// fmt.Sprintf("PROVIDE_SOR_URL=%s", sorURL),
+
+	// if azureServiceBusConnectionString != "" {
+	// 	for _, envvar := range []string{
+	// 		fmt.Sprintf("AZURE_SERVICE_BUS_CONNECTION_STRING=%s", azureServiceBusConnectionString),
+	// 	} {
+	// 		env = append(env, envvar)
+	// 	}
+	// }
+
+	// if sapAPIHost != "" && sapAPIUsername != "" && sapAPIPassword != "" {
+	// 	for _, envvar := range []string{
+	// 		fmt.Sprintf("SAP_API_HOST=%s", sapAPIHost),
+	// 		fmt.Sprintf("SAP_API_SCHEME=%s", sapAPIScheme),
+	// 		fmt.Sprintf("SAP_API_PATH=%s", sapAPIPath),
+	// 		fmt.Sprintf("SAP_API_USERNAME=%s", sapAPIUsername),
+	// 		fmt.Sprintf("SAP_API_PASSWORD=%s", sapAPIPassword),
+	// 	} {
+	// 		env = append(env, envvar)
+	// 	}
+	// } else if sorID == "sap" && sorURL != "" {
+	// 	_url, err := url.Parse(sorURL)
+	// 	if err != nil {
+	// 		log.Printf("WARNING: system of record url invalid; %s", err.Error())
+	// 	}
+	// 	for _, envvar := range []string{
+	// 		fmt.Sprintf("SAP_API_HOST=%s", _url.Host),
+	// 		fmt.Sprintf("SAP_API_SCHEME=%s", _url.Scheme),
+	// 	} {
+	// 		env = append(env, envvar)
+	// 	}
+
+	// 	if _url.Path != "" {
+	// 		env = append(env, fmt.Sprintf("SAP_API_PATH=%s", strings.TrimLeft(_url.Path, "/")))
+	// 	}
+	// }
+
+	// if serviceNowAPIHost != "" && serviceNowAPIUsername != "" && serviceNowAPIPassword != "" {
+	// 	for _, envvar := range []string{
+	// 		fmt.Sprintf("SERVICENOW_API_HOST=%s", serviceNowAPIHost),
+	// 		fmt.Sprintf("SERVICENOW_API_SCHEME=%s", serviceNowAPIScheme),
+	// 		fmt.Sprintf("SERVICENOW_API_PATH=%s", serviceNowAPIPath),
+	// 		fmt.Sprintf("SERVICENOW_API_USERNAME=%s", serviceNowAPIUsername),
+	// 		fmt.Sprintf("SERVICENOW_API_PASSWORD=%s", serviceNowAPIPassword),
+	// 	} {
+	// 		env = append(env, envvar)
+	// 	}
+	// } else if sorID == "servicenow" || sorID == "snow" && sorURL != "" {
+	// 	_url, err := url.Parse(sorURL)
+	// 	if err != nil {
+	// 		log.Printf("WARNING: system of record url invalid; %s", err.Error())
+	// 	}
+	// 	for _, envvar := range []string{
+	// 		fmt.Sprintf("SERVICENOW_API_HOST=%s", _url.Host),
+	// 		fmt.Sprintf("SERVICENOW_API_SCHEME=%s", _url.Scheme),
+	// 	} {
+	// 		env = append(env, envvar)
+	// 	}
+
+	// 	if _url.Path != "" {
+	// 		env = append(env, fmt.Sprintf("SERVICENOW_API_PATH=%s", strings.TrimLeft(_url.Path, "/")))
+	// 	}
+	// }
+
+	return sor
+}
+
+func requireBPISubjectAccount() error {
+	log.Printf("waiting for BPI to become available...")
+	for baseline.Status() != nil {
+		time.Sleep(time.Second * 1)
+	}
+	log.Printf("BPI is available")
+
+	token, err := ident.CreateToken(organizationRefreshToken, map[string]interface{}{
+		"grant_type":      "refresh_token",
+		"organization_id": common.OrganizationID,
+	})
+	if err != nil {
+		log.Printf("failed to authorize access token on behalf of organization %s; %s", common.OrganizationID, err.Error())
+		os.Exit(1)
+	}
+
+	var sacct *baseline.SubjectAccount
+	subjectAccountID := baseline.SubjectAccountIDFactory(common.OrganizationID, baselineWorkgroupID)
+
+	sacct, err = baseline.GetSubjectAccountDetails(*token.AccessToken, common.OrganizationID, subjectAccountID, map[string]interface{}{})
+	if err == nil && sacct != nil && sacct.ID != nil {
+		log.Printf("BPI subject account resolved: %s", *sacct.ID)
+		// TODO-- update if needed...
+		return nil
+	}
+
+	sacct, err = baseline.CreateSubjectAccount(*token.AccessToken, common.OrganizationID, map[string]interface{}{
+		"metadata": &baseline.SubjectAccountMetadata{
+			// Counterparties []*Participant `sql:"-" json:"counterparties,omitempty"`
+			NetworkID:           &nchainBaselineNetworkID,
+			OrganizationAddress: &baselineOrganizationAddress,
+			// OrganizationDomain *string `json:"organization_domain,omitempty"`
+			OrganizationID:                &common.OrganizationID,
+			OrganizationMessagingEndpoint: &common.MessagingEndpoint,
+			OrganizationProxyEndpoint:     &common.APIEndpoint,
+			OrganizationRefreshToken:      &organizationRefreshToken,
+			// OrganizationWebsocketEndpoint *string `json:"organization_websocket_endpoint,omitempty"`
+			RegistryContractAddress: &baselineRegistryContractAddress,
+			SOR:                     sorConfigFactory(),
+			WorkgroupID:             &baselineWorkgroupID,
+		},
+		"subject_id": common.OrganizationID,
+	})
+
+	if err != nil {
+		log.Printf("WARNING: BPI subject account not created; %s", err.Error())
+		return err
+	}
+
+	log.Printf("BPI subject account created: %s", *sacct.ID)
+	return nil
 }
 
 func configureNetwork(docker *client.Client) {
@@ -619,11 +747,6 @@ func applyFlags() {
 func containerEnvironmentFactory(listenPort *int) []string {
 	env := make([]string, 0)
 	for _, envvar := range []string{
-		fmt.Sprintf("BASELINE_ORGANIZATION_ADDRESS=%s", baselineOrganizationAddress),
-		fmt.Sprintf("BASELINE_ORGANIZATION_MESSAGING_ENDPOINT=%s", common.MessagingEndpoint),
-		fmt.Sprintf("BASELINE_ORGANIZATION_PROXY_ENDPOINT=%s", common.APIEndpoint),
-		fmt.Sprintf("BASELINE_REGISTRY_CONTRACT_ADDRESS=%s", baselineRegistryContractAddress),
-		fmt.Sprintf("BASELINE_WORKGROUP_ID=%s", baselineWorkgroupID),
 		fmt.Sprintf("DATABASE_HOST=%s", postgresHostname),
 		fmt.Sprintf("DATABASE_PORT=%d", postgresPort),
 		fmt.Sprintf("DATABASE_USER=%s", postgresUser),
@@ -645,11 +768,6 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("NCHAIN_BASELINE_NETWORK_ID=%s", nchainBaselineNetworkID),
 		fmt.Sprintf("PRIVACY_API_HOST=%s", privacyAPIHost),
 		fmt.Sprintf("PRIVACY_API_SCHEME=%s", privacyAPIScheme),
-		fmt.Sprintf("PROVIDE_ORGANIZATION_ID=%s", common.OrganizationID),
-		fmt.Sprintf("PROVIDE_ORGANIZATION_REFRESH_TOKEN=%s", organizationRefreshToken),
-		fmt.Sprintf("PROVIDE_SOR_IDENTIFIER=%s", sorID),
-		fmt.Sprintf("PROVIDE_SOR_ORGANIZATION_CODE=%s", sorOrganizationCode),
-		fmt.Sprintf("PROVIDE_SOR_URL=%s", sorURL),
 		fmt.Sprintf("PRIVACY_API_SCHEME=%s", privacyAPIScheme),
 		fmt.Sprintf("REDIS_HOSTS=%s", redisHosts),
 		fmt.Sprintf("SYSLOG_ENDPOINT=%s", syslogEndpoint),
@@ -663,68 +781,6 @@ func containerEnvironmentFactory(listenPort *int) []string {
 
 	if listenPort != nil {
 		env = append(env, fmt.Sprintf("PORT=%d", *listenPort))
-	}
-
-	if azureServiceBusConnectionString != "" {
-		for _, envvar := range []string{
-			fmt.Sprintf("AZURE_SERVICE_BUS_CONNECTION_STRING=%s", azureServiceBusConnectionString),
-		} {
-			env = append(env, envvar)
-		}
-	}
-
-	if sapAPIHost != "" && sapAPIUsername != "" && sapAPIPassword != "" {
-		for _, envvar := range []string{
-			fmt.Sprintf("SAP_API_HOST=%s", sapAPIHost),
-			fmt.Sprintf("SAP_API_SCHEME=%s", sapAPIScheme),
-			fmt.Sprintf("SAP_API_PATH=%s", sapAPIPath),
-			fmt.Sprintf("SAP_API_USERNAME=%s", sapAPIUsername),
-			fmt.Sprintf("SAP_API_PASSWORD=%s", sapAPIPassword),
-		} {
-			env = append(env, envvar)
-		}
-	} else if sorID == "sap" && sorURL != "" {
-		_url, err := url.Parse(sorURL)
-		if err != nil {
-			log.Printf("WARNING: system of record url invalid; %s", err.Error())
-		}
-		for _, envvar := range []string{
-			fmt.Sprintf("SAP_API_HOST=%s", _url.Host),
-			fmt.Sprintf("SAP_API_SCHEME=%s", _url.Scheme),
-		} {
-			env = append(env, envvar)
-		}
-
-		if _url.Path != "" {
-			env = append(env, fmt.Sprintf("SAP_API_PATH=%s", strings.TrimLeft(_url.Path, "/")))
-		}
-	}
-
-	if serviceNowAPIHost != "" && serviceNowAPIUsername != "" && serviceNowAPIPassword != "" {
-		for _, envvar := range []string{
-			fmt.Sprintf("SERVICENOW_API_HOST=%s", serviceNowAPIHost),
-			fmt.Sprintf("SERVICENOW_API_SCHEME=%s", serviceNowAPIScheme),
-			fmt.Sprintf("SERVICENOW_API_PATH=%s", serviceNowAPIPath),
-			fmt.Sprintf("SERVICENOW_API_USERNAME=%s", serviceNowAPIUsername),
-			fmt.Sprintf("SERVICENOW_API_PASSWORD=%s", serviceNowAPIPassword),
-		} {
-			env = append(env, envvar)
-		}
-	} else if sorID == "servicenow" || sorID == "snow" && sorURL != "" {
-		_url, err := url.Parse(sorURL)
-		if err != nil {
-			log.Printf("WARNING: system of record url invalid; %s", err.Error())
-		}
-		for _, envvar := range []string{
-			fmt.Sprintf("SERVICENOW_API_HOST=%s", _url.Host),
-			fmt.Sprintf("SERVICENOW_API_SCHEME=%s", _url.Scheme),
-		} {
-			env = append(env, envvar)
-		}
-
-		if _url.Path != "" {
-			env = append(env, fmt.Sprintf("SERVICENOW_API_PATH=%s", strings.TrimLeft(_url.Path, "/")))
-		}
 	}
 
 	return env
