@@ -530,6 +530,30 @@ func requireBPISubjectAccount() error {
 	return nil
 }
 
+func requireOrganizationKeys() {
+	var err error
+
+	_, err = common.RequireOrganizationKeypair("babyJubJub")
+	if err != nil {
+		log.Printf("WARNING: failed to require organization keypair; %s", err.Error())
+	}
+
+	_, err = common.RequireOrganizationKeypair("secp256k1")
+	if err != nil {
+		log.Printf("WARNING: failed to require organization keypair; %s", err.Error())
+	}
+
+	_, err = common.RequireOrganizationKeypair("BIP39")
+	if err != nil {
+		log.Printf("WARNING: failed to require organization keypair; %s", err.Error())
+	}
+
+	_, err = common.RequireOrganizationKeypair("RSA-4096")
+	if err != nil {
+		log.Printf("WARNING: failed to require organization keypair; %s", err.Error())
+	}
+}
+
 func configureNetwork(docker *client.Client) {
 	network, err := docker.NetworkCreate(
 		context.Background(),
