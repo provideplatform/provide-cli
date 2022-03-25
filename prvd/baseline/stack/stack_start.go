@@ -383,6 +383,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 			wg.Wait()
 			log.Printf("%s local baseline instance started", name)
 
+			requireOrganizationKeys()
 			requireBPISubjectAccount()
 		},
 		func(reason *string) {
