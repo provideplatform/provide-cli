@@ -636,21 +636,42 @@ func authorizeWorkgroupContext() {
 		workgroupAccessToken = *token.AccessToken
 	}
 
+	var contracts []*nchain.Contract
+
 	workgroup, err := ident.GetApplicationDetails(workgroupAccessToken, baselineWorkgroupID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("failed to resolve workgroup: %s; %s", baselineWorkgroupID, err.Error())
 		os.Exit(1)
 	}
 
-	contracts, err := nchain.ListContracts(workgroupAccessToken, map[string]interface{}{
+	contracts, err = nchain.ListContracts(workgroupAccessToken, map[string]interface{}{
 		"type": "organization-registry",
 	})
 	if err != nil {
 		log.Printf("failed to resolve global organization registry contract; %s", err.Error())
 		os.Exit(1)
 	} else if len(contracts) == 0 {
-		log.Printf("failed to resolve global organization registry contract")
-		os.Exit(1)
+		common.AuthorizeOrganizationContext(false)
+
+		token, err := ident.CreateToken(common.RequireOrganizationToken(), map[string]interface{}{
+			"scope":           "offline_access",
+			"organization_id": common.OrganizationID,
+		})
+		if err != nil {
+			log.Printf("failed to authorize API access token on behalf of workgroup %s; %s", baselineWorkgroupID, err.Error())
+			os.Exit(1)
+		}
+
+		contracts, err = nchain.ListContracts(*token.AccessToken, map[string]interface{}{
+			"type": "organization-registry",
+		})
+		if err != nil {
+			log.Printf("failed to resolve global organization registry contract; %s", err.Error())
+			os.Exit(1)
+		} else if len(contracts) == 0 {
+			log.Printf("failed to resolve global organization registry contract")
+			os.Exit(1)
+		}
 	}
 
 	if nchainBaselineNetworkID == "" {
