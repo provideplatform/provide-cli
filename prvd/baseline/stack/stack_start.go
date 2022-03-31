@@ -643,7 +643,7 @@ func authorizeWorkgroupContext() {
 	if err != nil {
 		common.AuthorizeOrganizationContext(false)
 
-		token, err := ident.CreateToken(common.RequireUserAccessToken(), map[string]interface{}{
+		token, err := ident.CreateToken(common.RequireOrganizationToken(), map[string]interface{}{
 			"scope":           "offline_access",
 			"organization_id": common.OrganizationID,
 		})
