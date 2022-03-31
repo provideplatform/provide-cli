@@ -854,6 +854,9 @@ func runBaselineAPI(docker *client.Client, wg *sync.WaitGroup) {
 		os.Exit(1)
 	}
 
+	os.Setenv("BASELINE_API_HOST", fmt.Sprintf("localhost:%d", port))
+	os.Setenv("BASELINE_API_SCHEME", "http")
+
 	if wg != nil {
 		wg.Done()
 	}
