@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/manifoldco/promptui"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/common/util"
@@ -166,11 +168,70 @@ func RequireOrganizationToken() string {
 	}
 
 	if token == "" {
-		log.Printf("Authorized organization API token required in prvd configuration; run 'prvd api_tokens init --organization <id>'")
+		RequireOrganization()
+		PromptOrganizationAuthorization()
+		// log.Printf("Authorized organization API token required in prvd configuration; run 'prvd api_tokens init --organization <id>'")
 		os.Exit(1)
 	}
 
 	return token
+}
+
+func PromptOrganizationAuthorization() {
+	prompt := promptui.Prompt{
+		IsConfirm: true,
+		Label:     fmt.Sprintf("Authorize access/refresh token for %s", *Organization.Name),
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	if strings.ToLower(result) == "y" {
+		AuthorizeOrganization(true)
+	}
+}
+
+func AuthorizeOrganization(persist bool) {
+	token, err := ident.CreateToken(RequireUserAccessToken(), map[string]interface{}{
+		"scope":           "offline_access",
+		"organization_id": OrganizationID,
+	})
+	if err != nil {
+		log.Printf("failed to authorize API access token on behalf of organization %s; %s", OrganizationID, err.Error())
+		os.Exit(1)
+	}
+
+	if token.AccessToken != nil {
+		OrganizationAccessToken = *token.AccessToken
+
+		if token.RefreshToken != nil {
+			OrganizationRefreshToken = *token.RefreshToken
+		}
+
+		if persist {
+			// FIXME-- DRY this up (also exists in api_tokens_init.go)
+			orgAPIAccessTokenKey := BuildConfigKeyWithID(AccessTokenConfigKey, OrganizationID)
+			orgAPIRefreshTokenKey := BuildConfigKeyWithID(RefreshTokenConfigKey, OrganizationID)
+
+			if token.AccessToken != nil {
+				// fmt.Printf("Access token authorized for organization: %s\t%s\n", OrganizationID, *token.AccessToken)
+				if !viper.IsSet(orgAPIAccessTokenKey) {
+					viper.Set(orgAPIAccessTokenKey, *token.AccessToken)
+					viper.WriteConfig()
+				}
+				if token.RefreshToken != nil {
+					// fmt.Printf("Refresh token authorized for organization: %s\t%s\n", OrganizationID, *token.RefreshToken)
+					if !viper.IsSet(orgAPIRefreshTokenKey) {
+						viper.Set(orgAPIRefreshTokenKey, *token.RefreshToken)
+						viper.WriteConfig()
+					}
+				}
+			}
+		}
+	}
 }
 
 func RequireAPIToken() string {
