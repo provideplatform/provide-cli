@@ -651,7 +651,7 @@ func authorizeWorkgroupContext() {
 		log.Printf("failed to resolve global organization registry contract; %s", err.Error())
 		os.Exit(1)
 	} else if len(contracts) == 0 {
-		common.AuthorizeOrganizationContext(false)
+		common.AuthorizeOrganizationContext(true)
 
 		token, err := ident.CreateToken(common.RequireOrganizationToken(), map[string]interface{}{
 			"scope":           "offline_access",
