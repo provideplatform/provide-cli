@@ -104,8 +104,20 @@ func RequireWorkgroup() error {
 		return nil
 	}
 
+	var token string
+
+	tkn, err := ident.CreateToken(RequireOrganizationToken(), map[string]interface{}{
+		"scope":           "offline_access",
+		"organization_id": OrganizationID,
+	})
+	if err == nil && tkn.AccessToken != nil {
+		token = *tkn.AccessToken
+	} else if err != nil {
+		token = RequireUserAccessToken()
+	}
+
 	opts := make([]string, 0)
-	apps, _ := ident.ListApplications(RequireUserAccessToken(), map[string]interface{}{
+	apps, _ := ident.ListApplications(token, map[string]interface{}{
 		"type": "baseline",
 	})
 	for _, app := range apps {
