@@ -170,8 +170,6 @@ func RequireOrganizationToken() string {
 	if token == "" {
 		RequireOrganization()
 		PromptOrganizationAuthorization()
-		// log.Printf("Authorized organization API token required in prvd configuration; run 'prvd api_tokens init --organization <id>'")
-		os.Exit(1)
 	}
 
 	return token
