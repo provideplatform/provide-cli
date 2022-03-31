@@ -637,11 +637,26 @@ func authorizeWorkgroupContext() {
 	}
 
 	var contracts []*nchain.Contract
+	var workgroup *ident.Application
 
-	workgroup, err := ident.GetApplicationDetails(workgroupAccessToken, baselineWorkgroupID, map[string]interface{}{})
+	workgroup, err = ident.GetApplicationDetails(workgroupAccessToken, baselineWorkgroupID, map[string]interface{}{})
 	if err != nil {
-		log.Printf("failed to resolve workgroup: %s; %s", baselineWorkgroupID, err.Error())
-		os.Exit(1)
+		common.AuthorizeOrganizationContext(false)
+
+		token, err := ident.CreateToken(common.RequireOrganizationToken(), map[string]interface{}{
+			"scope":           "offline_access",
+			"organization_id": common.OrganizationID,
+		})
+		if err != nil {
+			log.Printf("failed to authorize API access token on behalf of organization %s; %s", common.OrganizationID, err.Error())
+			os.Exit(1)
+		}
+
+		workgroup, err = ident.GetApplicationDetails(*token.AccessToken, baselineWorkgroupID, map[string]interface{}{})
+		if err != nil {
+			log.Printf("failed to resolve workgroup: %s; %s", baselineWorkgroupID, err.Error())
+			os.Exit(1)
+		}
 	}
 
 	contracts, err = nchain.ListContracts(workgroupAccessToken, map[string]interface{}{
