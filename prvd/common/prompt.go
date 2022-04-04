@@ -64,9 +64,10 @@ func CmdExists(cmd *cobra.Command, args []string) (bool, string) {
 }
 
 func CmdExistsOrExit(cmd *cobra.Command, args []string) {
-	exists, command := CmdExists(cmd, args)
+	exists, _ := CmdExists(cmd, args)
 	if !exists {
-		fmt.Printf("%s is not a valid command", command)
+		// if command doesn't exist, try to execute help
+		cmd.Help()
 		os.Exit(1)
 	}
 }
