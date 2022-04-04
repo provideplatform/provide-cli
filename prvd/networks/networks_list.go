@@ -37,6 +37,7 @@ func listNetworks(cmd *cobra.Command, args []string) {
 		log.Printf("Failed to retrieve networks list; %s", err.Error())
 		os.Exit(1)
 	}
+
 	publicNetworks := []*provide.Network{}
 	privateNetworks := []*provide.Network{}
 	for i := range networks {
@@ -47,8 +48,6 @@ func listNetworks(cmd *cobra.Command, args []string) {
 		} else {
 			privateNetworks = append(privateNetworks, network)
 		}
-		result := fmt.Sprintf("%s\n", *network.Name)
-		fmt.Print(result)
 	}
 
 	fmt.Println("public:")
