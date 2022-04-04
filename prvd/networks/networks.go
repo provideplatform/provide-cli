@@ -9,6 +9,8 @@ import (
 
 var network map[string]interface{}
 var networks []interface{}
+var optional bool
+var paginate bool
 
 var NetworksCmd = &cobra.Command{
 	Use:   "networks",
@@ -28,7 +30,6 @@ var NetworksCmd = &cobra.Command{
 }
 
 func init() {
-	NetworksCmd.AddCommand(networksInitCmd)
 	NetworksCmd.AddCommand(networksListCmd)
 	NetworksCmd.AddCommand(networksDisableCmd)
 	NetworksCmd.Flags().BoolVarP(&optional, "optional", "", false, "List all the optional flags")
