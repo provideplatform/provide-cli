@@ -273,7 +273,6 @@ func RequireAPIToken() string {
 // strings when passed an empty string.
 func BuildConfigKeyWithID(keyPartial, id string) string {
 	if id == "" {
-		log.Println("an identifier is required for this operation")
 		return ""
 	}
 	return fmt.Sprintf("%s.%s", id, keyPartial)
