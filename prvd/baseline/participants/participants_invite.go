@@ -68,7 +68,7 @@ func inviteParticipantRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	contracts, _ := nchain.ListContracts(common.ApplicationAccessToken, map[string]interface{}{
+	contracts, _ := nchain.ListContracts(common.OrganizationAccessToken, map[string]interface{}{
 		"type": "organization-registry",
 	})
 	if err != nil {
