@@ -132,7 +132,6 @@ var identAPIScheme string
 var nchainAPIHost string
 var nchainAPIScheme string
 
-var workgroupAccessToken string
 var organizationRefreshToken string
 
 var privacyAPIHost string
@@ -623,28 +622,15 @@ func authorizeWorkgroupContext() {
 		baselineWorkgroupID = common.ApplicationID
 	}
 
-	token, err := ident.CreateToken(common.RequireUserAccessToken(), map[string]interface{}{
-		"scope":          "offline_access",
-		"application_id": baselineWorkgroupID,
-	})
-	if err != nil {
-		log.Printf("failed to authorize API access token on behalf of workgroup %s; %s", baselineWorkgroupID, err.Error())
-		os.Exit(1)
-	}
-
-	if token.AccessToken != nil {
-		workgroupAccessToken = *token.AccessToken
-	}
-
 	var contracts []*nchain.Contract
 
-	workgroup, err := ident.GetApplicationDetails(workgroupAccessToken, baselineWorkgroupID, map[string]interface{}{})
+	workgroup, err := ident.GetApplicationDetails(common.RequireOrganizationToken(), baselineWorkgroupID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("failed to resolve workgroup: %s; %s", baselineWorkgroupID, err.Error())
 		os.Exit(1)
 	}
 
-	contracts, err = nchain.ListContracts(workgroupAccessToken, map[string]interface{}{
+	contracts, err = nchain.ListContracts(common.RequireOrganizationToken(), map[string]interface{}{
 		"type": "organization-registry",
 	})
 	if err != nil {
