@@ -100,8 +100,9 @@ func inviteParticipantRun(cmd *cobra.Command, args []string) {
 		params["permissions"] = permissions
 	}
 
-	// FIXME-- authorize the organization to act on behalf of this application when sending an invite
-	err = ident.CreateInvitation(common.ApplicationAccessToken, map[string]interface{}{
+	common.RegisterWorkgroupOrganization(common.ApplicationID)
+
+	err = ident.CreateInvitation(common.OrganizationAccessToken, map[string]interface{}{
 		"application_id": common.ApplicationID,
 		"email":          email,
 		"params":         params,

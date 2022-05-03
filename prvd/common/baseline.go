@@ -152,7 +152,7 @@ func InitWorkgroupContract() *nchain.Contract {
 	}
 
 	log.Printf("deploying global baseline organization registry contract: %s", defaultBaselineRegistryContractName)
-	contract, err := nchain.CreateContract(ApplicationAccessToken, map[string]interface{}{
+	contract, err := nchain.CreateContract(OrganizationAccessToken, map[string]interface{}{
 		"address":    "0x",
 		"name":       defaultBaselineRegistryContractName,
 		"network_id": NetworkID,
@@ -284,9 +284,9 @@ func RequireContract(contractID, contractType *string, printCreationTxLink bool)
 			var contract *nchain.Contract
 			var err error
 			if contractID != nil {
-				contract, err = nchain.GetContractDetails(ApplicationAccessToken, *contractID, map[string]interface{}{})
+				contract, err = nchain.GetContractDetails(OrganizationAccessToken, *contractID, map[string]interface{}{})
 			} else if contractType != nil {
-				contracts, _ := nchain.ListContracts(ApplicationAccessToken, map[string]interface{}{
+				contracts, _ := nchain.ListContracts(OrganizationAccessToken, map[string]interface{}{
 					"type": contractType,
 				})
 				if len(contracts) > 0 {
@@ -296,7 +296,7 @@ func RequireContract(contractID, contractType *string, printCreationTxLink bool)
 
 			if err == nil && contract != nil && contract.TransactionID != nil {
 				if !printed && printCreationTxLink {
-					tx, _ := nchain.GetTransactionDetails(ApplicationAccessToken, contract.TransactionID.String(), map[string]interface{}{})
+					tx, _ := nchain.GetTransactionDetails(OrganizationAccessToken, contract.TransactionID.String(), map[string]interface{}{})
 					if tx.Hash != nil {
 						etherscanBaseURL := EtherscanBaseURL(tx.NetworkID.String())
 						if etherscanBaseURL != nil {
@@ -310,7 +310,7 @@ func RequireContract(contractID, contractType *string, printCreationTxLink bool)
 
 				if contract.Address != nil && *contract.Address != "0x" {
 					if Verbose {
-						tx, _ := nchain.GetTransactionDetails(ApplicationAccessToken, contract.TransactionID.String(), map[string]interface{}{})
+						tx, _ := nchain.GetTransactionDetails(OrganizationAccessToken, contract.TransactionID.String(), map[string]interface{}{})
 						txraw, _ := json.MarshalIndent(tx, "", "  ")
 						log.Printf("%s", string(txraw))
 					}
