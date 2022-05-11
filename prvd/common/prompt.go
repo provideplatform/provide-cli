@@ -106,7 +106,7 @@ func RequireWorkgroup() error {
 
 	var token string
 
-	tkn, err := ident.CreateToken(RequireOrganizationToken(), map[string]interface{}{
+	tkn, err := ident.CreateToken(RequireUserAccessToken(), map[string]interface{}{
 		"scope":           "offline_access",
 		"organization_id": OrganizationID,
 	})
