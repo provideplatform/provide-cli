@@ -83,7 +83,7 @@ func RequireUserAccessToken() string {
 		token = viper.GetString(AccessTokenConfigKey)
 	}
 
-	if token == "" {
+	if token == "" || isTokenExpired(token) {
 		log.Printf("Authorized API access token required in prvd configuration; run 'authenticate'")
 		os.Exit(1)
 	}
@@ -152,7 +152,7 @@ func RequireApplicationToken() string {
 		token = viper.GetString(tokenKey)
 	}
 
-	if token == "" {
+	if token == "" || isTokenExpired(token) {
 		log.Printf("Authorized application API token required in prvd configuration; run 'prvd api_tokens init --application <id>'")
 		os.Exit(1)
 	}
@@ -167,15 +167,17 @@ func RequireOrganizationToken() string {
 		token = viper.GetString(tokenKey)
 	}
 
-	if token == "" {
+	if token == "" || isTokenExpired(token) {
 		RequireOrganization()
-		PromptOrganizationAuthorization()
+		if PromptOrganizationAuthorization() {
+			token = viper.GetString(tokenKey)
+		}
 	}
 
 	return token
 }
 
-func PromptOrganizationAuthorization() {
+func PromptOrganizationAuthorization() bool {
 	prompt := promptui.Prompt{
 		IsConfirm: true,
 		Label:     fmt.Sprintf("Authorize access/refresh token for %s", *Organization.Name),
@@ -184,15 +186,17 @@ func PromptOrganizationAuthorization() {
 	result, err := prompt.Run()
 	if err != nil {
 		os.Exit(1)
-		return
+		return false
 	}
 
 	if strings.ToLower(result) == "y" {
-		AuthorizeOrganization(true)
+		return AuthorizeOrganization(true) == nil
 	}
+
+	return false
 }
 
-func AuthorizeOrganization(persist bool) {
+func AuthorizeOrganization(persist bool) error {
 	token, err := ident.CreateToken(RequireUserAccessToken(), map[string]interface{}{
 		"scope":           "offline_access",
 		"organization_id": OrganizationID,
@@ -230,6 +234,8 @@ func AuthorizeOrganization(persist bool) {
 			}
 		}
 	}
+
+	return nil
 }
 
 func RequireAPIToken() string {
