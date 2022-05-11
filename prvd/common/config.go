@@ -168,8 +168,8 @@ func RequireOrganizationToken() string {
 	}
 
 	if token == "" || isTokenExpired(token) {
-		RequireOrganization()
-		if PromptOrganizationAuthorization() {
+		err := RequireOrganization()
+		if err == nil && PromptOrganizationAuthorization() {
 			token = viper.GetString(tokenKey)
 		}
 	}
