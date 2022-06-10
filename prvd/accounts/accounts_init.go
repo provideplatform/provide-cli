@@ -44,23 +44,23 @@ var accountsInitCmd = &cobra.Command{
 
 func CreateAccount(cmd *cobra.Command, args []string) {
 	if nonCustodial {
-		createDecentralizedAccount()
+		createNonCustodialAccount()
 		return
 	}
 
 	createManagedAccount(cmd, args)
 }
 
-func createDecentralizedAccount() {
+func createNonCustodialAccount() {
 	publicKey, privateKey, err := providecrypto.EVMGenerateKeyPair()
 	if err != nil {
-		log.Printf("Failed to genereate nonCustodial keypair; %s", err.Error())
+		log.Printf("Failed to genereate non-custodial keypair; %s", err.Error())
 		os.Exit(1)
 	}
 	secret := hex.EncodeToString(providecrypto.FromECDSA(privateKey))
 	keypairJSON, err := providecrypto.EVMMarshalEncryptedKey(providecrypto.HexToAddress(*publicKey), privateKey, secret)
 	if err != nil {
-		log.Printf("Failed to genereate nonCustodial keypair; %s", err.Error())
+		log.Printf("Failed to genereate non-custodial keypair; %s", err.Error())
 		os.Exit(1)
 	}
 	result := fmt.Sprintf("%s\t%s\n", *publicKey, string(keypairJSON))

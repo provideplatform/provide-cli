@@ -49,29 +49,29 @@ func CreateWallet(cmd *cobra.Command, args []string) {
 
 func CreateWalletRun(cmd *cobra.Command, args []string) {
 	if nonCustodial {
-		createDecentralizedWallet()
+		createNonCustodialWallet()
 		return
 	}
-	createManagedWallet(cmd, args)
+	createCustodialWallet(cmd, args)
 }
 
-func createDecentralizedWallet() {
+func createNonCustodialWallet() {
 	publicKey, privateKey, err := providecrypto.EVMGenerateKeyPair()
 	if err != nil {
-		log.Printf("Failed to genereate decentralized HD wallet; %s", err.Error())
+		log.Printf("Failed to genereate non-custodial HD wallet; %s", err.Error())
 		os.Exit(1)
 	}
 	secret := hex.EncodeToString(providecrypto.FromECDSA(privateKey))
 	walletJSON, err := providecrypto.EVMMarshalEncryptedKey(providecrypto.HexToAddress(*publicKey), privateKey, secret)
 	if err != nil {
-		log.Printf("Failed to genereate decentralized HD wallet; %s", err.Error())
+		log.Printf("Failed to genereate non-custodial HD wallet; %s", err.Error())
 		os.Exit(1)
 	}
 	result := fmt.Sprintf("%s\t%s\n", *publicKey, string(walletJSON))
 	fmt.Print(result)
 }
 
-func createManagedWallet(cmd *cobra.Command, args []string) {
+func createCustodialWallet(cmd *cobra.Command, args []string) {
 	token := common.RequireAPIToken()
 	params := map[string]interface{}{
 		"purpose": purpose,
@@ -79,7 +79,7 @@ func createManagedWallet(cmd *cobra.Command, args []string) {
 
 	wallet, err := provide.CreateWallet(token, params)
 	if err != nil {
-		log.Printf("Failed to genereate HD wallet; %s", err.Error())
+		log.Printf("Failed to genereate custodial HD wallet; %s", err.Error())
 		os.Exit(1)
 	}
 	common.WalletID = wallet.ID.String()
