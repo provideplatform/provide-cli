@@ -27,8 +27,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// createCmd represents the authenticate command
-var createCmd = &cobra.Command{
+// initCmd creates a new user
+var initCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new user",
 	Long:  `Create a new user in the configured ident instance; defaults to ident.provide.services.`,
