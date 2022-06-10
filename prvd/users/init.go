@@ -29,7 +29,7 @@ import (
 
 // initCmd creates a new user
 var initCmd = &cobra.Command{
-	Use:   "create",
+	Use:   "init",
 	Short: "Create a new user",
 	Long:  `Create a new user in the configured ident instance; defaults to ident.provide.services.`,
 	Run:   create,
