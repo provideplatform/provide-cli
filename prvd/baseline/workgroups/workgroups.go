@@ -27,7 +27,7 @@ import (
 // Workgroup is a baseline workgroup context
 type Workgroup struct {
 	baseline.Workgroup
-	Config         *WorkgroupConfig `sql:"-" json:"config"`
+	Config *WorkgroupConfig `json:"config"`
 }
 
 // WorkgroupConfig is a baseline workgroup configuration object

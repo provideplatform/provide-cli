@@ -22,7 +22,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/ory/viper v1.7.5
-	github.com/provideplatform/provide-go v0.0.0-20220708013926-d39ee35426a3
+	github.com/provideplatform/provide-go v0.0.0-20220708041610-2ba044d971e3
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/cobra v1.1.3

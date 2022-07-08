@@ -22,7 +22,7 @@ import (
 	"os"
 
 	"github.com/provideplatform/provide-cli/prvd/common"
-	ident "github.com/provideplatform/provide-go/api/ident"
+	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/spf13/cobra"
 )
 
@@ -41,9 +41,8 @@ func listWorkgroups(cmd *cobra.Command, args []string) {
 }
 
 func listWorkgroupsRun(cmd *cobra.Command, args []string) {
-	token := common.RequireAPIToken()
-	applications, err := ident.ListApplications(token, map[string]interface{}{
-		"type": "baseline",
+	token := common.RequireOrganizationToken()
+	workgroups, err := baseline.ListWorkgroups(token, map[string]interface{}{
 		"page": fmt.Sprintf("%d", page),
 		"rpp":  fmt.Sprintf("%d", rpp),
 	})
@@ -51,8 +50,7 @@ func listWorkgroupsRun(cmd *cobra.Command, args []string) {
 		log.Printf("failed to retrieve baseline workgroups; %s", err.Error())
 		os.Exit(1)
 	}
-	for i := range applications {
-		workgroup := applications[i]
+	for _, workgroup := range workgroups {
 		result := fmt.Sprintf("%s\t%s\n", workgroup.ID.String(), *workgroup.Name)
 		fmt.Print(result)
 	}

@@ -53,7 +53,7 @@ func fetchOrganizationDetailsRun(cmd *cobra.Command, args []string) {
 	// 	log.Printf("Failed to retrieve details for organization with id: %s; %s", common.OrganizationID, organization)
 	// 	os.Exit(1)
 	// }
-	result := fmt.Sprintf("%s\t%s\n", organization.ID, *organization.Name)
+	result := fmt.Sprintf("%s\t%s\n", *organization.ID, *organization.Name)
 	fmt.Print(result)
 }
 

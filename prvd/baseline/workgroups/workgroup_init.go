@@ -17,6 +17,7 @@
 package workgroups
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -24,7 +25,9 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
-	ident "github.com/provideplatform/provide-go/api/ident"
+	"github.com/provideplatform/provide-cli/prvd/organizations"
+	"github.com/provideplatform/provide-go/api/baseline"
+	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/nchain"
 	"github.com/provideplatform/provide-go/api/vault"
 	"github.com/spf13/cobra"
@@ -73,21 +76,58 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	}
 	common.AuthorizeOrganizationContext(true)
 
-	token := common.RequireUserAccessToken()
-	application, err := ident.CreateApplication(token, map[string]interface{}{
-		"config": map[string]interface{}{
-			"baselined": true,
-		},
+	token := common.RequireOrganizationToken()
+
+	vaults, err := vault.ListVaults(token, map[string]interface{}{})
+	if err != nil {
+		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
+		os.Exit(1)
+	}
+
+	orgVault := vaults[0]
+	if orgVault == nil {
+		log.Print("failed to initialize baseline workgroup; failed to fetch organization vault; no vaults found")
+		os.Exit(1)
+	}
+
+	wg, err := baseline.CreateWorkgroup(token, map[string]interface{}{
 		"name":       name,
 		"network_id": common.NetworkID,
-		"type":       defaultWorkgroupType,
+		"config": map[string]interface{}{
+			"vault_id": orgVault.ID.String(),
+		},
 	})
 	if err != nil {
 		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
 		os.Exit(1)
 	}
 
-	common.ApplicationID = application.ID.String()
+	org, err := ident.GetOrganizationDetails(token, common.OrganizationID, map[string]interface{}{})
+	if err != nil {
+		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
+		os.Exit(1)
+	}
+
+	var organization organizations.Organization
+	raw, _ := json.Marshal(org)
+	json.Unmarshal(raw, &organization)
+
+	organization.Metadata.Workgroups[wg.ID] = &organizations.OrganizationWorkgroupMetadata{
+		OperatorSeparationDegree: uint32(0),
+		VaultID:                  &orgVault.ID,
+	}
+
+	var orgInterface map[string]interface{}
+	raw, _ = json.Marshal(organization)
+	json.Unmarshal(raw, &orgInterface)
+
+	err = ident.UpdateOrganization(token, common.OrganizationID, orgInterface)
+	if err != nil {
+		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
+		os.Exit(1)
+	}
+
+	common.ApplicationID = wg.ID.String()
 	authorizeApplicationContext()
 
 	common.InitWorkgroupContract()
@@ -95,10 +135,10 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	common.RequireOrganizationVault()
 	requireOrganizationKeys()
 
-	common.RegisterWorkgroupOrganization(application.ID.String())
+	common.RegisterWorkgroupOrganization(wg.ID.String())
 	//common.RequireOrganizationEndpoints(nil)
 
-	log.Printf("initialized baseline workgroup: %s", application.ID)
+	log.Printf("initialized baseline workgroup: %s", wg.ID)
 }
 
 func requireOrganizationKeys() {

@@ -29,7 +29,7 @@ import (
 // Organization model
 type Organization struct {
 	ident.Organization
-	Metadata    *OrganizationMetadata `json:"metadata"`
+	Metadata *OrganizationMetadata `json:"metadata"`
 }
 
 // Organization metadata
@@ -40,7 +40,7 @@ type OrganizationMetadata struct {
 
 // Organization workgroup metadata
 type OrganizationWorkgroupMetadata struct {
-	OperatorSeparationDegree *uint32                 `json:"operator_separation_degree"`
+	OperatorSeparationDegree uint32                  `json:"operator_separation_degree"`
 	Privacy                  *WorkgroupMetadataLegal `json:"privacy"`
 	SystemSecretIDs          []*uuid.UUID            `json:"system_secret_ids"`
 	TOS                      *WorkgroupMetadataLegal `json:"tos"`
