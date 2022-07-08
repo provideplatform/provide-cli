@@ -178,14 +178,27 @@ func RequireApplicationToken() string {
 
 func RequireOrganizationToken() string {
 	var token string
+
+	// set organization id
+	if OrganizationID == "" {
+		err := RequireOrganization()
+		if err != nil {
+			fmt.Printf("failed to require organization; %s", err.Error())
+			os.Exit(1)
+			return ""
+		}
+	}
+
+	// set token if organization token is in memory
 	tokenKey := BuildConfigKeyWithID(AccessTokenConfigKey, OrganizationID)
 	if viper.IsSet(tokenKey) {
 		token = viper.GetString(tokenKey)
 	}
 
+	// else create token
 	if token == "" || isTokenExpired(token) {
-		err := RequireOrganization()
-		if err == nil && PromptOrganizationAuthorization() {
+		if PromptOrganizationAuthorization() {
+			tokenKey = BuildConfigKeyWithID(AccessTokenConfigKey, OrganizationID)
 			token = viper.GetString(tokenKey)
 		}
 	}
