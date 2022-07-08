@@ -42,7 +42,7 @@ type WorkgroupConfig struct {
 
 var WorkgroupsCmd = &cobra.Command{
 	Use:   "workgroups",
-	Short: "Interact with a baseline workgroups",
+	Short: "Interact with baseline workgroups",
 	Long:  `Create, manage and interact with workgroups via the baseline protocol.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		common.CmdExistsOrExit(cmd, args)

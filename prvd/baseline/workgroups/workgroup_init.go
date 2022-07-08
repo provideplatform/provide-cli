@@ -34,7 +34,6 @@ import (
 )
 
 const defaultNChainBaselineNetworkID = "66d44f30-9092-4182-a3c4-bc02736d6ae5"
-const defaultWorkgroupType = "baseline"
 
 var name string
 

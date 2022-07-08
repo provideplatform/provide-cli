@@ -51,7 +51,7 @@ func listWorkgroupsRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 	for _, workgroup := range workgroups {
-		result := fmt.Sprintf("%s\t%s\n", workgroup.ID.String(), *workgroup.Name)
+		result := fmt.Sprintf("%s\t%s\n", workgroup.ID, *workgroup.Name)
 		fmt.Print(result)
 	}
 }
