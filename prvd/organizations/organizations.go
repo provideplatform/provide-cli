@@ -18,10 +18,40 @@ package organizations
 
 import (
 	"os"
+	"time"
 
+	uuid "github.com/kthomas/go.uuid"
 	"github.com/provideplatform/provide-cli/prvd/common"
+	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/spf13/cobra"
 )
+
+// Organization model
+type Organization struct {
+	ident.Organization
+	Metadata    *OrganizationMetadata `json:"metadata"`
+}
+
+// Organization metadata
+type OrganizationMetadata struct {
+	Address    *string                                      `json:"address"`
+	Workgroups map[uuid.UUID]*OrganizationWorkgroupMetadata `json:"workgroups"`
+}
+
+// Organization workgroup metadata
+type OrganizationWorkgroupMetadata struct {
+	OperatorSeparationDegree *uint32                 `json:"operator_separation_degree"`
+	Privacy                  *WorkgroupMetadataLegal `json:"privacy"`
+	SystemSecretIDs          []*uuid.UUID            `json:"system_secret_ids"`
+	TOS                      *WorkgroupMetadataLegal `json:"tos"`
+	VaultID                  *uuid.UUID              `json:"vault_id"`
+}
+
+// Organization workgroup metadata legal data
+type WorkgroupMetadataLegal struct {
+	AgreedAt  *time.Time `json:"agreed_at"`
+	Signature *string    `json:"signature"`
+}
 
 // var organization provide.Organization
 

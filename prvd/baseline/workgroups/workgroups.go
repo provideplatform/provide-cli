@@ -17,10 +17,28 @@
 package workgroups
 
 import (
+	uuid "github.com/kthomas/go.uuid"
 	"github.com/provideplatform/provide-cli/prvd/baseline/participants"
 	"github.com/provideplatform/provide-cli/prvd/common"
+	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/spf13/cobra"
 )
+
+// Workgroup is a baseline workgroup context
+type Workgroup struct {
+	baseline.Workgroup
+	Config         *WorkgroupConfig `sql:"-" json:"config"`
+}
+
+// WorkgroupConfig is a baseline workgroup configuration object
+type WorkgroupConfig struct {
+	Environment        *string      `json:"environment"`
+	L2NetworkID        *uuid.UUID   `json:"l2_network_id"`
+	OnboardingComplete bool         `json:"onboarding_complete"`
+	SystemSecretIDs    []*uuid.UUID `json:"system_secret_ids"`
+	VaultID            *uuid.UUID   `json:"vault_id"`
+	WebhookSecret      *string      `json:"webhook_secret"`
+}
 
 var WorkgroupsCmd = &cobra.Command{
 	Use:   "workgroups",
