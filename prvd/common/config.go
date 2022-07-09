@@ -206,6 +206,37 @@ func RequireOrganizationToken() string {
 	return token
 }
 
+// todo-- refactor into single RequireOrganizationToken method
+func RequireOrganizationRefreshToken() string {
+	var token string
+
+	// set organization id
+	if OrganizationID == "" {
+		err := RequireOrganization()
+		if err != nil {
+			fmt.Printf("failed to require organization; %s", err.Error())
+			os.Exit(1)
+			return ""
+		}
+	}
+
+	// set token if organization token is in memory
+	tokenKey := BuildConfigKeyWithID(RefreshTokenConfigKey, OrganizationID)
+	if viper.IsSet(tokenKey) {
+		token = viper.GetString(tokenKey)
+	}
+
+	// else create token
+	if token == "" || isTokenExpired(token) {
+		if PromptOrganizationAuthorization() {
+			tokenKey = BuildConfigKeyWithID(RefreshTokenConfigKey, OrganizationID)
+			token = viper.GetString(tokenKey)
+		}
+	}
+
+	return token
+}
+
 func PromptOrganizationAuthorization() bool {
 	prompt := promptui.Prompt{
 		IsConfirm: true,

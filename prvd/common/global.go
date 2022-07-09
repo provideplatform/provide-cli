@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	provide "github.com/provideplatform/provide-go/api"
+	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/common"
 )
@@ -34,8 +35,11 @@ const DefaultPage = 1
 const DefaultRpp = 25
 
 var (
-	Application   *ident.Application
 	ApplicationID string
+	Application   *ident.Application
+
+	WorkgroupID string
+	Workgroup   *baseline.Workgroup
 
 	OrganizationID string
 	Organization   *ident.Organization

@@ -34,6 +34,7 @@ var SubjectAccountsCmd = &cobra.Command{
 
 func init() {
 	SubjectAccountsCmd.AddCommand(listBaselineSubjectAccountsCmd)
+	SubjectAccountsCmd.AddCommand(initBaselineSubjectAccountCmd)
 	SubjectAccountsCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 	SubjectAccountsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
 }

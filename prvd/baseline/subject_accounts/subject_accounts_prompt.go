@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const promptStepInit = "Initialize"
 const promptStepList = "List"
 
 var emptyPromptArgs = []string{promptStepList}
@@ -30,9 +31,8 @@ var emptyPromptLabel = "What would you like to do"
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	switch step {
-	// case promptStepInit:
-	// 	organizationName = common.FreeInput("Organization Name", "", common.MandatoryValidation)
-	// 	createOrganizationRun(cmd, args)
+	case promptStepInit:
+		createSubjectAccountRun(cmd, args)
 	case promptStepList:
 		page, rpp = common.PromptPagination(paginate, page, rpp)
 		listSubjectAccountsRun(cmd, args)

@@ -27,6 +27,7 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
+	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/nchain"
 	"github.com/provideplatform/provide-go/api/vault"
@@ -114,14 +115,14 @@ func RequireApplication() error {
 }
 
 // RequireWorkgroup is equivalent to a required --workgroup flag
-// (yes, this is identical to RequireApplication() with exception to the Printf content...)
 func RequireWorkgroup() error {
-	if ApplicationID != "" {
+	if WorkgroupID != "" {
 		return nil
 	}
 
 	var token string
 
+	// FIXME-- should check if token is in memory
 	tkn, err := ident.CreateToken(RequireUserAccessToken(), map[string]interface{}{
 		"scope":           "offline_access",
 		"organization_id": OrganizationID,
@@ -133,10 +134,8 @@ func RequireWorkgroup() error {
 	}
 
 	opts := make([]string, 0)
-	apps, _ := ident.ListApplications(token, map[string]interface{}{
-		"type": "baseline",
-	})
-	for _, app := range apps {
+	workgroups, _ := baseline.ListWorkgroups(token, map[string]interface{}{})
+	for _, app := range workgroups {
 		opts = append(opts, *app.Name)
 	}
 
@@ -150,7 +149,7 @@ func RequireWorkgroup() error {
 		return err
 	}
 
-	ApplicationID = apps[i].ID.String()
+	WorkgroupID = workgroups[i].ID.String()
 	return nil
 }
 
