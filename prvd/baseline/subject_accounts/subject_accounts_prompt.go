@@ -24,6 +24,7 @@ import (
 
 const promptStepInit = "Initialize"
 const promptStepList = "List"
+const promptStepDetails = "Details"
 
 var emptyPromptArgs = []string{promptStepList}
 var emptyPromptLabel = "What would you like to do"
@@ -36,9 +37,8 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	case promptStepList:
 		page, rpp = common.PromptPagination(paginate, page, rpp)
 		listSubjectAccountsRun(cmd, args)
-	// case promptStepDetails:
-	// 	common.RequireOrganization()
-	// 	fetchOrganizationDetailsRun(cmd, args)
+	case promptStepDetails:
+		fetchSubjectAccountDetailsRun(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)
 		generalPrompt(cmd, args, result)

@@ -47,6 +47,8 @@ var (
 	UserID string
 	User   *ident.User
 
+	SubjectAccountID string
+
 	AccountID   string
 	ConnectorID string
 	ContractID  string

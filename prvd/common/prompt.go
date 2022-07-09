@@ -110,6 +110,7 @@ func RequireApplication() error {
 		return err
 	}
 
+	Application = apps[i]
 	ApplicationID = apps[i].ID.String()
 	return nil
 }
@@ -149,6 +150,7 @@ func RequireWorkgroup() error {
 		return err
 	}
 
+	Workgroup = workgroups[i]
 	WorkgroupID = workgroups[i].ID.String()
 	return nil
 }
