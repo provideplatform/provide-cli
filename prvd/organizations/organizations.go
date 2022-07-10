@@ -34,16 +34,16 @@ type Organization struct {
 
 // Organization metadata
 type OrganizationMetadata struct {
-	Address    *string                                      `json:"address"`
+	Address    string                                       `json:"address"`
 	Workgroups map[uuid.UUID]*OrganizationWorkgroupMetadata `json:"workgroups"`
 }
 
 // Organization workgroup metadata
 type OrganizationWorkgroupMetadata struct {
 	OperatorSeparationDegree uint32                  `json:"operator_separation_degree"`
-	Privacy                  *WorkgroupMetadataLegal `json:"privacy"`
+	Privacy                  *WorkgroupMetadataLegal `json:"privacy,omitempty"`
 	SystemSecretIDs          []*uuid.UUID            `json:"system_secret_ids"`
-	TOS                      *WorkgroupMetadataLegal `json:"tos"`
+	TOS                      *WorkgroupMetadataLegal `json:"tos,omitempty"`
 	VaultID                  *uuid.UUID              `json:"vault_id"`
 }
 

@@ -103,6 +103,15 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	common.RequireOrganizationVault()
+	requireOrganizationKeys()
+
+	secp256k1Key, err := vault.FetchKey(token, common.VaultID, secp256k1KeyID)
+	if err != nil {
+		fmt.Printf("failed to initialize baseline workgroup: %s", err.Error())
+		os.Exit(1)
+	}
+
 	org, err := ident.GetOrganizationDetails(token, common.OrganizationID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
@@ -113,13 +122,19 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	raw, _ := json.Marshal(org)
 	json.Unmarshal(raw, &organization)
 
-	organization.Metadata = &organizations.OrganizationMetadata{
-		Workgroups: map[uuid.UUID]*organizations.OrganizationWorkgroupMetadata{},
+	if organization.Metadata == nil {
+		organization.Metadata = &organizations.OrganizationMetadata{
+			Address:    *secp256k1Key.Address,
+			Workgroups: map[uuid.UUID]*organizations.OrganizationWorkgroupMetadata{},
+		}
+	} else if organization.Metadata.Workgroups == nil {
+		organization.Metadata.Workgroups = map[uuid.UUID]*organizations.OrganizationWorkgroupMetadata{}
 	}
 
 	organization.Metadata.Workgroups[wg.ID] = &organizations.OrganizationWorkgroupMetadata{
 		OperatorSeparationDegree: uint32(0),
 		VaultID:                  &orgVault.ID,
+		SystemSecretIDs:          make([]*uuid.UUID, 0),
 	}
 
 	var orgInterface map[string]interface{}
@@ -136,17 +151,7 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 
 	common.InitWorkgroupContract()
 
-	common.RequireOrganizationVault()
-	requireOrganizationKeys()
-	// common.RegisterWorkgroupOrganization(wg.ID.String())
-
 	refresh := common.RequireOrganizationRefreshToken()
-
-	secp256k1Key, err := vault.FetchKey(token, common.VaultID, secp256k1KeyID)
-	if err != nil {
-		fmt.Printf("failed to initialize baseline workgroup: %s", err.Error())
-		os.Exit(1)
-	}
 
 	sa, err := baseline.CreateSubjectAccount(token, common.OrganizationID, map[string]interface{}{
 		"metadata": map[string]interface{}{
@@ -160,8 +165,8 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	})
 
 	//common.RequireOrganizationEndpoints(nil)
-
-	log.Printf("initialized baseline workgroup: %s; subject account id: %s", wg.ID, *sa.ID)
+	result, _ := json.MarshalIndent(wg, "", "\t")
+	fmt.Printf("%s\nsubject account id: %s\n", string(result), *sa.ID)
 }
 
 func requireOrganizationKeys() {
