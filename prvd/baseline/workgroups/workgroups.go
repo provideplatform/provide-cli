@@ -52,9 +52,10 @@ var WorkgroupsCmd = &cobra.Command{
 }
 
 func init() {
+	WorkgroupsCmd.AddCommand(listBaselineWorkgroupsCmd)
+	WorkgroupsCmd.AddCommand(detailBaselineWorkgroupCmd)
 	WorkgroupsCmd.AddCommand(initBaselineWorkgroupCmd)
 	WorkgroupsCmd.AddCommand(joinBaselineWorkgroupCmd)
-	WorkgroupsCmd.AddCommand(listBaselineWorkgroupsCmd)
 	WorkgroupsCmd.AddCommand(participants.ParticipantsCmd)
 	WorkgroupsCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 	WorkgroupsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
