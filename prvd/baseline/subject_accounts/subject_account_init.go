@@ -17,6 +17,8 @@
 package subject_accounts
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 
@@ -73,7 +75,8 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	log.Printf("initialized baseline subject account: %s", *sa.ID)
+	result, _ := json.MarshalIndent(sa, "", "\t")
+	fmt.Printf("%s\n", string(result))
 }
 
 func init() {
