@@ -635,7 +635,7 @@ func authorizeWorkgroupContext() {
 			log.Printf("failed to require workgroup; %s", err.Error())
 			os.Exit(1)
 		}
-		baselineWorkgroupID = common.ApplicationID
+		baselineWorkgroupID = common.WorkgroupID
 	}
 
 	var contracts []*nchain.Contract
