@@ -50,7 +50,7 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 	}
 
 	if common.NetworkID == "" {
-		common.RequirePublicNetwork()
+		common.RequireL1Network()
 	}
 	common.AuthorizeOrganizationContext(true)
 

@@ -44,7 +44,7 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 		if Optional {
 			fmt.Println("Optional Flags:")
 			if common.NetworkID == "" {
-				common.RequirePublicNetwork()
+				common.RequireL1Network()
 			}
 			if common.OrganizationID == "" {
 				common.RequireOrganization()

@@ -71,9 +71,14 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	if name == "" {
 		namePrompt()
 	}
+	// TODO-- descriptionPrompt()
 	if common.NetworkID == "" {
-		common.RequirePublicNetwork()
+		common.RequireL1Network()
 	}
+	if common.L2NetworkID == "" {
+		common.RequireL2Network()
+	}
+
 	common.AuthorizeOrganizationContext(true)
 
 	token := common.RequireOrganizationToken()
@@ -94,7 +99,8 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		"name":       name,
 		"network_id": common.NetworkID,
 		"config": map[string]interface{}{
-			"vault_id": orgVault.ID.String(),
+			"vault_id":      orgVault.ID.String(),
+			"l2_network_id": common.L2NetworkID,
 		},
 		"type": "baseline",
 	})
@@ -228,6 +234,7 @@ func organizationAuthPrompt(target string) {
 func init() {
 	initBaselineWorkgroupCmd.Flags().StringVar(&name, "name", "", "name of the baseline workgroup")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.NetworkID, "network", "", "nchain network id of the baseline mainnet to use for this workgroup")
+	initBaselineWorkgroupCmd.Flags().StringVar(&common.L2NetworkID, "l2", "", "nchain l2 network id of the baseline layer 2 to use for this workgroup")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.MessagingEndpoint, "endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
 	initBaselineWorkgroupCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")

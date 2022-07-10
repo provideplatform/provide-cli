@@ -53,6 +53,7 @@ var (
 	ConnectorID string
 	ContractID  string
 	NetworkID   string
+	L2NetworkID string
 	NodeID      string
 	WalletID    string
 

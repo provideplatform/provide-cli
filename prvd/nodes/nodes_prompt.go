@@ -36,7 +36,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepInit:
 		if common.NetworkID == "" {
-			common.RequirePublicNetwork()
+			common.RequireL1Network()
 		}
 		if common.Image == "" {
 			common.Image = common.FreeInput("Image", "", common.MandatoryValidation)
@@ -63,7 +63,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		CreateNodeRun(cmd, args)
 	case promptStepDelete:
 		if common.NetworkID == "" {
-			common.RequirePublicNetwork()
+			common.RequireL1Network()
 		}
 		if common.NodeID == "" {
 			common.NodeID = common.FreeInput("Node ID", "", common.MandatoryValidation)
@@ -71,7 +71,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 		deleteNodeRun(cmd, args)
 	case promptStepLogs:
 		if common.NetworkID == "" {
-			common.RequirePublicNetwork()
+			common.RequireL1Network()
 		}
 		if common.NodeID == "" {
 			common.NodeID = common.FreeInput("Node ID", "", common.MandatoryValidation)

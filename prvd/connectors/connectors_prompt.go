@@ -45,7 +45,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			common.RequireApplication()
 		}
 		if common.NetworkID == "" {
-			common.RequirePublicNetwork()
+			common.RequireL1Network()
 		}
 		if optional {
 			if ipfsAPIPort == 5001 {

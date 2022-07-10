@@ -38,6 +38,7 @@ const requireAccountSelectLabel = "Select an account"
 const requireApplicationSelectLabel = "Select an application"
 const requireConnectorSelectLabel = "Select a connector"
 const requireNetworkSelectLabel = "Select a network"
+const requireL2NetworkSelectLabel = "Select an l2 network"
 const requireOrganizationSelectLabel = "Select an organization"
 const requireVaultSelectLabel = "Select a vault"
 const requireWalletSelectLabel = "Select a wallet"
@@ -207,8 +208,8 @@ func RequireNetwork() error {
 	return nil
 }
 
-// RequirePublicNetwork is equivalent to a required --network flag; but list options filtered to show only public networks
-func RequirePublicNetwork() error {
+// RequireL1Network is equivalent to a required --network flag; but list options filtered to show only public l1 networks
+func RequireL1Network() error {
 	if NetworkID != "" {
 		return nil
 	}
@@ -216,6 +217,7 @@ func RequirePublicNetwork() error {
 	opts := make([]string, 0)
 	networks, _ := nchain.ListNetworks(RequireUserAccessToken(), map[string]interface{}{
 		"public": "true",
+		"layer2": "false",
 	})
 	for _, network := range networks {
 		opts = append(opts, *network.Name)
@@ -232,6 +234,35 @@ func RequirePublicNetwork() error {
 	}
 
 	NetworkID = networks[i].ID.String()
+	return nil
+}
+
+// RequireL2Network is equivalent to a required --l2 flag; but list options filtered to show only public l2 networks
+func RequireL2Network() error {
+	if L2NetworkID != "" {
+		return nil
+	}
+
+	opts := make([]string, 0)
+	networks, _ := nchain.ListNetworks(RequireUserAccessToken(), map[string]interface{}{
+		"public": "true",
+		"layer2": "true",
+	})
+	for _, network := range networks {
+		opts = append(opts, *network.Name)
+	}
+
+	prompt := promptui.Select{
+		Label: requireNetworkSelectLabel,
+		Items: opts,
+	}
+
+	i, _, err := prompt.Run()
+	if err != nil {
+		return err
+	}
+
+	L2NetworkID = networks[i].ID.String()
 	return nil
 }
 

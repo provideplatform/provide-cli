@@ -680,7 +680,7 @@ func authorizeWorkgroupContext() {
 		if workgroup.NetworkID != uuid.Nil {
 			nchainBaselineNetworkID = workgroup.NetworkID.String()
 		} else {
-			err := common.RequirePublicNetwork()
+			err := common.RequireL1Network()
 			if err != nil {
 				log.Printf("failed to require network id; %s", err.Error())
 				os.Exit(1)
