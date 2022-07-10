@@ -23,6 +23,7 @@ import (
 	"os"
 	"strings"
 
+	uuid "github.com/kthomas/go.uuid"
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
 	"github.com/provideplatform/provide-cli/prvd/organizations"
@@ -41,7 +42,7 @@ var vaultID string
 var babyJubJubKeyID string
 var secp256k1KeyID string
 var hdwalletID string
-var rsa4096Key string
+var rsa4096KeyID string
 var Optional bool
 var paginate bool
 
@@ -52,8 +53,8 @@ var initBaselineWorkgroupCmd = &cobra.Command{
 	Run:   initWorkgroup,
 }
 
-func authorizeApplicationContext() {
-	common.AuthorizeApplicationContext()
+func AuthorizeApplicationContext() {
+	// common.AuthorizeApplicationContext()
 	_, err := nchain.CreateWallet(common.ApplicationAccessToken, map[string]interface{}{
 		"purpose": 44,
 	})
@@ -95,6 +96,7 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		"config": map[string]interface{}{
 			"vault_id": orgVault.ID.String(),
 		},
+		"type": "baseline",
 	})
 	if err != nil {
 		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
@@ -111,6 +113,10 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	raw, _ := json.Marshal(org)
 	json.Unmarshal(raw, &organization)
 
+	organization.Metadata = &organizations.OrganizationMetadata{
+		Workgroups: map[uuid.UUID]*organizations.OrganizationWorkgroupMetadata{},
+	}
+
 	organization.Metadata.Workgroups[wg.ID] = &organizations.OrganizationWorkgroupMetadata{
 		OperatorSeparationDegree: uint32(0),
 		VaultID:                  &orgVault.ID,
@@ -126,18 +132,36 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	common.ApplicationID = wg.ID.String()
-	authorizeApplicationContext()
+	common.WorkgroupID = wg.ID.String()
 
 	common.InitWorkgroupContract()
 
 	common.RequireOrganizationVault()
 	requireOrganizationKeys()
+	// common.RegisterWorkgroupOrganization(wg.ID.String())
 
-	common.RegisterWorkgroupOrganization(wg.ID.String())
+	refresh := common.RequireOrganizationRefreshToken()
+
+	secp256k1Key, err := vault.FetchKey(token, common.VaultID, secp256k1KeyID)
+	if err != nil {
+		fmt.Printf("failed to initialize baseline workgroup: %s", err.Error())
+		os.Exit(1)
+	}
+
+	sa, err := baseline.CreateSubjectAccount(token, common.OrganizationID, map[string]interface{}{
+		"metadata": map[string]interface{}{
+			"organization_id":            common.OrganizationID,
+			"organization_address":       *secp256k1Key.Address,
+			"organization_refresh_token": refresh,
+			"workgroup_id":               common.WorkgroupID,
+			"registry_contract_address":  *secp256k1Key.Address,
+			"network_id":                 common.NetworkID,
+		},
+	})
+
 	//common.RequireOrganizationEndpoints(nil)
 
-	log.Printf("initialized baseline workgroup: %s", wg.ID)
+	log.Printf("initialized baseline workgroup: %s; subject account id: %s", wg.ID, *sa.ID)
 }
 
 func requireOrganizationKeys() {
@@ -161,7 +185,7 @@ func requireOrganizationKeys() {
 
 	key, err = common.RequireOrganizationKeypair("RSA-4096")
 	if err == nil {
-		rsa4096Key = key.ID.String()
+		rsa4096KeyID = key.ID.String()
 	}
 }
 

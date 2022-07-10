@@ -65,7 +65,7 @@ func joinWorkgroupRun(cmd *cobra.Command, args []string) {
 
 	common.ApplicationID = *claims.Baseline.WorkgroupID
 	common.AuthorizeOrganizationContext(true)
-	authorizeApplicationContext()
+	// AuthorizeApplicationContext()
 
 	// initWorkgroupContract()
 

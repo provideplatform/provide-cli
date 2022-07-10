@@ -41,7 +41,7 @@ func listParticipants(cmd *cobra.Command, args []string) {
 }
 
 func listParticipantsRun(cmd *cobra.Command, args []string) {
-	common.AuthorizeApplicationContext()
+	// common.AuthorizeApplicationContext()
 	common.AuthorizeOrganizationContext(false)
 
 	participants, err := ident.ListApplicationOrganizations(common.OrganizationAccessToken, common.ApplicationID, map[string]interface{}{

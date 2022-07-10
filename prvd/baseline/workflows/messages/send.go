@@ -48,7 +48,7 @@ func sendMessage(cmd *cobra.Command, args []string) {
 }
 
 func sendMessageRun(cmd *cobra.Command, args []string) {
-	common.AuthorizeApplicationContext()
+	// common.AuthorizeApplicationContext()
 	common.AuthorizeOrganizationContext(false)
 
 	var payload map[string]interface{}

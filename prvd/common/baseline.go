@@ -193,17 +193,17 @@ func InitWorkgroupContract() *nchain.Contract {
 	return contract
 }
 
-func RegisterWorkgroupOrganization(applicationID string) {
+func RegisterWorkgroupOrganization(workgroupID string) {
 	err := RequireContract(nil, util.StringOrNil("organization-registry"), false)
 	if err != nil {
 		log.Printf("failed to initialize registry contract; %s", err.Error())
 		os.Exit(1)
 	}
-	err = ident.CreateApplicationOrganization(ApplicationAccessToken, applicationID, map[string]interface{}{
+	err = ident.CreateApplicationOrganization(OrganizationAccessToken, workgroupID, map[string]interface{}{
 		"organization_id": OrganizationID,
 	})
 	if err != nil {
-		orgs, err := ident.ListApplicationOrganizations(ApplicationAccessToken, applicationID, map[string]interface{}{
+		orgs, err := ident.ListApplicationOrganizations(OrganizationAccessToken, workgroupID, map[string]interface{}{
 			"organization_id": OrganizationID,
 		})
 		if err == nil {
