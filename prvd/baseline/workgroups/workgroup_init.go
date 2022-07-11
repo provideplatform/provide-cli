@@ -37,6 +37,7 @@ import (
 const defaultNChainBaselineNetworkID = "66d44f30-9092-4182-a3c4-bc02736d6ae5"
 
 var name string
+var description string
 
 var vaultID string
 var babyJubJubKeyID string
@@ -71,7 +72,9 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	if name == "" {
 		namePrompt()
 	}
-	// TODO-- descriptionPrompt()
+	if description == "" {
+		descriptionPrompt()
+	}
 	if common.NetworkID == "" {
 		common.RequireL1Network()
 	}
@@ -96,8 +99,9 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	}
 
 	wg, err := baseline.CreateWorkgroup(token, map[string]interface{}{
-		"name":       name,
-		"network_id": common.NetworkID,
+		"name":        name,
+		"description": description,
+		"network_id":  common.NetworkID,
 		"config": map[string]interface{}{
 			"vault_id":      orgVault.ID.String(),
 			"l2_network_id": common.L2NetworkID,
@@ -203,6 +207,13 @@ func requireOrganizationKeys() {
 func namePrompt() {
 	prompt := promptui.Prompt{
 		Label: "Workgroup Name",
+		Validate: func(s string) error {
+			if s == "" {
+				return fmt.Errorf("name cannot be empty")
+			}
+
+			return nil
+		},
 	}
 
 	result, err := prompt.Run()
@@ -212,6 +223,20 @@ func namePrompt() {
 	}
 
 	name = result
+}
+
+func descriptionPrompt() {
+	prompt := promptui.Prompt{
+		Label: "Workgroup Description",
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	description = result
 }
 
 func organizationAuthPrompt(target string) {
@@ -233,6 +258,7 @@ func organizationAuthPrompt(target string) {
 
 func init() {
 	initBaselineWorkgroupCmd.Flags().StringVar(&name, "name", "", "name of the baseline workgroup")
+	initBaselineWorkgroupCmd.Flags().StringVar(&description, "description", "", "description of the baseline workgroup")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.NetworkID, "network", "", "nchain network id of the baseline mainnet to use for this workgroup")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.L2NetworkID, "l2", "", "nchain l2 network id of the baseline layer 2 to use for this workgroup")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
