@@ -380,6 +380,38 @@ var MandatoryValidation = func(input string) error {
 	return nil
 }
 
+// RequireTermsOfServiceAgreement is equivalent to a required --terms flag
+func RequireTermsOfServiceAgreement() bool {
+	prompt := promptui.Prompt{
+		IsConfirm: true,
+		Label:     "I have read and accept the terms of service (https://provide.services/terms)",
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return false
+	}
+
+	return strings.ToLower(result) == "y" // this may be redundant bc if err != nil, then result != "y"
+}
+
+// RequirePrivacyPolicyAgreement is equivalent to a required --privacy flag
+func RequirePrivacyPolicyAgreement() bool {
+	prompt := promptui.Prompt{
+		IsConfirm: true,
+		Label:     "I have read and accept the privacy policy (https://provide.services/privacy-policy)",
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return false
+	}
+
+	return strings.ToLower(result) == "y"
+}
+
 var MandatoryNumberValidation = func(input string) error {
 	if len(input) < 1 {
 		return errors.New("field cant be nil")

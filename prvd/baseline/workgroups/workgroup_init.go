@@ -17,11 +17,13 @@
 package workgroups
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	uuid "github.com/kthomas/go.uuid"
 	"github.com/manifoldco/promptui"
@@ -38,6 +40,9 @@ const defaultNChainBaselineNetworkID = "66d44f30-9092-4182-a3c4-bc02736d6ae5"
 
 var name string
 var description string
+
+var hasAgreedToTermsOfService bool
+var hasAgreedToPrivacyPolicy bool
 
 var vaultID string
 var babyJubJubKeyID string
@@ -81,6 +86,12 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	if common.L2NetworkID == "" {
 		common.RequireL2Network()
 	}
+	if !hasAgreedToTermsOfService {
+		common.RequireTermsOfServiceAgreement()
+	}
+	if !hasAgreedToPrivacyPolicy {
+		common.RequirePrivacyPolicyAgreement()
+	}
 
 	common.AuthorizeOrganizationContext(true)
 
@@ -122,6 +133,28 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	termsNow := time.Now()
+	termsString := termsNow.Format(time.RFC3339)
+	termsTimestampHex := hex.EncodeToString([]byte(termsString))
+	termsTimestampHash := common.SHA256(termsTimestampHex)
+
+	termsSig, err := vault.SignMessage(token, common.VaultID, secp256k1KeyID, termsTimestampHash, map[string]interface{}{})
+	if err != nil {
+		fmt.Printf("failed to initialize baseline workgroup: %s", err.Error())
+		os.Exit(1)
+	}
+
+	privacyNow := time.Now()
+	privacyString := privacyNow.Format(time.RFC3339)
+	privacyTimestampHex := hex.EncodeToString([]byte(privacyString))
+	privacyTimestampHash := common.SHA256(privacyTimestampHex)
+
+	privacySig, err := vault.SignMessage(token, common.VaultID, secp256k1KeyID, privacyTimestampHash, map[string]interface{}{})
+	if err != nil {
+		fmt.Printf("failed to initialize baseline workgroup: %s", err.Error())
+		os.Exit(1)
+	}
+
 	org, err := ident.GetOrganizationDetails(token, common.OrganizationID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
@@ -145,6 +178,14 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		OperatorSeparationDegree: uint32(0),
 		VaultID:                  &orgVault.ID,
 		SystemSecretIDs:          make([]*uuid.UUID, 0),
+		TOS: &organizations.WorkgroupMetadataLegal{
+			AgreedAt:  &termsNow,
+			Signature: termsSig.Signature,
+		},
+		Privacy: &organizations.WorkgroupMetadataLegal{
+			AgreedAt:  &privacyNow,
+			Signature: privacySig.Signature,
+		},
 	}
 
 	var orgInterface map[string]interface{}
@@ -261,6 +302,10 @@ func init() {
 	initBaselineWorkgroupCmd.Flags().StringVar(&description, "description", "", "description of the baseline workgroup")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.NetworkID, "network", "", "nchain network id of the baseline mainnet to use for this workgroup")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.L2NetworkID, "l2", "", "nchain l2 network id of the baseline layer 2 to use for this workgroup")
+
+	initBaselineWorkgroupCmd.Flags().BoolVarP(&hasAgreedToTermsOfService, "terms", "", false, "accept the terms of service (https://provide.services/terms)")
+	initBaselineWorkgroupCmd.Flags().BoolVarP(&hasAgreedToPrivacyPolicy, "privacy", "", false, "accept the privacy policy (https://provide.services/privacy-policy)")
+
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.MessagingEndpoint, "endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
 	initBaselineWorkgroupCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")

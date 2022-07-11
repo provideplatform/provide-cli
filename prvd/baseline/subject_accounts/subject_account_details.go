@@ -17,8 +17,6 @@
 package subject_accounts
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"log"
 	"os"
@@ -40,13 +38,6 @@ func fetchSubjectAccountDetails(cmd *cobra.Command, args []string) {
 	generalPrompt(cmd, args, promptStepDetails)
 }
 
-// SHA256 is a convenience method to return the sha256 hash of the given input
-func SHA256(str string) string {
-	digest := sha256.New()
-	digest.Write([]byte(str))
-	return hex.EncodeToString(digest.Sum(nil))
-}
-
 func fetchSubjectAccountDetailsRun(cmd *cobra.Command, args []string) {
 	if common.OrganizationID == "" {
 		common.RequireOrganization()
@@ -58,7 +49,7 @@ func fetchSubjectAccountDetailsRun(cmd *cobra.Command, args []string) {
 
 	token := common.RequireOrganizationToken()
 
-	saID := SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID))
+	saID := common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID))
 
 	sa, err := baseline.GetSubjectAccountDetails(token, common.OrganizationID, saID, map[string]interface{}{})
 	if err != nil {
