@@ -30,6 +30,8 @@ import (
 
 var description string
 
+var primaryKey string
+
 var Optional bool
 var paginate bool
 
@@ -62,7 +64,7 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 
 	fieldsPrompt(&fields)
 
-	pk, err := primaryKeyPrompt(fields)
+	err := primaryKeyPrompt(fields)
 	if err != nil {
 		log.Printf("failed to initialize baseline domain model; %s", err.Error())
 		os.Exit(1)
@@ -81,7 +83,7 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 				"type":        name,
 				"description": description,
 				"fields":      fields,
-				"primary_key": pk,
+				"primary_key": primaryKey,
 			},
 		},
 		"workgroup_id": common.WorkgroupID,
@@ -184,28 +186,34 @@ func fieldsPrompt(fields *[]*baseline.MappingField) func([]*baseline.MappingFiel
 
 }
 
-func primaryKeyPrompt(fields []*baseline.MappingField) (string, error) {
-	fieldNames := make([]string, 0)
+func primaryKeyPrompt(fields []*baseline.MappingField) error {
+	if primaryKey == "" {
+		fieldNames := make([]string, 0)
+		for _, field := range fields {
+			fieldNames = append(fieldNames, field.Name)
+		}
+
+		prompt := promptui.Select{
+			Label: "Select Primary Key",
+			Items: fieldNames, // TODO-- use templates
+		}
+
+		i, _, err := prompt.Run()
+		if err != nil {
+			return err
+		}
+
+		primaryKey = fieldNames[i]
+	}
+
 	for _, field := range fields {
-		fieldNames = append(fieldNames, field.Name)
-	}
-
-	prompt := promptui.Select{
-		Label: "Select Primary Key",
-		Items: fieldNames, // TODO-- use templates
-	}
-
-	i, _, err := prompt.Run()
-	if err == nil {
-		for j, field := range fields {
-			if i == j {
-				field.IsPrimaryKey = true
-				return field.Name, nil
-			}
+		if field.Name == primaryKey {
+			field.IsPrimaryKey = true
+			return nil
 		}
 	}
 
-	return "", err
+	return fmt.Errorf("primary key not found")
 }
 
 func init() {
@@ -213,6 +221,8 @@ func init() {
 	initBaselineDomainModelCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
 	initBaselineDomainModelCmd.Flags().StringVar(&name, "type", "", "model type")
 	initBaselineDomainModelCmd.Flags().StringVar(&description, "description", "", "model description")
+
+	initBaselineDomainModelCmd.Flags().StringVar(&primaryKey, "primary-key", "", "model primary key")
 
 	initBaselineDomainModelCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }
