@@ -69,7 +69,7 @@ func listDomainModelsRun(cmd *cobra.Command, args []string) {
 
 		_, err := prompt.Run()
 		if err == nil {
-			typePrompt()
+			listModelsTypePrompt()
 
 			ref = common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, name))
 		}
@@ -102,7 +102,7 @@ func listDomainModelsRun(cmd *cobra.Command, args []string) {
 	}
 }
 
-func typePrompt() {
+func listModelsTypePrompt() {
 	prompt := promptui.Prompt{
 		Label: "Model Type",
 	}

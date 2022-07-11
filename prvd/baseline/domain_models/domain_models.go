@@ -34,7 +34,7 @@ var DomainModelsCmd = &cobra.Command{
 
 func init() {
 	DomainModelsCmd.AddCommand(listBaselineDomainModelsCmd)
-	//  SubjectAccountsCmd.AddCommand(initBaselineSubjectAccountCmd)
+	DomainModelsCmd.AddCommand(initBaselineDomainModelCmd)
 	//  SubjectAccountsCmd.AddCommand(subjectAccountDetailsCmd)
 	DomainModelsCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 	DomainModelsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")

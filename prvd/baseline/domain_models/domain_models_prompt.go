@@ -32,8 +32,8 @@ var emptyPromptLabel = "What would you like to do"
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	switch step {
-	//  case promptStepInit:
-	// 	 createSubjectAccountRun(cmd, args)
+	case promptStepInit:
+		initDomainModelRun(cmd, args)
 	case promptStepList:
 		page, rpp = common.PromptPagination(paginate, page, rpp)
 		listDomainModelsRun(cmd, args)
