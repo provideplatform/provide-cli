@@ -269,6 +269,7 @@ func RequireL2Network() error {
 // RequireOrganization is equivalent to a required --organization flag
 func RequireOrganization() error {
 	if OrganizationID != "" {
+		Organization, _ = ident.GetOrganizationDetails(RequireUserAccessToken(), OrganizationID, map[string]interface{}{})
 		return nil
 	}
 
@@ -289,9 +290,7 @@ func RequireOrganization() error {
 	}
 
 	Organization = orgs[i]
-	if orgs[i].ID != nil {
-		OrganizationID = *orgs[i].ID
-	}
+	OrganizationID = *orgs[i].ID
 	return nil
 }
 

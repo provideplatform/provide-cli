@@ -71,12 +71,15 @@ func listDomainModelsRun(cmd *cobra.Command, args []string) {
 	}
 
 	for _, model := range models {
-		result := fmt.Sprintf("%s\t%d model(s)\t%s\n", model.ID.String(), len(model.Models), *model.Type)
+		result := fmt.Sprintf("%s\t%d field(s)\t%s\n", model.ID.String(), len(model.Models[0].Fields), *model.Type)
 		fmt.Print(result)
 	}
 }
 
 func init() {
+	listBaselineDomainModelsCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
+	listBaselineDomainModelsCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
+
 	// initBaselineWorkgroupCmd.Flags().StringVar(&type, "type", "", "type of the domain model")
 	listBaselineDomainModelsCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
 	listBaselineDomainModelsCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of baseline domain models to retrieve per page")
