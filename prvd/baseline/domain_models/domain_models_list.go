@@ -21,12 +21,13 @@ import (
 	"log"
 	"os"
 
+	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
 	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/spf13/cobra"
 )
 
-// var type string
+var name string // FIXME-- using var 'name' instead of 'type' bc type is reserved keyword
 
 var page uint64
 var rpp uint64
@@ -48,7 +49,31 @@ func listDomainModelsRun(cmd *cobra.Command, args []string) {
 	}
 
 	if common.WorkgroupID == "" {
-		common.RequireWorkgroup()
+		prompt := promptui.Prompt{
+			IsConfirm: true,
+			Label:     "Select workgroup",
+		}
+
+		_, err := prompt.Run()
+		if err == nil {
+			common.RequireWorkgroup()
+		}
+	}
+
+	var ref string
+	if name == "" {
+		prompt := promptui.Prompt{
+			IsConfirm: true,
+			Label:     "Enter model type",
+		}
+
+		_, err := prompt.Run()
+		if err == nil {
+			typePrompt()
+
+			ref = common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, name))
+		}
+
 	}
 
 	common.AuthorizeOrganizationContext(true)
@@ -57,6 +82,7 @@ func listDomainModelsRun(cmd *cobra.Command, args []string) {
 
 	models, err := baseline.ListMappings(token, map[string]interface{}{
 		"workgroup_id": common.WorkgroupID,
+		"ref":          ref,
 		"page":         fmt.Sprintf("%d", page),
 		"rpp":          fmt.Sprintf("%d", rpp),
 	})
@@ -76,11 +102,21 @@ func listDomainModelsRun(cmd *cobra.Command, args []string) {
 	}
 }
 
+func typePrompt() {
+	prompt := promptui.Prompt{
+		Label: "Model Type",
+	}
+
+	result, err := prompt.Run()
+	if err == nil {
+		name = result
+	}
+}
+
 func init() {
 	listBaselineDomainModelsCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	listBaselineDomainModelsCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
-
-	// initBaselineWorkgroupCmd.Flags().StringVar(&type, "type", "", "type of the domain model")
+	listBaselineDomainModelsCmd.Flags().StringVar(&name, "type", "", "domain model type")
 	listBaselineDomainModelsCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
 	listBaselineDomainModelsCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of baseline domain models to retrieve per page")
 	listBaselineDomainModelsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
