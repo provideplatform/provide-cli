@@ -64,5 +64,5 @@ func createOrganizationRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	organizationsInitCmd.Flags().StringVar(&organizationName, "name", "", "name of the organization")	
+	organizationsInitCmd.Flags().StringVar(&organizationName, "name", "", "name of the organization")
 }

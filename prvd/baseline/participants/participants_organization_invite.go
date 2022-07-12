@@ -19,6 +19,7 @@ package participants
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -27,8 +28,10 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kthomas/go-pgputil"
+	uuid "github.com/kthomas/go.uuid"
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
+	"github.com/provideplatform/provide-cli/prvd/organizations"
 	ident "github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/nchain"
 	"github.com/provideplatform/provide-go/api/vault"
@@ -36,99 +39,109 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-var name string
-var email string
-var permissions int
-var invitorAddress string
-var registryContractAddress string
-var managedTenant bool
-var Optional bool
-var paginate bool
+var orgName string
 
-var inviteBaselineWorkgroupParticipantCmd = &cobra.Command{
-	Use:   "invite",
-	Short: "Invite an organization to a baseline workgroup",
-	Long: `Invite an organization to participate in a baseline workgroup.
-
-A verifiable credential is issued which can then be distributed to the invited party out-of-band.`,
-	Run: inviteParticipant,
+var inviteBaselineWorkgroupOrganizationCmd = &cobra.Command{
+	Use:   "invite-organization",
+	Short: "Invite a organization to a baseline workgroup",
+	Long: `Invite a organization to participate in a baseline workgroup.
+ 
+ A verifiable credential is issued which can then be distributed to the invited party out-of-band.`,
+	Run: inviteOrganization,
 }
 
-func inviteParticipant(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, promptStepInvite)
+func inviteOrganization(cmd *cobra.Command, args []string) {
+	generalPrompt(cmd, args, promptStepInviteOrganization)
 }
 
-func inviteParticipantRun(cmd *cobra.Command, args []string) {
-	if name == "" {
-		namePrompt()
+func inviteOrganizationRun(cmd *cobra.Command, args []string) {
+	if common.OrganizationID == "" {
+		common.RequireOrganization()
+	}
+	if common.WorkgroupID == "" {
+		common.RequireWorkgroup()
+	}
+	if firstName == "" {
+		firstNamePrompt()
+	}
+	if lastName == "" {
+		lastNamePrompt()
 	}
 	if email == "" {
 		emailPrompt()
 	}
-	// common.AuthorizeApplicationContext()
+	if orgName == "" {
+		orgNamePrompt()
+	}
+
 	common.AuthorizeOrganizationContext(false)
 
-	vaults, err := vault.ListVaults(common.OrganizationAccessToken, map[string]interface{}{
-		"organization_id": common.OrganizationID,
-	})
+	token := common.RequireOrganizationToken()
+
+	vaults, err := vault.ListVaults(token, map[string]interface{}{})
 	if err != nil {
 		log.Printf("failed to resolve vault for organization; %s", err.Error())
 		os.Exit(1)
 	}
+	orgVaultID := vaults[0].ID.String()
 
-	keys, err := vault.ListKeys(common.OrganizationAccessToken, vaults[0].ID.String(), map[string]interface{}{
+	keys, err := vault.ListKeys(token, orgVaultID, map[string]interface{}{
 		"spec": "secp256k1",
 	})
 	if err != nil {
 		log.Printf("failed to resolve secp256k1 key for organization; %s", err.Error())
 		os.Exit(1)
 	}
+	secp256k1KeyAddress := keys[0].Address
 
-	contracts, _ := nchain.ListContracts(common.OrganizationAccessToken, map[string]interface{}{
+	contracts, _ := nchain.ListContracts(token, map[string]interface{}{
 		"type": "organization-registry",
 	})
 	if err != nil {
 		log.Printf("failed to resolve contract for organization; %s", err.Error())
 		os.Exit(1)
 	}
+	orgRegistryAddress := contracts[0].Address
 
-	invitorAddress := keys[0].Address
-	registryContractAddress := contracts[0].Address
-
-	params := map[string]interface{}{
-		"invitor_organization_address": invitorAddress,
-		"registry_contract_address":    registryContractAddress,
-		"workgroup_id":                 common.ApplicationID,
+	if common.SubjectAccountID == "" {
+		common.SubjectAccountID = common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID))
 	}
 
-	authorizedBearerToken := vendJWT(vaults[0].ID.String(), params)
-	params["authorized_bearer_token"] = authorizedBearerToken
-
-	if common.OrganizationID != "" {
-		params["organization_id"] = common.OrganizationID
+	jwtParams := map[string]interface{}{
+		"invitor_organization_address": secp256k1KeyAddress,
+		"registry_contract_address":    orgRegistryAddress,
+		"workgroup_id":                 common.WorkgroupID,
+		"invitor_subject_account_id":   common.SubjectAccountID,
 	}
 
-	if name != "" {
-		params["organization_name"] = name
+	authorizedBearerToken := vendJWT(orgVaultID, jwtParams)
+
+	var localOrg organizations.Organization
+	raw, _ := json.Marshal(common.Organization)
+	json.Unmarshal(raw, &localOrg)
+
+	wgID, _ := uuid.FromString(common.WorkgroupID)
+
+	inviteParams := map[string]interface{}{
+		"first_name":        firstName,
+		"last_name":         lastName,
+		"email":             email,
+		"organization_name": orgName,
+		"application_id":    common.WorkgroupID, // FIXME-- should be workgroup id
+		"params": map[string]interface{}{
+			"authorized_bearer_token":    authorizedBearerToken,
+			"is_organization_invite":     true,
+			"operator_separation_degree": localOrg.Metadata.Workgroups[wgID].OperatorSeparationDegree + 1,
+			"workgroup":                  common.Workgroup,
+		},
 	}
 
-	if permissions != 0 {
-		params["permissions"] = permissions
-	}
-
-	common.RegisterWorkgroupOrganization(common.ApplicationID)
-
-	err = ident.CreateInvitation(common.OrganizationAccessToken, map[string]interface{}{
-		"application_id": common.ApplicationID,
-		"email":          email,
-		"params":         params,
-	})
-	if err != nil {
-		log.Printf("failed to invite baseline workgroup participants; %s", err.Error())
+	if err := ident.CreateInvitation(token, inviteParams); err != nil {
+		log.Printf("failed to invite baseline workgroup user; %s", err.Error())
 		os.Exit(1)
 	}
 
-	log.Printf("invited baseline workgroup participant: %s\n\n\t%s", email, authorizedBearerToken)
+	log.Printf("invited baseline workgroup organization: %s\n", orgName)
 }
 
 func vendJWT(vaultID string, params map[string]interface{}) string {
@@ -156,7 +169,7 @@ func vendJWT(vaultID string, params map[string]interface{}) string {
 	claims := map[string]interface{}{
 		"aud":      org.Metadata["messaging_endpoint"],
 		"iat":      issuedAt.Unix(),
-		"iss":      fmt.Sprintf("organization:%s", common.OrganizationID),
+		"iss":      common.OrganizationID,
 		"sub":      email,
 		"baseline": params,
 	}
@@ -289,9 +302,16 @@ func encodeJWTNatsClaims() (map[string]interface{}, error) {
 	return natsClaims, nil
 }
 
-func namePrompt() {
+func orgNamePrompt() {
 	prompt := promptui.Prompt{
-		Label: "Invitee Name",
+		Label: "Invitee Organization Name",
+		Validate: func(s string) error {
+			if s == "" {
+				return fmt.Errorf("organization name required")
+			}
+
+			return nil
+		},
 	}
 
 	result, err := prompt.Run()
@@ -300,29 +320,19 @@ func namePrompt() {
 		return
 	}
 
-	name = result
-}
-
-func emailPrompt() {
-	prompt := promptui.Prompt{
-		Label: "Invitee Email",
-	}
-
-	result, err := prompt.Run()
-	if err != nil {
-		os.Exit(1)
-		return
-	}
-
-	email = result
+	orgName = result
 }
 
 func init() {
-	inviteBaselineWorkgroupParticipantCmd.Flags().StringVar(&common.ApplicationID, "workgroup", "", "workgroup identifier")
-	inviteBaselineWorkgroupParticipantCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier")
-	inviteBaselineWorkgroupParticipantCmd.Flags().StringVar(&name, "name", "", "name of the invited participant")
-	inviteBaselineWorkgroupParticipantCmd.Flags().StringVar(&email, "email", "", "email address of the invited participant")
-	inviteBaselineWorkgroupParticipantCmd.Flags().BoolVar(&managedTenant, "managed-tenant", false, "if set, the invited participant is authorized to leverage operator-provided infrastructure")
-	inviteBaselineWorkgroupParticipantCmd.Flags().IntVar(&permissions, "permissions", 0, "permissions for invited participant")
-	inviteBaselineWorkgroupParticipantCmd.Flags().BoolVarP(&Optional, "Optional", "", false, "List all the Optional flags")
+	inviteBaselineWorkgroupOrganizationCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
+	inviteBaselineWorkgroupOrganizationCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier")
+	inviteBaselineWorkgroupOrganizationCmd.Flags().StringVar(&common.SubjectAccountID, "subject-account", "", "subject account identifier")
+	inviteBaselineWorkgroupOrganizationCmd.Flags().StringVar(&firstName, "first-name", "", "first name of the invited participant")
+	inviteBaselineWorkgroupOrganizationCmd.Flags().StringVar(&lastName, "last-name", "", "last name of the invited participant")
+	inviteBaselineWorkgroupOrganizationCmd.Flags().StringVar(&email, "email", "", "email address of the invited participant")
+	inviteBaselineWorkgroupOrganizationCmd.Flags().StringVar(&orgName, "organization-name", "", "name of the invited organization")
+
+	// inviteBaselineWorkgroupOrganizationCmd.Flags().BoolVar(&managedTenant, "managed-tenant", false, "if set, the invited participant is authorized to leverage operator-provided infrastructure")
+	// inviteBaselineWorkgroupOrganizationCmd.Flags().IntVar(&permissions, "permissions", 0, "permissions for invited participant")
+	inviteBaselineWorkgroupOrganizationCmd.Flags().BoolVarP(&Optional, "Optional", "", false, "List all the Optional flags")
 }
