@@ -24,9 +24,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const promptStepInit = "Initialize"
 const promptStepList = "List"
 const promptStepDetails = "Details"
+const promptStepInit = "Initialize"
+const promptStepUpdate = "Update"
 const promptStepJoin = "Join"
 
 var emptyPromptArgs = []string{promptStepInit, promptStepList, promptStepJoin}
@@ -57,6 +58,8 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 			}
 		}
 		initWorkgroupRun(cmd, args)
+	case promptStepUpdate:
+		updateWorkgroupRun(cmd, args)
 	case promptStepJoin:
 		if Optional {
 			fmt.Println("Optional Flags:")
