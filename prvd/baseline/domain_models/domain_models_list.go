@@ -73,7 +73,6 @@ func listDomainModelsRun(cmd *cobra.Command, args []string) {
 
 			ref = common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, name))
 		}
-
 	}
 
 	common.AuthorizeOrganizationContext(true)
@@ -117,6 +116,7 @@ func init() {
 	listBaselineDomainModelsCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	listBaselineDomainModelsCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
 	listBaselineDomainModelsCmd.Flags().StringVar(&name, "type", "", "domain model type")
+
 	listBaselineDomainModelsCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
 	listBaselineDomainModelsCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of baseline domain models to retrieve per page")
 	listBaselineDomainModelsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")

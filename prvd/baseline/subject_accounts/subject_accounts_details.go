@@ -49,9 +49,11 @@ func fetchSubjectAccountDetailsRun(cmd *cobra.Command, args []string) {
 
 	token := common.RequireOrganizationToken()
 
-	saID := common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID))
+	if common.SubjectAccountID == "" {
+		common.SubjectAccountID = common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID))
+	}
 
-	sa, err := baseline.GetSubjectAccountDetails(token, common.OrganizationID, saID, map[string]interface{}{})
+	sa, err := baseline.GetSubjectAccountDetails(token, common.OrganizationID, common.SubjectAccountID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("Failed to retrieve details for subject account with id: %s; %s", common.OrganizationID, err.Error())
 		os.Exit(1)
@@ -67,5 +69,7 @@ func fetchSubjectAccountDetailsRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	subjectAccountDetailsCmd.Flags().StringVar(&common.SubjectAccountID, "subject account", "", "subject account identifier")
+	subjectAccountDetailsCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier")
+	subjectAccountDetailsCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
+	subjectAccountDetailsCmd.Flags().StringVar(&common.SubjectAccountID, "subject-account", "", "subject account identifier")
 }

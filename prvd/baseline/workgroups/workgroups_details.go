@@ -63,5 +63,6 @@ func fetchWorkgroupDetailsRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	detailBaselineWorkgroupCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "id of the baseline workgroup")
+	detailBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier")
+	detailBaselineWorkgroupCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
 }

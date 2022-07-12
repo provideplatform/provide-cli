@@ -250,7 +250,6 @@ func init() {
 	initBaselineDomainModelCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
 	initBaselineDomainModelCmd.Flags().StringVar(&name, "type", "", "model type")
 	initBaselineDomainModelCmd.Flags().StringVar(&description, "description", "", "model description")
-
 	initBaselineDomainModelCmd.Flags().StringVar(&fields, "fields", "", "model fields in the '[{\"name\": \"yourmother\", \"type\": \"string\"}, ...]' format")
 	initBaselineDomainModelCmd.Flags().StringVar(&primaryKey, "primary-key", "", "model primary key")
 

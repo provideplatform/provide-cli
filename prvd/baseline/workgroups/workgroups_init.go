@@ -298,15 +298,13 @@ func organizationAuthPrompt(target string) {
 }
 
 func init() {
+	initBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	initBaselineWorkgroupCmd.Flags().StringVar(&name, "name", "", "name of the baseline workgroup")
 	initBaselineWorkgroupCmd.Flags().StringVar(&description, "description", "", "description of the baseline workgroup")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.NetworkID, "network", "", "nchain network id of the baseline mainnet to use for this workgroup")
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.L2NetworkID, "l2", "", "nchain l2 network id of the baseline layer 2 to use for this workgroup")
-
 	initBaselineWorkgroupCmd.Flags().BoolVarP(&hasAgreedToTermsOfService, "terms", "", false, "accept the terms of service (https://provide.services/terms)")
 	initBaselineWorkgroupCmd.Flags().BoolVarP(&hasAgreedToPrivacyPolicy, "privacy", "", false, "accept the privacy policy (https://provide.services/privacy-policy)")
 
-	initBaselineWorkgroupCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
-	initBaselineWorkgroupCmd.Flags().StringVar(&common.MessagingEndpoint, "endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
 	initBaselineWorkgroupCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }

@@ -77,6 +77,8 @@ func listSubjectAccountsRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
+	listBaselineSubjectAccountsCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier")
+
 	listBaselineSubjectAccountsCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
 	listBaselineSubjectAccountsCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of baseline subject accounts to retrieve per page")
 	listBaselineSubjectAccountsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")

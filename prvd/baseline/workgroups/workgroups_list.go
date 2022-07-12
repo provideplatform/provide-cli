@@ -57,6 +57,8 @@ func listWorkgroupsRun(cmd *cobra.Command, args []string) {
 }
 
 func init() {
+	listBaselineWorkgroupsCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier")
+
 	listBaselineWorkgroupsCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
 	listBaselineWorkgroupsCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of baseline workgroups to retrieve per page")
 	listBaselineWorkgroupsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
