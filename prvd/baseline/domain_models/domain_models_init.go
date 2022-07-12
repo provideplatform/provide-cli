@@ -30,6 +30,7 @@ import (
 
 var description string
 
+var fields string
 var primaryKey string
 
 var Optional bool
@@ -60,12 +61,22 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 		descriptionPrompt()
 	}
 
-	fields := make([]*baseline.MappingField, 0)
+	localFields := make([]*baseline.MappingField, 0)
+	if fields != "" {
+		if err := json.Unmarshal([]byte(fields), &localFields); err != nil {
+			log.Printf("failed to initialize baseline domain model; %s", err.Error())
+			os.Exit(1)
+		}
 
-	fieldsPrompt(&fields)
+		if err := validateFields(localFields); err != nil {
+			log.Printf("failed to initialize baseline domain model; %s", err.Error())
+			os.Exit(1)
+		}
+	}
 
-	err := primaryKeyPrompt(fields)
-	if err != nil {
+	fieldsPrompt(&localFields)
+
+	if err := primaryKeyPrompt(localFields); err != nil {
 		log.Printf("failed to initialize baseline domain model; %s", err.Error())
 		os.Exit(1)
 	}
@@ -82,7 +93,7 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 			map[string]interface{}{
 				"type":        name,
 				"description": description,
-				"fields":      fields,
+				"fields":      localFields,
 				"primary_key": primaryKey,
 			},
 		},
@@ -216,12 +227,31 @@ func primaryKeyPrompt(fields []*baseline.MappingField) error {
 	return fmt.Errorf("primary key not found")
 }
 
+func validateFields(fields []*baseline.MappingField) error {
+	for _, field := range fields {
+		if field.Name == "" {
+			return fmt.Errorf("field must have a name")
+		}
+
+		if field.Type != "number" && field.Type != "string" {
+			return fmt.Errorf("%s is not a valid field type; fields must have type number or string", field.Type)
+		}
+
+		if field.IsPrimaryKey {
+			return fmt.Errorf("cannot set primary key from the --fields flag; use the --primary-key flag instead") // TODO-- this should be supported
+		}
+	}
+
+	return nil
+}
+
 func init() {
 	initBaselineDomainModelCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	initBaselineDomainModelCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
 	initBaselineDomainModelCmd.Flags().StringVar(&name, "type", "", "model type")
 	initBaselineDomainModelCmd.Flags().StringVar(&description, "description", "", "model description")
 
+	initBaselineDomainModelCmd.Flags().StringVar(&fields, "fields", "", "model fields in the '[{\"name\": \"yourmother\", \"type\": \"string\"}, ...]' format")
 	initBaselineDomainModelCmd.Flags().StringVar(&primaryKey, "primary-key", "", "model primary key")
 
 	initBaselineDomainModelCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
