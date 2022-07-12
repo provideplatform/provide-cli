@@ -350,14 +350,8 @@ func lastNamePrompt() {
 
 func emailPrompt() {
 	prompt := promptui.Prompt{
-		Label: "Invitee Email",
-		Validate: func(s string) error {
-			if s == "" {
-				return fmt.Errorf("email required") // TODO-- email regex validation
-			}
-
-			return nil
-		},
+		Label:    "Invitee Email",
+		Validate: common.EmailValidation,
 	}
 
 	result, err := prompt.Run()

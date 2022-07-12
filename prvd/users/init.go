@@ -43,7 +43,7 @@ var passwd string
 func create(cmd *cobra.Command, args []string) {
 	firstName = common.FreeInput("First Name", "", common.MandatoryValidation)
 	lastName = common.FreeInput("Last Name", "", common.MandatoryValidation)
-	email = common.FreeInput("Email", "", common.MandatoryValidation)
+	email = common.FreeInput("Email", "", common.EmailValidation)
 	passwd = common.FreeInput("Password", "", common.MandatoryValidation)
 
 	resp, err := provide.CreateUser("", map[string]interface{}{

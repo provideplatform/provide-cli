@@ -374,10 +374,24 @@ func RequireWallet() error {
 }
 
 var MandatoryValidation = func(input string) error {
-	if len(input) < 1 {
-		return errors.New("password must have more than 6 characters")
+	if input == "" {
+		return errors.New("required")
 	}
 	return nil
+}
+
+var EmailValidation = func(input string) error {
+	if input == "" {
+		return errors.New("email is required")
+	}
+
+	re := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	if !re.MatchString(input) {
+		return errors.New("invalid email")
+	}
+
+	return nil
+
 }
 
 // RequireTermsOfServiceAgreement is equivalent to a required --terms flag
@@ -459,7 +473,6 @@ var HexValidation = func(input string) error {
 }
 
 func FreeInput(label string, defaultValue string, validate func(string) error) string {
-
 	var prompt = promptui.Prompt{}
 	if label == "Password" {
 		prompt = promptui.Prompt{
