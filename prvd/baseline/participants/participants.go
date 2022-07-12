@@ -17,7 +17,11 @@
 package participants
 
 import (
+	participants_invitations "github.com/provideplatform/provide-cli/prvd/baseline/participants/invitations"
+	participants_organizations "github.com/provideplatform/provide-cli/prvd/baseline/participants/organizations"
+	participants_users "github.com/provideplatform/provide-cli/prvd/baseline/participants/users"
 	"github.com/provideplatform/provide-cli/prvd/common"
+
 	"github.com/spf13/cobra"
 )
 
@@ -33,10 +37,9 @@ var ParticipantsCmd = &cobra.Command{
 }
 
 func init() {
-	ParticipantsCmd.AddCommand(inviteBaselineWorkgroupUserCmd)
-	ParticipantsCmd.AddCommand(inviteBaselineWorkgroupOrganizationCmd)
-
-	ParticipantsCmd.AddCommand(listBaselineWorkgroupParticipantsCmd)
+	ParticipantsCmd.AddCommand(participants_users.ParticipantsUsersCmd)
+	ParticipantsCmd.AddCommand(participants_organizations.ParticipantsOrganizationsCmd)
+	ParticipantsCmd.AddCommand(participants_invitations.ParticipantsInvitationsCmd)
 
 	ParticipantsCmd.Flags().BoolVarP(&Optional, "Optional", "", false, "List all the Optional flags")
 	ParticipantsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")

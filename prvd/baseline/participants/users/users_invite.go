@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package participants
+package users
 
 import (
 	"fmt"
@@ -35,20 +35,18 @@ var permissions int
 var invitorAddress string
 var registryContractAddress string
 var managedTenant bool
-var Optional bool
-var paginate bool
 
 var inviteBaselineWorkgroupUserCmd = &cobra.Command{
-	Use:   "invite-user",
+	Use:   "invite",
 	Short: "Invite a user to a baseline workgroup",
 	Long: `Invite a user to participate in a baseline workgroup.
-
-A verifiable credential is issued which can then be distributed to the invited party out-of-band.`,
+ 
+ A verifiable credential is issued which can then be distributed to the invited party out-of-band.`,
 	Run: inviteUser,
 }
 
 func inviteUser(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, promptStepInviteUser)
+	generalPrompt(cmd, args, promptStepInvite)
 }
 
 func inviteUserRun(cmd *cobra.Command, args []string) {
@@ -139,7 +137,7 @@ func emailPrompt() {
 		Label: "Invitee Email",
 		Validate: func(s string) error {
 			if s == "" {
-				return fmt.Errorf("email required")
+				return fmt.Errorf("email required") // TODO-- email regex validation
 			}
 
 			return nil

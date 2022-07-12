@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package participants
+package organizations
 
 import (
 	"encoding/base64"
@@ -31,7 +31,7 @@ import (
 	uuid "github.com/kthomas/go.uuid"
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
-	"github.com/provideplatform/provide-cli/prvd/organizations"
+	cli_organizations "github.com/provideplatform/provide-cli/prvd/organizations"
 	ident "github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/nchain"
 	"github.com/provideplatform/provide-go/api/vault"
@@ -39,19 +39,23 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+var firstName string
+var lastName string
+var email string
+
 var orgName string
 
 var inviteBaselineWorkgroupOrganizationCmd = &cobra.Command{
-	Use:   "invite-organization",
-	Short: "Invite a organization to a baseline workgroup",
-	Long: `Invite a organization to participate in a baseline workgroup.
- 
- A verifiable credential is issued which can then be distributed to the invited party out-of-band.`,
+	Use:   "invite",
+	Short: "Invite an organization to a baseline workgroup",
+	Long: `Invite an organization to participate in a baseline workgroup.
+  
+  A verifiable credential is issued which can then be distributed to the invited party out-of-band.`,
 	Run: inviteOrganization,
 }
 
 func inviteOrganization(cmd *cobra.Command, args []string) {
-	generalPrompt(cmd, args, promptStepInviteOrganization)
+	generalPrompt(cmd, args, promptStepInvite)
 }
 
 func inviteOrganizationRun(cmd *cobra.Command, args []string) {
@@ -116,7 +120,7 @@ func inviteOrganizationRun(cmd *cobra.Command, args []string) {
 
 	authorizedBearerToken := vendJWT(orgVaultID, jwtParams)
 
-	var localOrg organizations.Organization
+	var localOrg cli_organizations.Organization
 	raw, _ := json.Marshal(common.Organization)
 	json.Unmarshal(raw, &localOrg)
 
@@ -300,6 +304,69 @@ func encodeJWTNatsClaims() (map[string]interface{}, error) {
 	}
 
 	return natsClaims, nil
+}
+
+func firstNamePrompt() {
+	prompt := promptui.Prompt{
+		Label: "Invitee First Name",
+		Validate: func(s string) error {
+			if s == "" {
+				return fmt.Errorf("first name required")
+			}
+
+			return nil
+		},
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	firstName = result
+}
+
+func lastNamePrompt() {
+	prompt := promptui.Prompt{
+		Label: "Invitee Last Name",
+		Validate: func(s string) error {
+			if s == "" {
+				return fmt.Errorf("last name required")
+			}
+
+			return nil
+		},
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	lastName = result
+}
+
+func emailPrompt() {
+	prompt := promptui.Prompt{
+		Label: "Invitee Email",
+		Validate: func(s string) error {
+			if s == "" {
+				return fmt.Errorf("email required") // TODO-- email regex validation
+			}
+
+			return nil
+		},
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	email = result
 }
 
 func orgNamePrompt() {
