@@ -127,7 +127,13 @@ func updateWorkgroupPrompt(wg *Workgroup, isOperator bool) error {
 
 		description = result
 	}
-	*wg.Description = description
+	if description != "" && wg.Description != nil {
+		*wg.Description = description
+	} else if description != "" && wg.Description == nil {
+		wg.Description = &description
+	} else if description == "" && wg.Description != nil {
+		wg.Description = nil
+	}
 
 	// TODO-- vault, systems
 

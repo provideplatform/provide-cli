@@ -74,6 +74,9 @@ func initWorkgroup(cmd *cobra.Command, args []string) {
 }
 
 func initWorkgroupRun(cmd *cobra.Command, args []string) {
+	if common.OrganizationID == "" {
+		common.RequireOrganization()
+	}
 	if name == "" {
 		namePrompt()
 	}
@@ -109,16 +112,21 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	wg, err := baseline.CreateWorkgroup(token, map[string]interface{}{
-		"name":        name,
-		"description": description,
-		"network_id":  common.NetworkID,
+	params := map[string]interface{}{
+		"name":       name,
+		"network_id": common.NetworkID,
 		"config": map[string]interface{}{
 			"vault_id":      orgVault.ID.String(),
 			"l2_network_id": common.L2NetworkID,
 		},
 		"type": "baseline",
-	})
+	}
+
+	if description != "" {
+		params["description"] = description
+	}
+
+	wg, err := baseline.CreateWorkgroup(token, params)
 	if err != nil {
 		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
 		os.Exit(1)

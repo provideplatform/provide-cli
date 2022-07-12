@@ -85,20 +85,26 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 
 	token := common.RequireOrganizationToken()
 
-	m, err := baseline.CreateMapping(token, map[string]interface{}{
-		"name":        name,
-		"description": description,
+	modelParam := map[string]interface{}{
 		"type":        name,
+		"fields":      localFields,
+		"primary_key": primaryKey,
+	}
+
+	if description != "" {
+		modelParam["description"] = description
+	}
+
+	params := map[string]interface{}{
+		"name": name,
+		"type": name,
 		"models": []interface{}{
-			map[string]interface{}{
-				"type":        name,
-				"description": description,
-				"fields":      localFields,
-				"primary_key": primaryKey,
-			},
+			modelParam,
 		},
 		"workgroup_id": common.WorkgroupID,
-	})
+	}
+
+	m, err := baseline.CreateMapping(token, params)
 	if err != nil {
 		log.Printf("failed to initialize baseline domain model; %s", err.Error())
 		os.Exit(1)
