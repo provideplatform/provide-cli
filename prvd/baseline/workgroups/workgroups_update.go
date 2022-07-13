@@ -24,7 +24,6 @@ import (
 	uuid "github.com/kthomas/go.uuid"
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
-	"github.com/provideplatform/provide-cli/prvd/organizations"
 	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/spf13/cobra"
 )
@@ -48,11 +47,11 @@ func updateWorkgroupRun(cmd *cobra.Command, args []string) {
 		common.RequireWorkgroup()
 	}
 
-	var localWg Workgroup
+	var localWg common.WorkgroupType
 	raw, _ := json.Marshal(common.Workgroup)
 	json.Unmarshal(raw, &localWg)
 
-	var localOrg organizations.Organization
+	var localOrg common.OrganizationType
 	raw, _ = json.Marshal(common.Organization)
 	json.Unmarshal(raw, &localOrg)
 
@@ -84,7 +83,7 @@ func updateWorkgroupRun(cmd *cobra.Command, args []string) {
 	fmt.Printf("%s\n", string(result))
 }
 
-func updateWorkgroupPrompt(wg *Workgroup, isOperator bool) error {
+func updateWorkgroupPrompt(wg *common.WorkgroupType, isOperator bool) error {
 	// name
 	if name == "" {
 		prompt := promptui.Prompt{

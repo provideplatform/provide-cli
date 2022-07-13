@@ -23,8 +23,11 @@ import (
 	"os"
 	"strings"
 
+	uuid "github.com/kthomas/go.uuid"
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
+	"github.com/provideplatform/provide-go/api/baseline"
+	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/vault"
 	"github.com/spf13/cobra"
 )
@@ -98,6 +101,43 @@ func initSystemRun(cmd *cobra.Command, args []string) {
 
 	secret, err := vault.CreateSecret(token, vaults[0].ID.String(), params)
 	if err != nil {
+		fmt.Printf("failed to initialize system; %s", err.Error())
+		os.Exit(1)
+	}
+
+	var localOrg common.OrganizationType
+	raw, _ := json.Marshal(common.Organization)
+	json.Unmarshal(raw, &localOrg)
+
+	var localWg common.WorkgroupType
+	raw, _ = json.Marshal(common.Workgroup)
+	json.Unmarshal(raw, &localWg)
+
+	isOperator := localOrg.Metadata.Workgroups[localWg.ID].OperatorSeparationDegree == 0
+	if isOperator {
+		if localWg.Config.SystemSecretIDs == nil {
+			localWg.Config.SystemSecretIDs = make([]*uuid.UUID, 0)
+		}
+
+		localWg.Config.SystemSecretIDs = append(localWg.Config.SystemSecretIDs, &secret.ID)
+
+		var wgInterface map[string]interface{}
+		raw, _ = json.Marshal(localWg)
+		json.Unmarshal(raw, &wgInterface)
+
+		if err := baseline.UpdateWorkgroup(token, localWg.ID.String(), wgInterface); err != nil {
+			fmt.Printf("failed to initialize system; %s", err.Error())
+			os.Exit(1)
+		}
+	}
+
+	localOrg.Metadata.Workgroups[localWg.ID].SystemSecretIDs = append(localOrg.Metadata.Workgroups[localWg.ID].SystemSecretIDs, &secret.ID)
+
+	var orgInterface map[string]interface{}
+	raw, _ = json.Marshal(localOrg)
+	json.Unmarshal(raw, &orgInterface)
+
+	if err := ident.UpdateOrganization(token, *localOrg.ID, orgInterface); err != nil {
 		fmt.Printf("failed to initialize system; %s", err.Error())
 		os.Exit(1)
 	}

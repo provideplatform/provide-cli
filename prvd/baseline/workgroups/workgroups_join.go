@@ -28,7 +28,6 @@ import (
 	uuid "github.com/kthomas/go.uuid"
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
-	"github.com/provideplatform/provide-cli/prvd/organizations"
 	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/vault"
@@ -216,20 +215,20 @@ func joinWorkgroupRun(cmd *cobra.Command, args []string) {
 
 		// TODO-- configure system for organization participant
 
-		var localOrg organizations.Organization
+		var localOrg common.OrganizationType
 		raw, _ := json.Marshal(org)
 		json.Unmarshal(raw, &localOrg)
 
 		localOrg.Metadata.Address = *secp256k1Key.Address
-		localOrg.Metadata.Workgroups[*decodedTokenData.ApplicationID] = &organizations.OrganizationWorkgroupMetadata{
+		localOrg.Metadata.Workgroups[*decodedTokenData.ApplicationID] = &common.OrganizationWorkgroupMetadata{
 			OperatorSeparationDegree: decodedTokenData.Params.OperatorSeparationDegree,
 			VaultID:                  &orgVault.ID,
 			SystemSecretIDs:          make([]*uuid.UUID, 0),
-			TOS: &organizations.WorkgroupMetadataLegal{
+			TOS: &common.WorkgroupMetadataLegal{
 				AgreedAt:  &termsNow,
 				Signature: termsSig.Signature,
 			},
-			Privacy: &organizations.WorkgroupMetadataLegal{
+			Privacy: &common.WorkgroupMetadataLegal{
 				AgreedAt:  &privacyNow,
 				Signature: privacySig.Signature,
 			},

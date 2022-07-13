@@ -31,7 +31,6 @@ import (
 	uuid "github.com/kthomas/go.uuid"
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
-	cli_organizations "github.com/provideplatform/provide-cli/prvd/organizations"
 	ident "github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/nchain"
 	"github.com/provideplatform/provide-go/api/vault"
@@ -120,7 +119,7 @@ func inviteOrganizationRun(cmd *cobra.Command, args []string) {
 
 	authorizedBearerToken := vendJWT(orgVaultID, jwtParams)
 
-	var localOrg cli_organizations.Organization
+	var localOrg common.OrganizationType
 	raw, _ := json.Marshal(common.Organization)
 	json.Unmarshal(raw, &localOrg)
 

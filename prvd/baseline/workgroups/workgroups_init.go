@@ -28,7 +28,6 @@ import (
 	uuid "github.com/kthomas/go.uuid"
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
-	"github.com/provideplatform/provide-cli/prvd/organizations"
 	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/nchain"
@@ -169,28 +168,28 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	var organization organizations.Organization
+	var organization common.OrganizationType
 	raw, _ := json.Marshal(common.Organization)
 	json.Unmarshal(raw, &organization)
 
 	if organization.Metadata == nil {
-		organization.Metadata = &organizations.OrganizationMetadata{
+		organization.Metadata = &common.OrganizationMetadata{
 			Address:    *secp256k1Key.Address,
-			Workgroups: map[uuid.UUID]*organizations.OrganizationWorkgroupMetadata{},
+			Workgroups: map[uuid.UUID]*common.OrganizationWorkgroupMetadata{},
 		}
 	} else if organization.Metadata.Workgroups == nil {
-		organization.Metadata.Workgroups = map[uuid.UUID]*organizations.OrganizationWorkgroupMetadata{}
+		organization.Metadata.Workgroups = map[uuid.UUID]*common.OrganizationWorkgroupMetadata{}
 	}
 
-	organization.Metadata.Workgroups[wg.ID] = &organizations.OrganizationWorkgroupMetadata{
+	organization.Metadata.Workgroups[wg.ID] = &common.OrganizationWorkgroupMetadata{
 		OperatorSeparationDegree: uint32(0),
 		VaultID:                  &orgVault.ID,
 		SystemSecretIDs:          make([]*uuid.UUID, 0),
-		TOS: &organizations.WorkgroupMetadataLegal{
+		TOS: &common.WorkgroupMetadataLegal{
 			AgreedAt:  &termsNow,
 			Signature: termsSig.Signature,
 		},
-		Privacy: &organizations.WorkgroupMetadataLegal{
+		Privacy: &common.WorkgroupMetadataLegal{
 			AgreedAt:  &privacyNow,
 			Signature: privacySig.Signature,
 		},
