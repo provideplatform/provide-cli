@@ -57,7 +57,7 @@ func create(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	_, err = provide.Authenticate(email, passwd)
+	_, err = provide.Authenticate(email, passwd, "")
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)

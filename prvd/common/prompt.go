@@ -403,7 +403,6 @@ func RequireTermsOfServiceAgreement() bool {
 
 	result, err := prompt.Run()
 	if err != nil {
-		os.Exit(1)
 		return false
 	}
 
@@ -419,7 +418,6 @@ func RequirePrivacyPolicyAgreement() bool {
 
 	result, err := prompt.Run()
 	if err != nil {
-		os.Exit(1)
 		return false
 	}
 

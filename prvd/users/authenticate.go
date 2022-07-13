@@ -40,7 +40,7 @@ func authenticate(cmd *cobra.Command, args []string) {
 	email = common.FreeInput("Email", "", common.MandatoryValidation)
 	passwd = common.FreeInput("Password", "", common.MandatoryValidation)
 
-	resp, err := provide.Authenticate(email, passwd)
+	resp, err := provide.Authenticate(email, passwd, "")
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)

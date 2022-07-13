@@ -90,10 +90,16 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		common.RequireL2Network()
 	}
 	if !hasAgreedToTermsOfService {
-		common.RequireTermsOfServiceAgreement()
+		if ok := common.RequireTermsOfServiceAgreement(); !ok {
+			fmt.Print("failed to initialize baseline workgroup; must accept the terms of agreement")
+			os.Exit(1)
+		}
 	}
 	if !hasAgreedToPrivacyPolicy {
-		common.RequirePrivacyPolicyAgreement()
+		if ok := common.RequirePrivacyPolicyAgreement(); !ok {
+			fmt.Print("failed to initialize baseline workgroup; must accept the privacy policy")
+			os.Exit(1)
+		}
 	}
 
 	common.AuthorizeOrganizationContext(true)
@@ -163,14 +169,8 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	org, err := ident.GetOrganizationDetails(token, common.OrganizationID, map[string]interface{}{})
-	if err != nil {
-		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
-		os.Exit(1)
-	}
-
 	var organization organizations.Organization
-	raw, _ := json.Marshal(org)
+	raw, _ := json.Marshal(common.Organization)
 	json.Unmarshal(raw, &organization)
 
 	if organization.Metadata == nil {
