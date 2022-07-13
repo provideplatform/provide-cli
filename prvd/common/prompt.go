@@ -270,6 +270,7 @@ func RequireL2Network() error {
 // RequireOrganization is equivalent to a required --organization flag
 func RequireOrganization() error {
 	if OrganizationID != "" {
+		// TODO-- should also check if Organization is set; if so, check that IDs match, else refetch and re-set Organization -- same for other similar Require() methods
 		Organization, _ = ident.GetOrganizationDetails(RequireUserAccessToken(), OrganizationID, map[string]interface{}{})
 		return nil
 	}
