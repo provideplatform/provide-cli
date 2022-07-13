@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package domain_models
+package systems
 
 import (
 	"github.com/provideplatform/provide-cli/prvd/common"
@@ -22,20 +22,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const promptStepList = "List"
 const promptStepInit = "Initialize"
+const promptStepUpdate = "Update"
+const promptStepList = "List"
+const promptStepDetails = "Details"
 
-var emptyPromptArgs = []string{promptStepList, promptStepInit}
+var emptyPromptArgs = []string{promptStepList, promptStepDetails, promptStepInit, promptStepUpdate}
 var emptyPromptLabel = "What would you like to do"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	switch step {
 	case promptStepInit:
-		initDomainModelRun(cmd, args)
-	case promptStepList:
-		page, rpp = common.PromptPagination(paginate, page, rpp)
-		listDomainModelsRun(cmd, args)
+		initSystemRun(cmd, args)
+		//  case promptStepList:
+		// 	 page, rpp = common.PromptPagination(paginate, page, rpp)
+		// 	 listDomainModelsRun(cmd, args)
 		//  case promptStepDetails:
 		// 	 fetchSubjectAccountDetailsRun(cmd, args)
 	case "":

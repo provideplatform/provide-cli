@@ -352,9 +352,9 @@ func loginPrompt(defaultEmail string) {
 func signupPrompt(defaultFirst, defaultLast, defaultEmail string) {
 	if firstName == "" {
 		prompt := promptui.Prompt{
-			Label: "First Name",
+			Label:    "First Name",
 			Validate: common.MandatoryValidation,
-			Default: defaultFirst,
+			Default:  defaultFirst,
 		}
 
 		result, err := prompt.Run()
@@ -368,9 +368,9 @@ func signupPrompt(defaultFirst, defaultLast, defaultEmail string) {
 
 	if lastName == "" {
 		prompt := promptui.Prompt{
-			Label: "Last Name",
+			Label:    "Last Name",
 			Validate: common.MandatoryValidation,
-			Default: defaultLast,
+			Default:  defaultLast,
 		}
 
 		result, err := prompt.Run()
@@ -406,9 +406,9 @@ func signupPrompt(defaultFirst, defaultLast, defaultEmail string) {
 func orgPrompt(defaultName string) {
 	if orgName == "" {
 		prompt := promptui.Prompt{
-			Label: "Organization Name",
+			Label:    "Organization Name",
 			Validate: common.MandatoryValidation,
-			Default: defaultName,
+			Default:  defaultName,
 		}
 
 		result, err := prompt.Run()

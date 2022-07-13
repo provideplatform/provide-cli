@@ -19,6 +19,7 @@ package workgroups
 import (
 	uuid "github.com/kthomas/go.uuid"
 	"github.com/provideplatform/provide-cli/prvd/baseline/participants"
+	"github.com/provideplatform/provide-cli/prvd/baseline/systems"
 	"github.com/provideplatform/provide-cli/prvd/common"
 	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/spf13/cobra"
@@ -58,6 +59,7 @@ func init() {
 	WorkgroupsCmd.AddCommand(updateBaselineWorkgroupCmd)
 	WorkgroupsCmd.AddCommand(joinBaselineWorkgroupCmd)
 	WorkgroupsCmd.AddCommand(participants.ParticipantsCmd)
+	WorkgroupsCmd.AddCommand(systems.SystemsCmd)
 
 	WorkgroupsCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 	WorkgroupsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
