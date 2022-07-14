@@ -21,12 +21,16 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
 	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/spf13/cobra"
 )
+
+var isSchema bool
+var schemaQuery string
 
 var description string
 
@@ -54,54 +58,154 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 	if common.WorkgroupID == "" {
 		common.RequireWorkgroup()
 	}
-	if name == "" {
-		createModelTypePrompt()
-	}
-	if description == "" {
-		descriptionPrompt()
-	}
 
-	localFields := make([]*baseline.MappingField, 0)
-	if fields != "" {
-		if err := json.Unmarshal([]byte(fields), &localFields); err != nil {
-			log.Printf("failed to initialize baseline domain model; %s", err.Error())
-			os.Exit(1)
-		}
+	common.AuthorizeOrganizationContext(true)
+	
+	token := common.RequireOrganizationToken()
 
-		if err := validateFields(localFields); err != nil {
-			log.Printf("failed to initialize baseline domain model; %s", err.Error())
-			os.Exit(1)
-		}
-	}
+	hasSystems := len(common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs) > 0
 
-	fieldsPrompt(&localFields)
-
-	if err := primaryKeyPrompt(localFields); err != nil {
-		log.Printf("failed to initialize baseline domain model; %s", err.Error())
+	if hasSystems && !isSchema {
+		isSchemaPrompt()
+	} else if hasSystems && isSchema {
+		fmt.Print("failed to initialize baseline domain model; cannot create a domain model from a schema without systems")
 		os.Exit(1)
 	}
 
-	common.AuthorizeOrganizationContext(true)
+	var params map[string]interface{}
+	if isSchema {
+		schemaQueryPrompt()
 
-	token := common.RequireOrganizationToken()
+		vaultID := common.Organization.Metadata.Workgroups[common.Workgroup.ID].VaultID
+		systemIDs := common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs
 
-	modelParam := map[string]interface{}{
-		"type":        name,
-		"fields":      localFields,
-		"primary_key": primaryKey,
-	}
+		isOperator := common.Organization.Metadata.Workgroups[common.Workgroup.ID].OperatorSeparationDegree == 0
+		if isOperator {
+			vaultID = common.Workgroup.Config.VaultID
+			systemIDs = common.Workgroup.Config.SystemSecretIDs
+		}
 
-	if description != "" {
-		modelParam["description"] = description
-	}
+		IDs := make([]string, 0)
+		for _, ID := range systemIDs {
+			IDs = append(IDs, ID.String())
+		}
 
-	params := map[string]interface{}{
-		"name": name,
-		"type": name,
-		"models": []interface{}{
-			modelParam,
-		},
-		"workgroup_id": common.WorkgroupID,
+		schemas, err := baseline.ListSchemas(token, common.WorkgroupID, map[string]interface{}{
+			"vault_id": vaultID.String(),
+			"system_secret_ids": strings.Join(IDs, ","),
+			"q": schemaQuery,
+		})
+		if err != nil {
+			log.Printf("failed to initialize baseline domain model; %s", err.Error())
+			os.Exit(1)
+		}
+
+		schemaOpts := make([]string, 0)
+		for _, schema := range schemas {
+			schemaOpts = append(schemaOpts, *schema.Name)
+		}
+
+		prompt := promptui.Select{
+			Label: "Select Schema",
+			Items: schemaOpts,	
+		}
+
+		i, _, err := prompt.Run()
+		if err != nil {
+			fmt.Printf("failed to initialize baseline domain model; %s", err.Error())
+			os.Exit(1)
+		}
+
+		ref := common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, schemaOpts[i]))
+		models, err := baseline.ListMappings(token, map[string]interface{}{
+			"workgroup_id": common.WorkgroupID,
+			"ref":          ref,
+			// "page":         fmt.Sprintf("%d", page),
+			// "rpp":          fmt.Sprintf("%d", rpp),
+		})
+
+		if len(models) > 0 {
+			fmt.Print("failed to initialize baseline domain model; schema mapping exists")
+			os.Exit(1)
+		}
+
+		schema, err := baseline.GetSchemaDetails(token, common.OrganizationID, ref, map[string]interface{}{})
+		if err != nil {
+			fmt.Printf("failed to initialize baseline domain model; %s", err.Error())
+			os.Exit(1)
+		}
+
+		fields := make([]interface{}, 0)
+		for _, field := range schema.Fields {
+			var f map[string]interface{}
+			raw, _ := json.Marshal(field)
+			json.Unmarshal(raw, &f)
+
+			f["type"] = "string"
+			fields = append(fields, f)
+		}
+
+		model := map[string]interface{}{
+			"type": *schema.Type,
+			"fields": fields,
+			"primary_key": "",
+			"standard": "sap",
+		}
+
+		params = map[string]interface{}{
+			"name": schema.Name,
+			"description": schema.Description,
+			"type": schema.Type,
+			"models": []interface{}{model},
+			"workgroup_id": common.WorkgroupID,
+		}
+	} else {
+		if name == "" {
+			createModelTypePrompt()
+		}
+		if description == "" {
+			descriptionPrompt()
+		}
+	
+		localFields := make([]*baseline.MappingField, 0)
+		if fields != "" {
+			if err := json.Unmarshal([]byte(fields), &localFields); err != nil {
+				log.Printf("failed to initialize baseline domain model; %s", err.Error())
+				os.Exit(1)
+			}
+	
+			if err := validateFields(localFields); err != nil {
+				log.Printf("failed to initialize baseline domain model; %s", err.Error())
+				os.Exit(1)
+			}
+		}
+	
+		fieldsPrompt(&localFields)
+	
+		if err := primaryKeyPrompt(localFields); err != nil {
+			log.Printf("failed to initialize baseline domain model; %s", err.Error())
+			os.Exit(1)
+		}
+	
+		
+		modelParam := map[string]interface{}{
+			"type":        name,
+			"fields":      localFields,
+			"primary_key": primaryKey,
+		}
+	
+		if description != "" {
+			modelParam["description"] = description
+		}
+	
+		params = map[string]interface{}{
+			"name": name,
+			"type": name,
+			"models": []interface{}{
+				modelParam,
+			},
+			"workgroup_id": common.WorkgroupID,
+		}
 	}
 
 	m, err := baseline.CreateMapping(token, params)
@@ -251,9 +355,41 @@ func validateFields(fields []*baseline.MappingField) error {
 	return nil
 }
 
+func isSchemaPrompt() {
+	prompt := promptui.Prompt{
+		IsConfirm: true,
+		Label:     "Create model from schema",
+	}
+
+	if _, err := prompt.Run(); err == nil {
+		isSchema = true
+	}
+}
+
+func schemaQueryPrompt() {
+	if schemaQuery == "" {
+		prompt := promptui.Prompt{
+			Label:    "Schema Query",
+			Validate: common.MandatoryValidation,
+		}
+
+		result, err := prompt.Run()
+		if err != nil {
+			fmt.Printf("failed to initialize baseline domain model; %s", err.Error())
+			os.Exit(1)
+		}
+
+		schemaQuery = result
+	}
+}
+
 func init() {
 	initBaselineDomainModelCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	initBaselineDomainModelCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
+
+	initBaselineDomainModelCmd.Flags().BoolVar(&isSchema, "schema", false, "create a domain model from a schema")
+	initBaselineDomainModelCmd.Flags().StringVar(&schemaQuery, "schema-query", "", "schema query string")
+
 	initBaselineDomainModelCmd.Flags().StringVar(&name, "type", "", "model type")
 	initBaselineDomainModelCmd.Flags().StringVar(&description, "description", "", "model description")
 	initBaselineDomainModelCmd.Flags().StringVar(&fields, "fields", "", "model fields in the '[{\"name\": \"yourmother\", \"type\": \"string\"}, ...]' format")
