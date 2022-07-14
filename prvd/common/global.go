@@ -25,7 +25,6 @@ import (
 	"strings"
 
 	provide "github.com/provideplatform/provide-go/api"
-	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/common"
 )
@@ -41,10 +40,10 @@ var (
 	Application   *ident.Application
 
 	WorkgroupID string
-	Workgroup   *baseline.Workgroup
+	Workgroup   *WorkgroupType
 
 	OrganizationID string
-	Organization   *ident.Organization
+	Organization   *OrganizationType
 
 	UserID string
 	User   *ident.User

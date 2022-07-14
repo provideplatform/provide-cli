@@ -49,21 +49,13 @@ func listSystemsRun(cmd *cobra.Command, args []string) {
 		common.RequireWorkgroup()
 	}
 
-	var localOrg common.OrganizationType
-	raw, _ := json.Marshal(common.Organization)
-	json.Unmarshal(raw, &localOrg)
+	vaultID := common.Organization.Metadata.Workgroups[common.Workgroup.ID].VaultID
+	systemIDs := common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs
 
-	var localWg common.WorkgroupType
-	raw, _ = json.Marshal(common.Workgroup)
-	json.Unmarshal(raw, &localWg)
-
-	vaultID := localOrg.Metadata.Workgroups[localWg.ID].VaultID
-	systemIDs := localOrg.Metadata.Workgroups[localWg.ID].SystemSecretIDs
-
-	isOperator := localOrg.Metadata.Workgroups[localWg.ID].OperatorSeparationDegree == 0
+	isOperator := common.Organization.Metadata.Workgroups[common.Workgroup.ID].OperatorSeparationDegree == 0
 	if isOperator {
-		vaultID = localWg.Config.VaultID
-		systemIDs = localWg.Config.SystemSecretIDs
+		vaultID = common.Workgroup.Config.VaultID
+		systemIDs = common.Workgroup.Config.SystemSecretIDs
 	}
 
 	common.AuthorizeOrganizationContext(true)
@@ -71,7 +63,7 @@ func listSystemsRun(cmd *cobra.Command, args []string) {
 	token := common.RequireOrganizationToken()
 
 	secrets := make([]*vault.Secret, 0)
-	
+
 	for _, secretID := range systemIDs {
 		secret, err := vault.FetchSecret(token, vaultID.String(), secretID.String(), map[string]interface{}{})
 		if err != nil {

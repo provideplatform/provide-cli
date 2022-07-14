@@ -215,12 +215,8 @@ func joinWorkgroupRun(cmd *cobra.Command, args []string) {
 
 		// TODO-- configure system for organization participant
 
-		var localOrg common.OrganizationType
-		raw, _ := json.Marshal(org)
-		json.Unmarshal(raw, &localOrg)
-
-		localOrg.Metadata.Address = *secp256k1Key.Address
-		localOrg.Metadata.Workgroups[*decodedTokenData.ApplicationID] = &common.OrganizationWorkgroupMetadata{
+		common.Organization.Metadata.Address = *secp256k1Key.Address
+		common.Organization.Metadata.Workgroups[*decodedTokenData.ApplicationID] = &common.OrganizationWorkgroupMetadata{
 			OperatorSeparationDegree: decodedTokenData.Params.OperatorSeparationDegree,
 			VaultID:                  &orgVault.ID,
 			SystemSecretIDs:          make([]*uuid.UUID, 0),
@@ -235,7 +231,7 @@ func joinWorkgroupRun(cmd *cobra.Command, args []string) {
 		}
 
 		var orgInterface map[string]interface{}
-		raw, _ = json.Marshal(localOrg)
+		raw, _ := json.Marshal(common.Organization)
 		json.Unmarshal(raw, &orgInterface)
 
 		err = ident.UpdateOrganization(token, common.OrganizationID, orgInterface)

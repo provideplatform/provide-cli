@@ -47,29 +47,21 @@ func updateWorkgroupRun(cmd *cobra.Command, args []string) {
 		common.RequireWorkgroup()
 	}
 
-	var localWg common.WorkgroupType
-	raw, _ := json.Marshal(common.Workgroup)
-	json.Unmarshal(raw, &localWg)
-
-	var localOrg common.OrganizationType
-	raw, _ = json.Marshal(common.Organization)
-	json.Unmarshal(raw, &localOrg)
-
 	wgID, err := uuid.FromString(common.WorkgroupID)
 	if err != nil {
 		fmt.Printf("failed to update baseline workgroup: %s", err.Error())
 		os.Exit(1)
 	}
 
-	isOperator := localOrg.Metadata.Workgroups[wgID].OperatorSeparationDegree == 0
+	isOperator := common.Organization.Metadata.Workgroups[wgID].OperatorSeparationDegree == 0
 
-	if err := updateWorkgroupPrompt(&localWg, isOperator); err != nil {
+	if err := updateWorkgroupPrompt(common.Workgroup, isOperator); err != nil {
 		fmt.Printf("failed to update baseline workgroup: %s", err.Error())
 		os.Exit(1)
 	}
 
 	var wgParams map[string]interface{}
-	raw, _ = json.Marshal(localWg)
+	raw, _ := json.Marshal(common.Workgroup)
 	json.Unmarshal(raw, &wgParams)
 
 	token := common.RequireOrganizationToken()

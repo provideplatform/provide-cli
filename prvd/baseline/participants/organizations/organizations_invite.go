@@ -19,7 +19,6 @@ package organizations
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -119,10 +118,6 @@ func inviteOrganizationRun(cmd *cobra.Command, args []string) {
 
 	authorizedBearerToken := vendJWT(orgVaultID, jwtParams)
 
-	var localOrg common.OrganizationType
-	raw, _ := json.Marshal(common.Organization)
-	json.Unmarshal(raw, &localOrg)
-
 	wgID, _ := uuid.FromString(common.WorkgroupID)
 
 	inviteParams := map[string]interface{}{
@@ -134,7 +129,7 @@ func inviteOrganizationRun(cmd *cobra.Command, args []string) {
 		"params": map[string]interface{}{
 			"authorized_bearer_token":    authorizedBearerToken,
 			"is_organization_invite":     true,
-			"operator_separation_degree": localOrg.Metadata.Workgroups[wgID].OperatorSeparationDegree + 1,
+			"operator_separation_degree": common.Organization.Metadata.Workgroups[wgID].OperatorSeparationDegree + 1,
 			"workgroup":                  common.Workgroup,
 		},
 	}

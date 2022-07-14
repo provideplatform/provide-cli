@@ -168,20 +168,16 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	var organization common.OrganizationType
-	raw, _ := json.Marshal(common.Organization)
-	json.Unmarshal(raw, &organization)
-
-	if organization.Metadata == nil {
-		organization.Metadata = &common.OrganizationMetadata{
+	if common.Organization.Metadata == nil {
+		common.Organization.Metadata = &common.OrganizationMetadata{
 			Address:    *secp256k1Key.Address,
 			Workgroups: map[uuid.UUID]*common.OrganizationWorkgroupMetadata{},
 		}
-	} else if organization.Metadata.Workgroups == nil {
-		organization.Metadata.Workgroups = map[uuid.UUID]*common.OrganizationWorkgroupMetadata{}
+	} else if common.Organization.Metadata.Workgroups == nil {
+		common.Organization.Metadata.Workgroups = map[uuid.UUID]*common.OrganizationWorkgroupMetadata{}
 	}
 
-	organization.Metadata.Workgroups[wg.ID] = &common.OrganizationWorkgroupMetadata{
+	common.Organization.Metadata.Workgroups[wg.ID] = &common.OrganizationWorkgroupMetadata{
 		OperatorSeparationDegree: uint32(0),
 		VaultID:                  &orgVault.ID,
 		SystemSecretIDs:          make([]*uuid.UUID, 0),
@@ -196,7 +192,7 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	}
 
 	var orgInterface map[string]interface{}
-	raw, _ = json.Marshal(organization)
+	raw, _ := json.Marshal(common.Organization)
 	json.Unmarshal(raw, &orgInterface)
 
 	err = ident.UpdateOrganization(token, common.OrganizationID, orgInterface)

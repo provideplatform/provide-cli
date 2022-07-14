@@ -63,10 +63,10 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 	sa, err := baseline.CreateSubjectAccount(token, common.OrganizationID, map[string]interface{}{
 		"metadata": map[string]interface{}{
 			"organization_id":            common.OrganizationID,
-			"organization_address":       common.Organization.Metadata["address"],
+			"organization_address":       common.Organization.Metadata.Address,
 			"organization_refresh_token": refresh,
 			"workgroup_id":               common.WorkgroupID,
-			"registry_contract_address":  common.Organization.Metadata["address"],
+			"registry_contract_address":  common.Organization.Metadata.Address,
 			"network_id":                 common.NetworkID,
 		},
 	})

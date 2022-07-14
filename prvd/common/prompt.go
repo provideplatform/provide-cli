@@ -119,8 +119,15 @@ func RequireApplication() error {
 // RequireWorkgroup is equivalent to a required --workgroup flag
 func RequireWorkgroup() error {
 	if WorkgroupID != "" {
-		Workgroup, _ = baseline.GetWorkgroupDetails(RequireOrganizationToken(), WorkgroupID, map[string]interface{}{})
-		return nil
+		wg, _ := baseline.GetWorkgroupDetails(RequireOrganizationToken(), WorkgroupID, map[string]interface{}{})
+
+		raw, err := json.Marshal(wg)
+		if err != nil {
+			return err
+		}
+
+		err = json.Unmarshal(raw, &Workgroup)
+		return err
 	}
 
 	var token string
@@ -152,9 +159,16 @@ func RequireWorkgroup() error {
 		return err
 	}
 
-	Workgroup = workgroups[i]
 	WorkgroupID = workgroups[i].ID.String()
-	return nil
+
+	wg := workgroups[i]
+	raw, err := json.Marshal(wg)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(raw, &Workgroup)
+	return err
 }
 
 // RequireConnector is equivalent to a required --connector flag
@@ -271,8 +285,15 @@ func RequireL2Network() error {
 func RequireOrganization() error {
 	if OrganizationID != "" {
 		// TODO-- should also check if Organization is set; if so, check that IDs match, else refetch and re-set Organization -- same for other similar Require() methods
-		Organization, _ = ident.GetOrganizationDetails(RequireUserAccessToken(), OrganizationID, map[string]interface{}{})
-		return nil
+		org, _ := ident.GetOrganizationDetails(RequireUserAccessToken(), OrganizationID, map[string]interface{}{})
+
+		raw, err := json.Marshal(org)
+		if err != nil {
+			return err
+		}
+
+		err = json.Unmarshal(raw, &Organization)
+		return err
 	}
 
 	opts := make([]string, 0)
@@ -291,9 +312,16 @@ func RequireOrganization() error {
 		return err
 	}
 
-	Organization = orgs[i]
 	OrganizationID = *orgs[i].ID
-	return nil
+
+	org := orgs[i]
+	raw, err := json.Marshal(org)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(raw, &Organization)
+	return err
 }
 
 // RequireVault is equivalent to a required --vault flag

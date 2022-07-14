@@ -105,39 +105,31 @@ func initSystemRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	var localOrg common.OrganizationType
-	raw, _ := json.Marshal(common.Organization)
-	json.Unmarshal(raw, &localOrg)
-
-	var localWg common.WorkgroupType
-	raw, _ = json.Marshal(common.Workgroup)
-	json.Unmarshal(raw, &localWg)
-
-	isOperator := localOrg.Metadata.Workgroups[localWg.ID].OperatorSeparationDegree == 0
+	isOperator := common.Organization.Metadata.Workgroups[common.Workgroup.ID].OperatorSeparationDegree == 0
 	if isOperator {
-		if localWg.Config.SystemSecretIDs == nil {
-			localWg.Config.SystemSecretIDs = make([]*uuid.UUID, 0)
+		if common.Workgroup.Config.SystemSecretIDs == nil {
+			common.Workgroup.Config.SystemSecretIDs = make([]*uuid.UUID, 0)
 		}
 
-		localWg.Config.SystemSecretIDs = append(localWg.Config.SystemSecretIDs, &secret.ID)
+		common.Workgroup.Config.SystemSecretIDs = append(common.Workgroup.Config.SystemSecretIDs, &secret.ID)
 
 		var wgInterface map[string]interface{}
-		raw, _ = json.Marshal(localWg)
+		raw, _ := json.Marshal(common.Workgroup)
 		json.Unmarshal(raw, &wgInterface)
 
-		if err := baseline.UpdateWorkgroup(token, localWg.ID.String(), wgInterface); err != nil {
+		if err := baseline.UpdateWorkgroup(token, common.Workgroup.ID.String(), wgInterface); err != nil {
 			fmt.Printf("failed to initialize system; %s", err.Error())
 			os.Exit(1)
 		}
 	}
 
-	localOrg.Metadata.Workgroups[localWg.ID].SystemSecretIDs = append(localOrg.Metadata.Workgroups[localWg.ID].SystemSecretIDs, &secret.ID)
+	common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs = append(common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs, &secret.ID)
 
 	var orgInterface map[string]interface{}
-	raw, _ = json.Marshal(localOrg)
+	raw, _ := json.Marshal(common.Organization)
 	json.Unmarshal(raw, &orgInterface)
 
-	if err := ident.UpdateOrganization(token, *localOrg.ID, orgInterface); err != nil {
+	if err := ident.UpdateOrganization(token, *common.Organization.ID, orgInterface); err != nil {
 		fmt.Printf("failed to initialize system; %s", err.Error())
 		os.Exit(1)
 	}
