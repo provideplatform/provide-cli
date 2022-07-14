@@ -35,9 +35,9 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	switch step {
 	case promptStepInit:
 		initSystemRun(cmd, args)
-		//  case promptStepList:
-		// 	 page, rpp = common.PromptPagination(paginate, page, rpp)
-		// 	 listDomainModelsRun(cmd, args)
+	case promptStepList:
+		//  page, rpp = common.PromptPagination(paginate, page, rpp)
+		listSystemsRun(cmd, args)
 		//  case promptStepDetails:
 		// 	 fetchSubjectAccountDetailsRun(cmd, args)
 	case "":

@@ -36,8 +36,8 @@ var SystemsCmd = &cobra.Command{
 }
 
 func init() {
-	//  SystemsCmd.AddCommand(listBaselineSystemsCmd)
 	SystemsCmd.AddCommand(initBaselineSystemCmd)
+	SystemsCmd.AddCommand(listBaselineSystemsCmd)
 	//  SubjectAccountsCmd.AddCommand(subjectAccountDetailsCmd)
 	SystemsCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 	SystemsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")
