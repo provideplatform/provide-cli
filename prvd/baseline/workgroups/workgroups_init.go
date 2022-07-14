@@ -121,8 +121,9 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		"name":       name,
 		"network_id": common.NetworkID,
 		"config": map[string]interface{}{
-			"vault_id":      orgVault.ID.String(),
-			"l2_network_id": common.L2NetworkID,
+			"vault_id":          orgVault.ID.String(),
+			"l2_network_id":     common.L2NetworkID,
+			"system_secret_ids": make([]*uuid.UUID, 0),
 		},
 		"type": "baseline",
 	}
