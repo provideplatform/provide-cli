@@ -48,8 +48,33 @@ func sendMessage(cmd *cobra.Command, args []string) {
 }
 
 func sendMessageRun(cmd *cobra.Command, args []string) {
-	// common.AuthorizeApplicationContext()
-	common.AuthorizeOrganizationContext(false)
+	if common.OrganizationID == "" {
+		common.RequireOrganization()
+	}
+	if common.WorkgroupID == "" {
+		common.RequireWorkgroup()
+	}
+	if messageType == "" {
+		opts := make([]string, 0)
+		for k := range items {
+			opts = append(opts, k)
+		}
+		value := common.SelectInput(opts, custodyPromptLabel)
+		messageType = items[value]
+	}
+	if id == "" {
+		id = common.FreeInput("ID", "", common.MandatoryValidation)
+	}
+	if baselineID == "" {
+		baselineID = common.FreeInput("Baseline ID", "", common.NoValidation)
+	}
+	if data == "" {
+		data = common.FreeInput("Data", "", common.JSONValidation)
+	}
+
+	common.AuthorizeOrganizationContext(true)
+
+	token := common.RequireOrganizationToken()
 
 	var payload map[string]interface{}
 	err := json.Unmarshal([]byte(data), &payload)
@@ -69,7 +94,7 @@ func sendMessageRun(cmd *cobra.Command, args []string) {
 	if recipients != "" {
 		_recipients := make([]*baseline.Participant, 0)
 		for _, id := range strings.Split(recipients, ",") {
-			orgs, err := ident.ListApplicationOrganizations(common.ApplicationAccessToken, common.ApplicationID, map[string]interface{}{
+			orgs, err := ident.ListApplicationOrganizations(token, common.ApplicationID, map[string]interface{}{
 				"organization_id": id,
 			})
 			if err != nil {
@@ -88,7 +113,7 @@ func sendMessageRun(cmd *cobra.Command, args []string) {
 		params["recipients"] = _recipients
 	}
 
-	baselinedRecord, err := baseline.SendProtocolMessage(common.OrganizationAccessToken, params)
+	baselinedRecord, err := baseline.SendProtocolMessage(token, params)
 	if err != nil {
 		log.Printf("WARNING: failed to baseline %d-byte payload; %s", len(data), err.Error())
 		os.Exit(1)
@@ -99,7 +124,6 @@ func sendMessageRun(cmd *cobra.Command, args []string) {
 		raw, _ := json.MarshalIndent(baselinedRecord, "", "  ")
 		log.Printf(string(raw))
 	}
-
 }
 
 func init() {

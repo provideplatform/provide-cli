@@ -60,7 +60,7 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 	}
 
 	common.AuthorizeOrganizationContext(true)
-	
+
 	token := common.RequireOrganizationToken()
 
 	hasSystems := len(common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs) > 0
@@ -91,9 +91,9 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 		}
 
 		schemas, err := baseline.ListSchemas(token, common.WorkgroupID, map[string]interface{}{
-			"vault_id": vaultID.String(),
+			"vault_id":          vaultID.String(),
 			"system_secret_ids": strings.Join(IDs, ","),
-			"q": schemaQuery,
+			"q":                 schemaQuery,
 		})
 		if err != nil {
 			log.Printf("failed to initialize baseline domain model; %s", err.Error())
@@ -107,7 +107,7 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 
 		prompt := promptui.Select{
 			Label: "Select Schema",
-			Items: schemaOpts,	
+			Items: schemaOpts,
 		}
 
 		i, _, err := prompt.Run()
@@ -146,17 +146,17 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 		}
 
 		model := map[string]interface{}{
-			"type": *schema.Type,
-			"fields": fields,
+			"type":        *schema.Type,
+			"fields":      fields,
 			"primary_key": "",
-			"standard": "sap",
+			"standard":    "sap",
 		}
 
 		params = map[string]interface{}{
-			"name": schema.Name,
-			"description": schema.Description,
-			"type": schema.Type,
-			"models": []interface{}{model},
+			"name":         schema.Name,
+			"description":  schema.Description,
+			"type":         schema.Type,
+			"models":       []interface{}{model},
 			"workgroup_id": common.WorkgroupID,
 		}
 	} else {
@@ -166,38 +166,37 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 		if description == "" {
 			descriptionPrompt()
 		}
-	
+
 		localFields := make([]*baseline.MappingField, 0)
 		if fields != "" {
 			if err := json.Unmarshal([]byte(fields), &localFields); err != nil {
 				log.Printf("failed to initialize baseline domain model; %s", err.Error())
 				os.Exit(1)
 			}
-	
+
 			if err := validateFields(localFields); err != nil {
 				log.Printf("failed to initialize baseline domain model; %s", err.Error())
 				os.Exit(1)
 			}
 		}
-	
+
 		fieldsPrompt(&localFields)
-	
+
 		if err := primaryKeyPrompt(localFields); err != nil {
 			log.Printf("failed to initialize baseline domain model; %s", err.Error())
 			os.Exit(1)
 		}
-	
-		
+
 		modelParam := map[string]interface{}{
 			"type":        name,
 			"fields":      localFields,
 			"primary_key": primaryKey,
 		}
-	
+
 		if description != "" {
 			modelParam["description"] = description
 		}
-	
+
 		params = map[string]interface{}{
 			"name": name,
 			"type": name,
