@@ -73,6 +73,11 @@ func listSystemsRun(cmd *cobra.Command, args []string) {
 		secrets = append(secrets, secret)
 	}
 
+	if len(secrets) == 0 {
+		fmt.Print("No systems of record found\n")
+		return
+	}
+
 	for _, secret := range secrets {
 		var value map[string]interface{}
 		err := json.Unmarshal([]byte(*secret.Value), &value)

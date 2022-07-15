@@ -40,6 +40,8 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 		listSystemsRun(cmd, args)
 		//  case promptStepDetails:
 		// 	 fetchSubjectAccountDetailsRun(cmd, args)
+	case promptStepDetails:
+		fetchSystemDetailsRun(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)
 		generalPrompt(cmd, args, result)
