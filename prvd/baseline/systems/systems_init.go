@@ -40,6 +40,7 @@ var sapMiddlewareType string
 
 var sapEndpointURL string
 
+// could combine the inbound and outbound sap vars into sapEndpointURL slices similar to sapAuthMethods, sapUsernames, etc
 var sapInboundMiddleware string
 var sapInboundEndpointURL string
 
@@ -87,11 +88,15 @@ func initSystemRun(cmd *cobra.Command, args []string) {
 		systemTypePrompt()
 	}
 
+	common.AuthorizeOrganizationContext(true)
+
+	token := common.RequireOrganizationToken()
+
 	var value string
 
 	switch strings.ToLower(systemType) {
 	case sapSystemIdentifier:
-		sapPrompt(&value)
+		sapPrompt(&value, token)
 	default:
 		fmt.Print("failed to initialize system; invalid system type")
 		os.Exit(1)
@@ -103,13 +108,6 @@ func initSystemRun(cmd *cobra.Command, args []string) {
 		"type":        "system",
 		"value":       value,
 	}
-
-	// TODO-- use baseline url validation method to validate endpoint url
-	// TODO-- schemas
-
-	common.AuthorizeOrganizationContext(true)
-
-	token := common.RequireOrganizationToken()
 
 	vaults, err := vault.ListVaults(token, map[string]interface{}{})
 	if err != nil {
@@ -174,8 +172,7 @@ func systemTypePrompt() {
 	systemType = systemTypes[i]
 }
 
-func sapPrompt(params *string) {
-
+func sapPrompt(params *string, token string) {
 	middlewareTypes := make([]string, 4)
 	middlewareTypes[0] = sapNoMiddlewareIdentifier
 	middlewareTypes[1] = sapInboundOnlyMiddlewareIdentifier
@@ -219,6 +216,22 @@ func sapPrompt(params *string) {
 			systemAuth["client_secret"] = sapClientSecrets[0]
 		}
 
+		reachabilityParams := map[string]interface{}{
+			"subject_account_id": common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID)),
+			"system": map[string]interface{}{
+				"auth":         systemAuth,
+				"endpoint_url": sapEndpointURL,
+				"name":         "system",
+				"type":         systemType,
+				"description":  sapDescription,
+			},
+		}
+
+		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
+			fmt.Printf("failed to initialize system; %s", err.Error())
+			os.Exit(1)
+		}
+
 		system := map[string]interface{}{
 			"name":        "system",
 			"description": sapDescription,
@@ -257,6 +270,22 @@ func sapPrompt(params *string) {
 		if sapRequireClientCredentials[0] {
 			inboundMiddlewareAuth["client_id"] = sapClientIDs[0]
 			inboundMiddlewareAuth["client_secret"] = sapClientSecrets[0]
+		}
+
+		reachabilityParams := map[string]interface{}{
+			"subject_account_id": common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID)),
+			"system": map[string]interface{}{
+				"auth":         inboundMiddlewareAuth,
+				"endpoint_url": sapInboundEndpointURL,
+				"name":         "system",
+				"type":         systemType,
+				"description":  sapDescription,
+			},
+		}
+
+		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
+			fmt.Printf("failed to initialize system; %s", err.Error())
+			os.Exit(1)
 		}
 
 		system := map[string]interface{}{
@@ -304,6 +333,22 @@ func sapPrompt(params *string) {
 			outboundMiddlewareAuth["client_secret"] = sapClientSecrets[0]
 		}
 
+		reachabilityParams := map[string]interface{}{
+			"subject_account_id": common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID)),
+			"system": map[string]interface{}{
+				"auth":         outboundMiddlewareAuth,
+				"endpoint_url": sapOutboundEndpointURL,
+				"name":         "system",
+				"type":         systemType,
+				"description":  sapDescription,
+			},
+		}
+
+		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
+			fmt.Printf("failed to initialize system; %s", err.Error())
+			os.Exit(1)
+		}
+
 		system := map[string]interface{}{
 			"name":        "system",
 			"description": sapDescription,
@@ -349,6 +394,22 @@ func sapPrompt(params *string) {
 			inboundMiddlewareAuth["client_secret"] = sapClientSecrets[0]
 		}
 
+		reachabilityParams := map[string]interface{}{
+			"subject_account_id": common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID)),
+			"system": map[string]interface{}{
+				"auth":         inboundMiddlewareAuth,
+				"endpoint_url": sapInboundEndpointURL,
+				"name":         "system",
+				"type":         systemType,
+				"description":  sapDescription,
+			},
+		}
+
+		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
+			fmt.Printf("failed to initialize system; %s", err.Error())
+			os.Exit(1)
+		}
+
 		sapOutboundOnlyPrompt()
 
 		sapAuthMethodsPrompt(&sapAuthMethods[1], &sapUsernames[1], &sapPasswords[1])
@@ -365,6 +426,22 @@ func sapPrompt(params *string) {
 		if sapRequireClientCredentials[1] {
 			outboundMiddlewareAuth["client_id"] = sapClientIDs[1]
 			outboundMiddlewareAuth["client_secret"] = sapClientSecrets[1]
+		}
+
+		reachabilityParams = map[string]interface{}{
+			"subject_account_id": common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID)),
+			"system": map[string]interface{}{
+				"auth":         outboundMiddlewareAuth,
+				"endpoint_url": sapOutboundEndpointURL,
+				"name":         "system",
+				"type":         systemType,
+				"description":  sapDescription,
+			},
+		}
+
+		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
+			fmt.Printf("failed to initialize system; %s", err.Error())
+			os.Exit(1)
 		}
 
 		system := map[string]interface{}{
