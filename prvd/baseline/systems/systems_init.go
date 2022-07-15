@@ -46,15 +46,15 @@ var sapInboundEndpointURL string
 var sapOutboundMiddleware string
 var sapOutboundEndpointURL string
 
-var sapAuthMethod string
+var sapAuthMethods []string
 
-var sapUsername string
-var sapPassword string
+var sapUsernames []string
+var sapPasswords []string
 
-var sapRequireClientCredentials bool
+var sapRequireClientCredentials []bool
 
-var sapClientID string
-var sapClientSecret string
+var sapClientIDs []string
+var sapClientSecrets []string
 
 const sapSystemIdentifier = "sap"
 
@@ -63,7 +63,7 @@ const sapInboundOnlyMiddlewareIdentifier = "Inbound Only"
 const sapOutboundOnlyMiddlewareIdentifier = "Outbound Only"
 const sapInboundAndOutboundMiddlewareIdentifier = "Inbound & Outbound"
 
-const sapAuthMethodIdentifier = "Basic Auth"
+const sapAuthMethodsIdentifier = "Basic Auth"
 
 var initBaselineSystemCmd = &cobra.Command{
 	Use:   "init",
@@ -203,20 +203,20 @@ func sapPrompt(params *string) {
 
 		sapNoMiddlewarePrompt()
 
-		sapAuthMethodPrompt()
+		sapAuthMethodsPrompt(&sapAuthMethods[0], &sapUsernames[0], &sapPasswords[0])
 
-		sapClientCredentialsPrompt()
+		sapClientCredentialsPrompt(&sapRequireClientCredentials[0], &sapClientIDs[0], &sapClientSecrets[0])
 
 		systemAuth := map[string]interface{}{
-			"method":                   sapAuthMethod,
-			"username":                 sapUsername,
-			"password":                 sapPassword,
-			"require_user_credentials": sapRequireClientCredentials,
+			"method":                   sapAuthMethods[0],
+			"username":                 sapUsernames[0],
+			"password":                 sapPasswords[0],
+			"require_user_credentials": sapRequireClientCredentials[0],
 		}
 
-		if sapRequireClientCredentials {
-			systemAuth["client_id"] = sapClientID
-			systemAuth["client_secret"] = sapClientSecret
+		if sapRequireClientCredentials[0] {
+			systemAuth["client_id"] = sapClientIDs[0]
+			systemAuth["client_secret"] = sapClientSecrets[0]
 		}
 
 		system := map[string]interface{}{
@@ -243,20 +243,20 @@ func sapPrompt(params *string) {
 
 		sapInboundOnlyPrompt()
 
-		sapAuthMethodPrompt()
+		sapAuthMethodsPrompt(&sapAuthMethods[0], &sapUsernames[0], &sapPasswords[0])
 
-		sapClientCredentialsPrompt()
+		sapClientCredentialsPrompt(&sapRequireClientCredentials[0], &sapClientIDs[0], &sapClientSecrets[0])
 
 		inboundMiddlewareAuth := map[string]interface{}{
-			"method":                   sapAuthMethod,
-			"username":                 sapUsername,
-			"password":                 sapPassword,
-			"require_user_credentials": sapRequireClientCredentials,
+			"method":                   sapAuthMethods[0],
+			"username":                 sapUsernames[0],
+			"password":                 sapPasswords[0],
+			"require_user_credentials": sapRequireClientCredentials[0],
 		}
 
-		if sapRequireClientCredentials {
-			inboundMiddlewareAuth["client_id"] = sapClientID
-			inboundMiddlewareAuth["client_secret"] = sapClientSecret
+		if sapRequireClientCredentials[0] {
+			inboundMiddlewareAuth["client_id"] = sapClientIDs[0]
+			inboundMiddlewareAuth["client_secret"] = sapClientSecrets[0]
 		}
 
 		system := map[string]interface{}{
@@ -288,20 +288,20 @@ func sapPrompt(params *string) {
 
 		sapOutboundOnlyPrompt()
 
-		sapAuthMethodPrompt()
+		sapAuthMethodsPrompt(&sapAuthMethods[0], &sapUsernames[0], &sapPasswords[0])
 
-		sapClientCredentialsPrompt()
+		sapClientCredentialsPrompt(&sapRequireClientCredentials[0], &sapClientIDs[0], &sapClientSecrets[0])
 
 		outboundMiddlewareAuth := map[string]interface{}{
-			"method":                   sapAuthMethod,
-			"username":                 sapUsername,
-			"password":                 sapPassword,
-			"require_user_credentials": sapRequireClientCredentials,
+			"method":                   sapAuthMethods[0],
+			"username":                 sapUsernames[0],
+			"password":                 sapPasswords[0],
+			"require_user_credentials": sapRequireClientCredentials[0],
 		}
 
-		if sapRequireClientCredentials {
-			outboundMiddlewareAuth["client_id"] = sapClientID
-			outboundMiddlewareAuth["client_secret"] = sapClientSecret
+		if sapRequireClientCredentials[0] {
+			outboundMiddlewareAuth["client_id"] = sapClientIDs[0]
+			outboundMiddlewareAuth["client_secret"] = sapClientSecrets[0]
 		}
 
 		system := map[string]interface{}{
@@ -333,47 +333,38 @@ func sapPrompt(params *string) {
 
 		sapInboundOnlyPrompt()
 
-		sapAuthMethodPrompt()
+		sapAuthMethodsPrompt(&sapAuthMethods[0], &sapUsernames[0], &sapPasswords[0])
 
-		sapClientCredentialsPrompt()
+		sapClientCredentialsPrompt(&sapRequireClientCredentials[0], &sapClientIDs[0], &sapClientSecrets[0])
 
 		inboundMiddlewareAuth := map[string]interface{}{
-			"method":                   sapAuthMethod,
-			"username":                 sapUsername,
-			"password":                 sapPassword,
-			"require_user_credentials": sapRequireClientCredentials,
+			"method":                   sapAuthMethods[0],
+			"username":                 sapUsernames[0],
+			"password":                 sapPasswords[0],
+			"require_user_credentials": sapRequireClientCredentials[0],
 		}
 
-		if sapRequireClientCredentials {
-			inboundMiddlewareAuth["client_id"] = sapClientID
-			inboundMiddlewareAuth["client_secret"] = sapClientSecret
+		if sapRequireClientCredentials[0] {
+			inboundMiddlewareAuth["client_id"] = sapClientIDs[0]
+			inboundMiddlewareAuth["client_secret"] = sapClientSecrets[0]
 		}
-
-		// HACK-- there is not currently a complete set of flags that supports inbound & outbound middleware; this is a shortcut to allow reusing prompts
-		sapAuthMethod = ""
-		sapUsername = ""
-		sapPassword = ""
-		sapUsername = ""
-		sapRequireClientCredentials = false
-		sapClientID = ""
-		sapClientSecret = ""
 
 		sapOutboundOnlyPrompt()
 
-		sapAuthMethodPrompt()
+		sapAuthMethodsPrompt(&sapAuthMethods[1], &sapUsernames[1], &sapPasswords[1])
 
-		sapClientCredentialsPrompt()
+		sapClientCredentialsPrompt(&sapRequireClientCredentials[1], &sapClientIDs[1], &sapClientSecrets[1])
 
 		outboundMiddlewareAuth := map[string]interface{}{
-			"method":                   sapAuthMethod,
-			"username":                 sapUsername,
-			"password":                 sapPassword,
-			"require_user_credentials": sapRequireClientCredentials,
+			"method":                   sapAuthMethods[1],
+			"username":                 sapUsernames[1],
+			"password":                 sapPasswords[1],
+			"require_user_credentials": sapRequireClientCredentials[1],
 		}
 
-		if sapRequireClientCredentials {
-			outboundMiddlewareAuth["client_id"] = sapClientID
-			outboundMiddlewareAuth["client_secret"] = sapClientSecret
+		if sapRequireClientCredentials[1] {
+			outboundMiddlewareAuth["client_id"] = sapClientIDs[1]
+			outboundMiddlewareAuth["client_secret"] = sapClientSecrets[1]
 		}
 
 		system := map[string]interface{}{
@@ -481,8 +472,8 @@ func sapInboundOnlyPrompt() {
 		}
 
 		if !isValid {
-			os.Exit(1)
 			fmt.Print("failed to initialize system; invalid sap inbound middleware type")
+			os.Exit(1)
 		}
 	}
 
@@ -544,8 +535,8 @@ func sapOutboundOnlyPrompt() {
 		}
 
 		if !isValid {
-			os.Exit(1)
 			fmt.Print("failed to initialize system; invalid sap outbound middleware type")
+			os.Exit(1)
 		}
 	}
 
@@ -580,11 +571,11 @@ func sapOutboundOnlyPrompt() {
 	}
 }
 
-func sapAuthMethodPrompt() {
+func sapAuthMethodsPrompt(method, username, password *string) {
 	authMethods := make([]string, 1)
-	authMethods[0] = sapAuthMethodIdentifier
+	authMethods[0] = sapAuthMethodsIdentifier
 
-	if sapAuthMethod == "" {
+	if *method == "" {
 		prompt := promptui.Select{
 			Label: "Authentication Method",
 			Items: authMethods,
@@ -596,22 +587,22 @@ func sapAuthMethodPrompt() {
 			os.Exit(1)
 		}
 
-		sapAuthMethod = authMethods[i]
+		*method = authMethods[i]
 	} else {
 		isValid := false
 		for _, am := range authMethods {
-			if sapAuthMethod == am {
+			if *method == am {
 				isValid = true
 			}
 		}
 
 		if !isValid {
-			os.Exit(1)
 			fmt.Print("failed to initialize system; invalid sap authentication method")
+			os.Exit(1)
 		}
 	}
 
-	if sapUsername == "" {
+	if *username == "" {
 		prompt := promptui.Prompt{
 			Label:    "Username",
 			Validate: common.MandatoryValidation,
@@ -623,10 +614,10 @@ func sapAuthMethodPrompt() {
 			os.Exit(1)
 		}
 
-		sapUsername = result
+		*username = result
 	}
 
-	if sapPassword == "" {
+	if *password == "" {
 		prompt := promptui.Prompt{
 			Label:    "Password",
 			Validate: common.MandatoryValidation,
@@ -639,12 +630,12 @@ func sapAuthMethodPrompt() {
 			os.Exit(1)
 		}
 
-		sapPassword = result
+		*password = result
 	}
 }
 
-func sapClientCredentialsPrompt() {
-	if !sapRequireClientCredentials {
+func sapClientCredentialsPrompt(requireCredentials *bool, clientID, clientSecret *string) {
+	if !*requireCredentials {
 		prompt := promptui.Prompt{
 			IsConfirm: true,
 			Label:     "Require Client Credentials",
@@ -655,10 +646,10 @@ func sapClientCredentialsPrompt() {
 			return
 		}
 
-		sapRequireClientCredentials = true
+		*requireCredentials = true
 	}
 
-	if sapClientID == "" {
+	if *clientID == "" {
 		prompt := promptui.Prompt{
 			Label:    "Client ID",
 			Validate: common.MandatoryValidation,
@@ -670,10 +661,10 @@ func sapClientCredentialsPrompt() {
 			os.Exit(1)
 		}
 
-		sapClientID = result
+		*clientID = result
 	}
 
-	if sapClientSecret == "" {
+	if *clientSecret == "" {
 		prompt := promptui.Prompt{
 			Label:    "Client Secret",
 			Validate: common.MandatoryValidation,
@@ -686,7 +677,7 @@ func sapClientCredentialsPrompt() {
 			os.Exit(1)
 		}
 
-		sapClientSecret = result
+		*clientSecret = result
 	}
 }
 
@@ -707,13 +698,13 @@ func init() {
 	initBaselineSystemCmd.Flags().StringVar(&sapOutboundMiddleware, "outbound-middleware", "", "sap outbound middleware type")
 	initBaselineSystemCmd.Flags().StringVar(&sapOutboundEndpointURL, "outbound-endpoint", "", "sap outbound middleware endpoint url")
 
-	initBaselineSystemCmd.Flags().StringVar(&sapAuthMethod, "auth-method", "", "sap authentication method")
-	initBaselineSystemCmd.Flags().StringVar(&sapUsername, "auth-username", "", "sap authentication username")
-	initBaselineSystemCmd.Flags().StringVar(&sapPassword, "auth-password", "", "sap authentication password")
+	initBaselineSystemCmd.Flags().StringArrayVar(&sapAuthMethods, "auth-methods", []string{"", ""}, "sap authentication methods")
+	initBaselineSystemCmd.Flags().StringArrayVar(&sapUsernames, "auth-usernames", []string{"", ""}, "sap authentication usernames")
+	initBaselineSystemCmd.Flags().StringArrayVar(&sapPasswords, "auth-passwords", []string{"", ""}, "sap authentication passwords")
 
-	initBaselineSystemCmd.Flags().BoolVarP(&sapRequireClientCredentials, "require-client-credentials", "", false, "require sap client credentials")
-	initBaselineSystemCmd.Flags().StringVar(&sapClientID, "client-id", "", "sap client id")
-	initBaselineSystemCmd.Flags().StringVar(&sapClientSecret, "client-secret", "", "sap client secret")
+	initBaselineSystemCmd.Flags().BoolSliceVar(&sapRequireClientCredentials, "require-client-credentials", []bool{false, false}, "require sap client credentials")
+	initBaselineSystemCmd.Flags().StringArrayVar(&sapClientIDs, "client-ids", []string{"", ""}, "sap client ids")
+	initBaselineSystemCmd.Flags().StringArrayVar(&sapClientSecrets, "client-secrets", []string{"", ""}, "sap client secrets")
 
 	initBaselineSystemCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }
