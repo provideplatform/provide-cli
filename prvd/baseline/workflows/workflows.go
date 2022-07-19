@@ -22,6 +22,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var paginate bool
+
 var WorkflowsCmd = &cobra.Command{
 	Use:   "workflows",
 	Short: "Interact with a baseline workflows",
@@ -35,6 +37,7 @@ var WorkflowsCmd = &cobra.Command{
 
 func init() {
 	WorkflowsCmd.AddCommand(initBaselineWorkflowCmd)
+	WorkflowsCmd.AddCommand(listBaselineWorkflowsCmd)
 	WorkflowsCmd.AddCommand(messages.MessagesCmd)
 	WorkflowsCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 
