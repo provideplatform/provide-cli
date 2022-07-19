@@ -33,12 +33,6 @@ var emptyPromptLabel = "What would you like to do"
 func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	switch step {
 	case promptStepInit:
-		if workgroupID == "" {
-			common.RequireWorkgroup()
-		}
-		if name == "" {
-			name = common.FreeInput("Name", "", common.MandatoryValidation)
-		}
 		initWorkflowRun(cmd, args)
 	case promptStepMessages:
 		messages.Optional = Optional
