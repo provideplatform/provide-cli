@@ -138,8 +138,15 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	common.RequireOrganizationVault()
-	requireOrganizationKeys()
+	if err := common.RequireOrganizationVault(); err != nil {
+		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
+		os.Exit(1)
+	}
+
+	if err := requireOrganizationKeys(); err != nil {
+		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
+		os.Exit(1)
+	}
 
 	secp256k1Key, err := vault.FetchKey(token, common.VaultID, secp256k1KeyID)
 	if err != nil {
@@ -224,29 +231,35 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	fmt.Printf("%s\nsubject account id: %s\n", string(result), *sa.ID)
 }
 
-func requireOrganizationKeys() {
+func requireOrganizationKeys() error {
 	var key *vault.Key
 	var err error
 
 	key, err = common.RequireOrganizationKeypair("babyJubJub")
-	if err == nil {
-		babyJubJubKeyID = key.ID.String()
+	if err != nil {
+		return err
 	}
+	babyJubJubKeyID = key.ID.String()
 
 	key, err = common.RequireOrganizationKeypair("secp256k1")
-	if err == nil {
-		secp256k1KeyID = key.ID.String()
+	if err != nil {
+		return err
 	}
+	secp256k1KeyID = key.ID.String()
 
 	key, err = common.RequireOrganizationKeypair("BIP39")
-	if err == nil {
-		hdwalletID = key.ID.String()
+	if err != nil {
+		return err
 	}
+	hdwalletID = key.ID.String()
 
 	key, err = common.RequireOrganizationKeypair("RSA-4096")
-	if err == nil {
-		rsa4096KeyID = key.ID.String()
+	if err != nil {
+		return err
 	}
+	rsa4096KeyID = key.ID.String()
+
+	return nil
 }
 
 func namePrompt() {

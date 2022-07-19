@@ -217,14 +217,11 @@ func sapPrompt(params *string, token string) {
 		}
 
 		reachabilityParams := map[string]interface{}{
-			"subject_account_id": common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID)),
-			"system": map[string]interface{}{
-				"auth":         systemAuth,
-				"endpoint_url": sapEndpointURL,
-				"name":         "system",
-				"type":         systemType,
-				"description":  sapDescription,
-			},
+			"auth":         systemAuth,
+			"endpoint_url": sapEndpointURL,
+			"name":         "system",
+			"type":         systemType,
+			"description":  sapDescription,
 		}
 
 		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
@@ -273,14 +270,11 @@ func sapPrompt(params *string, token string) {
 		}
 
 		reachabilityParams := map[string]interface{}{
-			"subject_account_id": common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID)),
-			"system": map[string]interface{}{
-				"auth":         inboundMiddlewareAuth,
-				"endpoint_url": sapInboundEndpointURL,
-				"name":         "system",
-				"type":         systemType,
-				"description":  sapDescription,
-			},
+			"auth":         inboundMiddlewareAuth,
+			"endpoint_url": sapInboundEndpointURL,
+			"name":         "system",
+			"type":         systemType,
+			"description":  sapDescription,
 		}
 
 		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
@@ -334,14 +328,11 @@ func sapPrompt(params *string, token string) {
 		}
 
 		reachabilityParams := map[string]interface{}{
-			"subject_account_id": common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID)),
-			"system": map[string]interface{}{
-				"auth":         outboundMiddlewareAuth,
-				"endpoint_url": sapOutboundEndpointURL,
-				"name":         "system",
-				"type":         systemType,
-				"description":  sapDescription,
-			},
+			"auth":         outboundMiddlewareAuth,
+			"endpoint_url": sapOutboundEndpointURL,
+			"name":         "system",
+			"type":         systemType,
+			"description":  sapDescription,
 		}
 
 		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
@@ -395,14 +386,11 @@ func sapPrompt(params *string, token string) {
 		}
 
 		reachabilityParams := map[string]interface{}{
-			"subject_account_id": common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID)),
-			"system": map[string]interface{}{
-				"auth":         inboundMiddlewareAuth,
-				"endpoint_url": sapInboundEndpointURL,
-				"name":         "system",
-				"type":         systemType,
-				"description":  sapDescription,
-			},
+			"auth":         inboundMiddlewareAuth,
+			"endpoint_url": sapInboundEndpointURL,
+			"name":         "system",
+			"type":         systemType,
+			"description":  sapDescription,
 		}
 
 		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
