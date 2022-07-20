@@ -42,8 +42,13 @@ func listSubjectAccounts(cmd *cobra.Command, args []string) {
 }
 
 func listSubjectAccountsRun(cmd *cobra.Command, args []string) {
-	token := common.RequireOrganizationToken()
-	subject_accounts, err := baseline.ListSubjectAccounts(token, common.OrganizationID, map[string]interface{}{
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		log.Printf("failed to retrieve baseline subject accounts; %s", err.Error())
+		os.Exit(1)
+	}
+
+	subject_accounts, err := baseline.ListSubjectAccounts(*token.AccessToken, common.OrganizationID, map[string]interface{}{
 		"page": fmt.Sprintf("%d", page),
 		"rpp":  fmt.Sprintf("%d", rpp),
 	})
@@ -53,19 +58,19 @@ func listSubjectAccountsRun(cmd *cobra.Command, args []string) {
 	}
 	// fmt.Printf("subject accounts len: %v", len(subject_accounts))
 	for _, subject_account := range subject_accounts {
-		details, err := baseline.GetSubjectAccountDetails(token, common.OrganizationID, *subject_account.ID, map[string]interface{}{})
+		details, err := baseline.GetSubjectAccountDetails(*token.AccessToken, common.OrganizationID, *subject_account.ID, map[string]interface{}{})
 		if err != nil {
 			log.Printf("failed to retrieve baseline subject accounts; %s", err.Error())
 			os.Exit(1)
 		}
 
-		subject_account_wg, err := baseline.GetWorkgroupDetails(token, *details.Metadata.WorkgroupID, map[string]interface{}{})
+		subject_account_wg, err := baseline.GetWorkgroupDetails(*token.AccessToken, *details.Metadata.WorkgroupID, map[string]interface{}{})
 		if err != nil {
 			log.Printf("failed to retrieve baseline subject accounts; %s", err.Error())
 			os.Exit(1)
 		}
 
-		subject_account_org, err := ident.GetOrganizationDetails(token, *details.Metadata.OrganizationID, map[string]interface{}{})
+		subject_account_org, err := ident.GetOrganizationDetails(*token.AccessToken, *details.Metadata.OrganizationID, map[string]interface{}{})
 		if err != nil {
 			log.Printf("failed to retrieve baseline subject accounts; %s", err.Error())
 			os.Exit(1)

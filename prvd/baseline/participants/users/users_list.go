@@ -47,9 +47,9 @@ func listUsersRun(cmd *cobra.Command, args []string) {
 
 	common.AuthorizeOrganizationContext(false)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
 
-	users, err := ident.ListOrganizationUsers(token, common.OrganizationID, map[string]interface{}{
+	users, err := ident.ListOrganizationUsers(*token.AccessToken, common.OrganizationID, map[string]interface{}{
 		"page": fmt.Sprintf("%d", page),
 		"rpp":  fmt.Sprintf("%d", rpp),
 	})

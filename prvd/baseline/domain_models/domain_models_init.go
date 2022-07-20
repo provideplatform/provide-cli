@@ -61,7 +61,11 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 
 	common.AuthorizeOrganizationContext(true)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		log.Printf("failed to initialize baseline domain model; %s", err.Error())
+		os.Exit(1)
+	}
 
 	hasSystems := len(common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs) > 0
 
@@ -90,7 +94,7 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 			IDs = append(IDs, ID.String())
 		}
 
-		schemas, err := baseline.ListSchemas(token, common.WorkgroupID, map[string]interface{}{
+		schemas, err := baseline.ListSchemas(*token.AccessToken, common.WorkgroupID, map[string]interface{}{
 			"vault_id":          vaultID.String(),
 			"system_secret_ids": strings.Join(IDs, ","),
 			"q":                 schemaQuery,
@@ -117,7 +121,7 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 		}
 
 		ref := common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, schemaOpts[i]))
-		models, err := baseline.ListMappings(token, map[string]interface{}{
+		models, err := baseline.ListMappings(*token.AccessToken, map[string]interface{}{
 			"workgroup_id": common.WorkgroupID,
 			"ref":          ref,
 			// "page":         fmt.Sprintf("%d", page),
@@ -129,7 +133,7 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 
-		schema, err := baseline.GetSchemaDetails(token, common.OrganizationID, ref, map[string]interface{}{})
+		schema, err := baseline.GetSchemaDetails(*token.AccessToken, common.OrganizationID, ref, map[string]interface{}{})
 		if err != nil {
 			fmt.Printf("failed to initialize baseline domain model; %s", err.Error())
 			os.Exit(1)
@@ -207,7 +211,7 @@ func initDomainModelRun(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	m, err := baseline.CreateMapping(token, params)
+	m, err := baseline.CreateMapping(*token.AccessToken, params)
 	if err != nil {
 		log.Printf("failed to initialize baseline domain model; %s", err.Error())
 		os.Exit(1)

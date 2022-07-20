@@ -68,7 +68,11 @@ func inviteUserRun(cmd *cobra.Command, args []string) {
 
 	common.AuthorizeOrganizationContext(false)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		log.Printf("failed to invite baseline workgroup user; %s", err.Error())
+		os.Exit(1)
+	}
 
 	inviteParams := map[string]interface{}{
 		"first_name":        firstName,
@@ -82,7 +86,7 @@ func inviteUserRun(cmd *cobra.Command, args []string) {
 		},
 	}
 
-	if err := ident.CreateInvitation(token, inviteParams); err != nil {
+	if err := ident.CreateInvitation(*token.AccessToken, inviteParams); err != nil {
 		log.Printf("failed to invite baseline workgroup user; %s", err.Error())
 		os.Exit(1)
 	}

@@ -41,8 +41,13 @@ func listWorkgroups(cmd *cobra.Command, args []string) {
 }
 
 func listWorkgroupsRun(cmd *cobra.Command, args []string) {
-	token := common.RequireOrganizationToken()
-	workgroups, err := baseline.ListWorkgroups(token, map[string]interface{}{
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		log.Printf("failed to retrieve baseline workgroups; %s", err.Error())
+		os.Exit(1)
+	}
+
+	workgroups, err := baseline.ListWorkgroups(*token.AccessToken, map[string]interface{}{
 		"page": fmt.Sprintf("%d", page),
 		"rpp":  fmt.Sprintf("%d", rpp),
 	})

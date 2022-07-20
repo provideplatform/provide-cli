@@ -50,9 +50,13 @@ func fetchWorkgroupDetailsRun(cmd *cobra.Command, args []string) {
 
 	common.AuthorizeOrganizationContext(true)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		log.Printf("Failed to retrieve details for workgroup with id: %s; %s", common.WorkgroupID, err.Error())
+		os.Exit(1)
+	}
 
-	wg, err := baseline.GetWorkgroupDetails(token, common.WorkgroupID, map[string]interface{}{})
+	wg, err := baseline.GetWorkgroupDetails(*token.AccessToken, common.WorkgroupID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("Failed to retrieve details for workgroup with id: %s; %s", common.WorkgroupID, err.Error())
 		os.Exit(1)

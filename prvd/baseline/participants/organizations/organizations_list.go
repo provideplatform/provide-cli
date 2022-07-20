@@ -50,9 +50,13 @@ func listOrganizationsRun(cmd *cobra.Command, args []string) {
 
 	common.AuthorizeOrganizationContext(false)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		log.Printf("failed to fetch baseline workgroup organizations; %s", err.Error())
+		os.Exit(1)
+	}
 
-	orgs, err := ident.ListApplicationOrganizations(token, common.WorkgroupID, map[string]interface{}{
+	orgs, err := ident.ListApplicationOrganizations(*token.AccessToken, common.WorkgroupID, map[string]interface{}{
 		"page": fmt.Sprintf("%d", page),
 		"rpp":  fmt.Sprintf("%d", rpp),
 	})

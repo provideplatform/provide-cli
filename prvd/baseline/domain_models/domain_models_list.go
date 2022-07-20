@@ -77,9 +77,13 @@ func listDomainModelsRun(cmd *cobra.Command, args []string) {
 
 	common.AuthorizeOrganizationContext(true)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		log.Printf("failed to retrieve baseline domain models; %s", err.Error())
+		os.Exit(1)
+	}
 
-	models, err := baseline.ListMappings(token, map[string]interface{}{
+	models, err := baseline.ListMappings(*token.AccessToken, map[string]interface{}{
 		"workgroup_id": common.WorkgroupID,
 		"ref":          ref,
 		"page":         fmt.Sprintf("%d", page),

@@ -64,9 +64,13 @@ func updateWorkgroupRun(cmd *cobra.Command, args []string) {
 	raw, _ := json.Marshal(common.Workgroup)
 	json.Unmarshal(raw, &wgParams)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		fmt.Printf("failed to update baseline workgroup: %s", err.Error())
+		os.Exit(1)
+	}
 
-	if err := baseline.UpdateWorkgroup(token, common.WorkgroupID, wgParams); err != nil {
+	if err := baseline.UpdateWorkgroup(*token.AccessToken, common.WorkgroupID, wgParams); err != nil {
 		fmt.Printf("failed to update baseline workgroup: %s", err.Error())
 		os.Exit(1)
 	}

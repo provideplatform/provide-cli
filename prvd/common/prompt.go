@@ -119,7 +119,15 @@ func RequireApplication() error {
 // RequireWorkgroup is equivalent to a required --workgroup flag
 func RequireWorkgroup() error {
 	if WorkgroupID != "" {
-		wg, _ := baseline.GetWorkgroupDetails(RequireOrganizationToken(), WorkgroupID, map[string]interface{}{})
+		token, err := ResolveOrganizationToken()
+		if err != nil {
+			return err
+		}
+
+		wg, err := baseline.GetWorkgroupDetails(*token.AccessToken, WorkgroupID, map[string]interface{}{})
+		if err != nil {
+			return err
+		}
 
 		raw, err := json.Marshal(wg)
 		if err != nil {

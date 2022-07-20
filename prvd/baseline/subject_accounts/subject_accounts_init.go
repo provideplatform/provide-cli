@@ -56,15 +56,13 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 	}
 	common.AuthorizeOrganizationContext(true)
 
-	refresh := common.RequireOrganizationRefreshToken()
+	token, err := common.ResolveOrganizationToken()
 
-	token := common.RequireOrganizationToken()
-
-	sa, err := baseline.CreateSubjectAccount(token, common.OrganizationID, map[string]interface{}{
+	sa, err := baseline.CreateSubjectAccount(*token.AccessToken, common.OrganizationID, map[string]interface{}{
 		"metadata": map[string]interface{}{
 			"organization_id":            common.OrganizationID,
 			"organization_address":       common.Organization.Metadata.Address,
-			"organization_refresh_token": refresh,
+			"organization_refresh_token": *token.RefreshToken,
 			"workgroup_id":               common.WorkgroupID,
 			"registry_contract_address":  common.Organization.Metadata.Address,
 			"network_id":                 common.NetworkID,

@@ -60,10 +60,9 @@ var initBaselineWorkgroupCmd = &cobra.Command{
 
 func AuthorizeApplicationContext() {
 	// common.AuthorizeApplicationContext()
-	_, err := nchain.CreateWallet(common.ApplicationAccessToken, map[string]interface{}{
+	if _, err := nchain.CreateWallet(common.ApplicationAccessToken, map[string]interface{}{
 		"purpose": 44,
-	})
-	if err != nil {
+	}); err != nil {
 		log.Printf("failed to initialize HD wallet; %s", err.Error())
 		os.Exit(1)
 	}
@@ -103,9 +102,13 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 
 	common.AuthorizeOrganizationContext(true)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
+		os.Exit(1)
+	}
 
-	vaults, err := vault.ListVaults(token, map[string]interface{}{})
+	vaults, err := vault.ListVaults(*token.AccessToken, map[string]interface{}{})
 	if err != nil {
 		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
 		os.Exit(1)
@@ -132,7 +135,7 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		params["description"] = description
 	}
 
-	wg, err := baseline.CreateWorkgroup(token, params)
+	wg, err := baseline.CreateWorkgroup(*token.AccessToken, params)
 	if err != nil {
 		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
 		os.Exit(1)
@@ -148,7 +151,7 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	secp256k1Key, err := vault.FetchKey(token, common.VaultID, secp256k1KeyID)
+	secp256k1Key, err := vault.FetchKey(*token.AccessToken, common.VaultID, secp256k1KeyID)
 	if err != nil {
 		fmt.Printf("failed to initialize baseline workgroup: %s", err.Error())
 		os.Exit(1)
@@ -159,7 +162,7 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	termsTimestampHex := hex.EncodeToString([]byte(termsString))
 	termsTimestampHash := common.SHA256(termsTimestampHex)
 
-	termsSig, err := vault.SignMessage(token, common.VaultID, secp256k1KeyID, termsTimestampHash, map[string]interface{}{})
+	termsSig, err := vault.SignMessage(*token.AccessToken, common.VaultID, secp256k1KeyID, termsTimestampHash, map[string]interface{}{})
 	if err != nil {
 		fmt.Printf("failed to initialize baseline workgroup: %s", err.Error())
 		os.Exit(1)
@@ -170,7 +173,7 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	privacyTimestampHex := hex.EncodeToString([]byte(privacyString))
 	privacyTimestampHash := common.SHA256(privacyTimestampHex)
 
-	privacySig, err := vault.SignMessage(token, common.VaultID, secp256k1KeyID, privacyTimestampHash, map[string]interface{}{})
+	privacySig, err := vault.SignMessage(*token.AccessToken, common.VaultID, secp256k1KeyID, privacyTimestampHash, map[string]interface{}{})
 	if err != nil {
 		fmt.Printf("failed to initialize baseline workgroup: %s", err.Error())
 		os.Exit(1)
@@ -203,8 +206,7 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 	raw, _ := json.Marshal(common.Organization)
 	json.Unmarshal(raw, &orgInterface)
 
-	err = ident.UpdateOrganization(token, common.OrganizationID, orgInterface)
-	if err != nil {
+	if err := ident.UpdateOrganization(*token.AccessToken, common.OrganizationID, orgInterface); err != nil {
 		log.Printf("failed to initialize baseline workgroup; %s", err.Error())
 		os.Exit(1)
 	}
@@ -213,13 +215,11 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 
 	common.InitWorkgroupContract()
 
-	refresh := common.RequireOrganizationRefreshToken()
-
-	sa, err := baseline.CreateSubjectAccount(token, common.OrganizationID, map[string]interface{}{
+	sa, err := baseline.CreateSubjectAccount(*token.AccessToken, common.OrganizationID, map[string]interface{}{
 		"metadata": map[string]interface{}{
 			"organization_id":            common.OrganizationID,
 			"organization_address":       *secp256k1Key.Address,
-			"organization_refresh_token": refresh,
+			"organization_refresh_token": *token.AccessToken,
 			"workgroup_id":               common.WorkgroupID,
 			"registry_contract_address":  *secp256k1Key.Address,
 			"network_id":                 common.NetworkID,

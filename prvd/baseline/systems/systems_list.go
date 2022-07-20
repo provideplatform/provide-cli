@@ -60,12 +60,16 @@ func listSystemsRun(cmd *cobra.Command, args []string) {
 
 	common.AuthorizeOrganizationContext(true)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		log.Printf("failed to retrieve systems; %s", err.Error())
+		os.Exit(1)
+	}
 
 	secrets := make([]*vault.Secret, 0)
 
 	for _, secretID := range systemIDs {
-		secret, err := vault.FetchSecret(token, vaultID.String(), secretID.String(), map[string]interface{}{})
+		secret, err := vault.FetchSecret(*token.AccessToken, vaultID.String(), secretID.String(), map[string]interface{}{})
 		if err != nil {
 			log.Printf("failed to retrieve systems; %s", err.Error())
 			os.Exit(1)

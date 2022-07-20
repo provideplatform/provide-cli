@@ -47,13 +47,13 @@ func fetchSubjectAccountDetailsRun(cmd *cobra.Command, args []string) {
 		common.RequireWorkgroup()
 	}
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
 
 	if common.SubjectAccountID == "" {
 		common.SubjectAccountID = common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID))
 	}
 
-	sa, err := baseline.GetSubjectAccountDetails(token, common.OrganizationID, common.SubjectAccountID, map[string]interface{}{})
+	sa, err := baseline.GetSubjectAccountDetails(*token.AccessToken, common.OrganizationID, common.SubjectAccountID, map[string]interface{}{})
 	if err != nil {
 		log.Printf("Failed to retrieve details for subject account with id: %s; %s", common.OrganizationID, err.Error())
 		os.Exit(1)

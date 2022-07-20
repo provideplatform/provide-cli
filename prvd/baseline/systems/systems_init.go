@@ -90,13 +90,17 @@ func initSystemRun(cmd *cobra.Command, args []string) {
 
 	common.AuthorizeOrganizationContext(true)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		fmt.Printf("failed to initialize system; %s", err.Error())
+		os.Exit(1)
+	}
 
 	var value string
 
 	switch strings.ToLower(systemType) {
 	case sapSystemIdentifier:
-		sapPrompt(&value, token)
+		sapPrompt(&value, *token.AccessToken)
 	default:
 		fmt.Print("failed to initialize system; invalid system type")
 		os.Exit(1)
@@ -109,13 +113,13 @@ func initSystemRun(cmd *cobra.Command, args []string) {
 		"value":       value,
 	}
 
-	vaults, err := vault.ListVaults(token, map[string]interface{}{})
+	vaults, err := vault.ListVaults(*token.AccessToken, map[string]interface{}{})
 	if err != nil {
 		fmt.Printf("failed to initialize system; %s", err.Error())
 		os.Exit(1)
 	}
 
-	secret, err := vault.CreateSecret(token, vaults[0].ID.String(), params)
+	secret, err := vault.CreateSecret(*token.AccessToken, vaults[0].ID.String(), params)
 	if err != nil {
 		fmt.Printf("failed to initialize system; %s", err.Error())
 		os.Exit(1)
@@ -133,7 +137,7 @@ func initSystemRun(cmd *cobra.Command, args []string) {
 		raw, _ := json.Marshal(common.Workgroup)
 		json.Unmarshal(raw, &wgInterface)
 
-		if err := baseline.UpdateWorkgroup(token, common.Workgroup.ID.String(), wgInterface); err != nil {
+		if err := baseline.UpdateWorkgroup(*token.AccessToken, common.Workgroup.ID.String(), wgInterface); err != nil {
 			fmt.Printf("failed to initialize system; %s", err.Error())
 			os.Exit(1)
 		}
@@ -145,7 +149,7 @@ func initSystemRun(cmd *cobra.Command, args []string) {
 	raw, _ := json.Marshal(common.Organization)
 	json.Unmarshal(raw, &orgInterface)
 
-	if err := ident.UpdateOrganization(token, *common.Organization.ID, orgInterface); err != nil {
+	if err := ident.UpdateOrganization(*token.AccessToken, *common.Organization.ID, orgInterface); err != nil {
 		fmt.Printf("failed to initialize system; %s", err.Error())
 		os.Exit(1)
 	}

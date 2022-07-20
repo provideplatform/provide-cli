@@ -78,16 +78,16 @@ func inviteOrganizationRun(cmd *cobra.Command, args []string) {
 
 	common.AuthorizeOrganizationContext(false)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
 
-	vaults, err := vault.ListVaults(token, map[string]interface{}{})
+	vaults, err := vault.ListVaults(*token.AccessToken, map[string]interface{}{})
 	if err != nil {
 		log.Printf("failed to resolve vault for organization; %s", err.Error())
 		os.Exit(1)
 	}
 	orgVaultID := vaults[0].ID.String()
 
-	keys, err := vault.ListKeys(token, orgVaultID, map[string]interface{}{
+	keys, err := vault.ListKeys(*token.AccessToken, orgVaultID, map[string]interface{}{
 		"spec": "secp256k1",
 	})
 	if err != nil {
@@ -96,7 +96,7 @@ func inviteOrganizationRun(cmd *cobra.Command, args []string) {
 	}
 	secp256k1KeyAddress := keys[0].Address
 
-	contracts, _ := nchain.ListContracts(token, map[string]interface{}{
+	contracts, _ := nchain.ListContracts(*token.AccessToken, map[string]interface{}{
 		"type": "organization-registry",
 	})
 	if err != nil {
@@ -134,7 +134,7 @@ func inviteOrganizationRun(cmd *cobra.Command, args []string) {
 		},
 	}
 
-	if err := ident.CreateInvitation(token, inviteParams); err != nil {
+	if err := ident.CreateInvitation(*token.AccessToken, inviteParams); err != nil {
 		log.Printf("failed to invite baseline workgroup user; %s", err.Error())
 		os.Exit(1)
 	}

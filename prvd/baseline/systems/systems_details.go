@@ -70,7 +70,11 @@ func fetchSystemDetailsRun(cmd *cobra.Command, args []string) {
 
 	common.AuthorizeOrganizationContext(true)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		log.Printf("failed to retrieve systems; %s", err.Error())
+		os.Exit(1)
+	}
 
 	var system vault.Secret
 
@@ -78,7 +82,7 @@ func fetchSystemDetailsRun(cmd *cobra.Command, args []string) {
 	secretOpts := make([]string, 0)
 
 	for _, secretID := range localSystemIDs {
-		secret, err := vault.FetchSecret(token, localVaultID.String(), secretID.String(), map[string]interface{}{})
+		secret, err := vault.FetchSecret(*token.AccessToken, localVaultID.String(), secretID.String(), map[string]interface{}{})
 		if err != nil {
 			log.Printf("failed to retrieve systems; %s", err.Error())
 			os.Exit(1)
@@ -115,7 +119,7 @@ func fetchSystemDetailsRun(cmd *cobra.Command, args []string) {
 	}
 
 	var value map[string]interface{}
-	err := json.Unmarshal([]byte(*system.Value), &value)
+	err = json.Unmarshal([]byte(*system.Value), &value)
 	if err != nil {
 		log.Printf("failed to retrieve system details; %s", err.Error())
 		os.Exit(1)

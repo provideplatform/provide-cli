@@ -69,7 +69,11 @@ func initWorkflowRun(cmd *cobra.Command, args []string) {
 
 	common.AuthorizeOrganizationContext(true)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		fmt.Printf("failed to initialize workflow; %s", err.Error())
+		os.Exit(1)
+	}
 
 	params := map[string]interface{}{
 		"workgroup_id": common.WorkgroupID,
@@ -81,7 +85,7 @@ func initWorkflowRun(cmd *cobra.Command, args []string) {
 		params["description"] = description
 	}
 
-	w, err := baseline.CreateWorkflow(token, params)
+	w, err := baseline.CreateWorkflow(*token.AccessToken, params)
 	if err != nil {
 		fmt.Printf("failed to initialize workflow; %s", err.Error())
 		os.Exit(1)

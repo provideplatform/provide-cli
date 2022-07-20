@@ -74,7 +74,11 @@ func listWorkflowsRun(cmd *cobra.Command, args []string) {
 
 	common.AuthorizeOrganizationContext(true)
 
-	token := common.RequireOrganizationToken()
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		fmt.Printf("failed to list workflows; %s", err.Error())
+		os.Exit(1)
+	}
 
 	params := map[string]interface{}{
 		"workgroup_id": common.WorkgroupID,
@@ -88,7 +92,7 @@ func listWorkflowsRun(cmd *cobra.Command, args []string) {
 		params["filter_prototypes"] = "true"
 	}
 
-	workflows, err := baseline.ListWorkflows(token, params)
+	workflows, err := baseline.ListWorkflows(*token.AccessToken, params)
 	if err != nil {
 		fmt.Printf("failed to list workflows; %s", err.Error())
 		os.Exit(1)
