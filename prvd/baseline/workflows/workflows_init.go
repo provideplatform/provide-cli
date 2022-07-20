@@ -128,7 +128,8 @@ func descriptionPrompt() {
 
 func versionPrompt() {
 	prompt := promptui.Prompt{
-		Label: "Workflow Version",
+		Label:   "Workflow Version",
+		Default: "0.0.1",
 		Validate: func(s string) error {
 			if s == "" {
 				return fmt.Errorf("version is required")
