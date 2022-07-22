@@ -25,6 +25,7 @@ import (
 
 const promptStepInit = "Initialize"
 const promptStepList = "List"
+const promptStepDetails = "Details"
 
 const promptStepMessages = "Messages"
 
@@ -38,6 +39,8 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 		initWorkflowRun(cmd, args)
 	case promptStepList:
 		listWorkflowsRun(cmd, args)
+	case promptStepDetails:
+		fetchWorkflowDetailsRun(cmd, args)
 	case promptStepMessages:
 		messages.Optional = Optional
 		messages.MessagesCmd.Run(cmd, args)

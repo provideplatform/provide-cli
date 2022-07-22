@@ -36,8 +36,9 @@ var WorkflowsCmd = &cobra.Command{
 }
 
 func init() {
-	WorkflowsCmd.AddCommand(initBaselineWorkflowCmd)
 	WorkflowsCmd.AddCommand(listBaselineWorkflowsCmd)
+	WorkflowsCmd.AddCommand(detailBaselineWorkflowCmd)
+	WorkflowsCmd.AddCommand(initBaselineWorkflowCmd)
 	WorkflowsCmd.AddCommand(messages.MessagesCmd)
 	WorkflowsCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 
