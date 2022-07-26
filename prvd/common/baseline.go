@@ -193,17 +193,17 @@ func InitWorkgroupContract() *nchain.Contract {
 	return contract
 }
 
-func RegisterWorkgroupOrganization(applicationID string) {
+func RegisterWorkgroupOrganization(workgroupID string) {
 	err := RequireContract(nil, util.StringOrNil("organization-registry"), false)
 	if err != nil {
 		log.Printf("failed to initialize registry contract; %s", err.Error())
 		os.Exit(1)
 	}
-	err = ident.CreateApplicationOrganization(ApplicationAccessToken, applicationID, map[string]interface{}{
+	err = ident.CreateApplicationOrganization(OrganizationAccessToken, workgroupID, map[string]interface{}{
 		"organization_id": OrganizationID,
 	})
 	if err != nil {
-		orgs, err := ident.ListApplicationOrganizations(ApplicationAccessToken, applicationID, map[string]interface{}{
+		orgs, err := ident.ListApplicationOrganizations(OrganizationAccessToken, workgroupID, map[string]interface{}{
 			"organization_id": OrganizationID,
 		})
 		if err == nil {
@@ -222,38 +222,32 @@ func RegisterWorkgroupOrganization(applicationID string) {
 	}
 }
 
-func RequireOrganizationVault() {
+func RequireOrganizationVault() error {
 	if OrganizationAccessToken == "" {
-		return
+		return fmt.Errorf("organization access token not found")
 	}
 
 	// FIXME-- parameterize with --vault or similar?
-	vaults, err := vault.ListVaults(OrganizationAccessToken, map[string]interface{}{
-		"organization_id": OrganizationID,
-	})
+	vaults, err := vault.ListVaults(OrganizationAccessToken, map[string]interface{}{})
 	if err != nil {
-		log.Printf("failed to retrieve vaults for organization: %s; %s", OrganizationID, err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	if len(vaults) > 0 {
 		VaultID = vaults[0].ID.String()
-	} else {
-		vault, err := vault.CreateVault(OrganizationAccessToken, map[string]interface{}{
-			"name":        fmt.Sprintf("vault for organization: %s", OrganizationID),
-			"description": fmt.Sprintf("identity/signing keystore for organization: %s", OrganizationID),
-		})
-		if err != nil {
-			log.Printf("failed to create vault for organization: %s; %s", OrganizationID, err.Error())
-			os.Exit(1)
-		}
-		VaultID = vault.ID.String()
+		return nil
 	}
 
-	if VaultID == "" {
-		log.Printf("failed to require vault for organization: %s", OrganizationID)
-		os.Exit(1)
+	vault, err := vault.CreateVault(OrganizationAccessToken, map[string]interface{}{
+		"name":        fmt.Sprintf("vault for organization: %s", OrganizationID),
+		"description": fmt.Sprintf("identity/signing keystore for organization: %s", OrganizationID),
+	})
+	if err != nil {
+		return err
 	}
+
+	VaultID = vault.ID.String()
+	return nil
 }
 
 func RequireOrganizationKeypair(spec string) (*vault.Key, error) {

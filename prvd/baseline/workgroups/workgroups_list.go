@@ -22,7 +22,7 @@ import (
 	"os"
 
 	"github.com/provideplatform/provide-cli/prvd/common"
-	ident "github.com/provideplatform/provide-go/api/ident"
+	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/spf13/cobra"
 )
 
@@ -41,9 +41,13 @@ func listWorkgroups(cmd *cobra.Command, args []string) {
 }
 
 func listWorkgroupsRun(cmd *cobra.Command, args []string) {
-	token := common.RequireAPIToken()
-	applications, err := ident.ListApplications(token, map[string]interface{}{
-		"type": "baseline",
+	token, err := common.ResolveOrganizationToken()
+	if err != nil {
+		log.Printf("failed to retrieve baseline workgroups; %s", err.Error())
+		os.Exit(1)
+	}
+
+	workgroups, err := baseline.ListWorkgroups(*token.AccessToken, map[string]interface{}{
 		"page": fmt.Sprintf("%d", page),
 		"rpp":  fmt.Sprintf("%d", rpp),
 	})
@@ -51,14 +55,15 @@ func listWorkgroupsRun(cmd *cobra.Command, args []string) {
 		log.Printf("failed to retrieve baseline workgroups; %s", err.Error())
 		os.Exit(1)
 	}
-	for i := range applications {
-		workgroup := applications[i]
-		result := fmt.Sprintf("%s\t%s\n", workgroup.ID.String(), *workgroup.Name)
+	for _, workgroup := range workgroups {
+		result := fmt.Sprintf("%s\t%s\n", workgroup.ID, *workgroup.Name)
 		fmt.Print(result)
 	}
 }
 
 func init() {
+	listBaselineWorkgroupsCmd.Flags().StringVar(&common.OrganizationID, "organization", "", "organization identifier")
+
 	listBaselineWorkgroupsCmd.Flags().Uint64Var(&page, "page", common.DefaultPage, "page number to retrieve")
 	listBaselineWorkgroupsCmd.Flags().Uint64Var(&rpp, "rpp", common.DefaultRpp, "number of baseline workgroups to retrieve per page")
 	listBaselineWorkgroupsCmd.Flags().BoolVarP(&paginate, "paginate", "", false, "List pagination flags")

@@ -19,6 +19,7 @@ package baseline
 import (
 	"github.com/provideplatform/provide-cli/prvd/baseline/participants"
 	"github.com/provideplatform/provide-cli/prvd/baseline/stack"
+	"github.com/provideplatform/provide-cli/prvd/baseline/subject_accounts"
 	"github.com/provideplatform/provide-cli/prvd/baseline/workflows"
 	"github.com/provideplatform/provide-cli/prvd/baseline/workgroups"
 
@@ -31,8 +32,9 @@ const promptStack = "Stack"
 const promptWorkgroups = "Workgroups"
 const promptWorkflows = "Workflows"
 const promptParticipant = "Participants"
+const promptSubjectAccounts = "Subject-Accounts"
 
-var emptyPromptArgs = []string{promptStack, promptWorkgroups, promptWorkflows, promptParticipant}
+var emptyPromptArgs = []string{promptStack, promptWorkgroups, promptWorkflows, promptParticipant, promptSubjectAccounts}
 var emptyPromptLabel = "What would you like to do"
 
 // General Endpoints
@@ -50,6 +52,9 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	case promptParticipant:
 		participants.Optional = Optional
 		participants.ParticipantsCmd.Run(cmd, args)
+	case promptSubjectAccounts:
+		subject_accounts.Optional = Optional
+		subject_accounts.SubjectAccountsCmd.Run(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)
 		generalPrompt(cmd, args, result)

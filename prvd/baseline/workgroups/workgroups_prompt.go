@@ -24,8 +24,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const promptStepInit = "Initialize"
 const promptStepList = "List"
+const promptStepDetails = "Details"
+const promptStepInit = "Initialize"
+const promptStepUpdate = "Update"
 const promptStepJoin = "Join"
 
 var emptyPromptArgs = []string{promptStepInit, promptStepList, promptStepJoin}
@@ -34,11 +36,16 @@ var emptyPromptLabel = "What would you like to do"
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	switch step {
+	case promptStepList:
+		page, rpp = common.PromptPagination(paginate, page, rpp)
+		listWorkgroupsRun(cmd, args)
+	case promptStepDetails:
+		fetchWorkgroupDetailsRun(cmd, args)
 	case promptStepInit:
 		if Optional {
 			fmt.Println("Optional Flags:")
 			if common.NetworkID == "" {
-				common.RequirePublicNetwork()
+				common.RequireL1Network()
 			}
 			if common.OrganizationID == "" {
 				common.RequireOrganization()
@@ -51,9 +58,8 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 			}
 		}
 		initWorkgroupRun(cmd, args)
-	case promptStepList:
-		page, rpp = common.PromptPagination(paginate, page, rpp)
-		listWorkgroupsRun(cmd, args)
+	case promptStepUpdate:
+		updateWorkgroupRun(cmd, args)
 	case promptStepJoin:
 		if Optional {
 			fmt.Println("Optional Flags:")

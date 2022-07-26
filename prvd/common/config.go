@@ -20,11 +20,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/manifoldco/promptui"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/common/util"
@@ -176,82 +174,47 @@ func RequireApplicationToken() string {
 	return token
 }
 
-func RequireOrganizationToken() string {
-	var token string
-	tokenKey := BuildConfigKeyWithID(AccessTokenConfigKey, OrganizationID)
-	if viper.IsSet(tokenKey) {
-		token = viper.GetString(tokenKey)
-	}
+func ResolveOrganizationToken() (*ident.Token, error) {
+	var accessToken string
+	var refreshToken string
 
-	if token == "" || isTokenExpired(token) {
-		err := RequireOrganization()
-		if err == nil && PromptOrganizationAuthorization() {
-			token = viper.GetString(tokenKey)
+	if OrganizationID == "" {
+		if err := RequireOrganization(); err != nil {
+			return nil, err
 		}
 	}
 
-	return token
-}
-
-func PromptOrganizationAuthorization() bool {
-	prompt := promptui.Prompt{
-		IsConfirm: true,
-		Label:     fmt.Sprintf("Authorize access/refresh token for %s", *Organization.Name),
+	accessTokenKey := BuildConfigKeyWithID(AccessTokenConfigKey, OrganizationID)
+	if viper.IsSet(accessTokenKey) {
+		accessToken = viper.GetString(accessTokenKey)
 	}
 
-	result, err := prompt.Run()
-	if err != nil {
-		os.Exit(1)
-		return false
+	refreshTokenKey := BuildConfigKeyWithID(RefreshTokenConfigKey, OrganizationID)
+	if viper.IsSet(refreshTokenKey) {
+		refreshToken = viper.GetString(refreshTokenKey)
 	}
 
-	if strings.ToLower(result) == "y" {
-		return AuthorizeOrganization(true) == nil
-	}
-
-	return false
-}
-
-func AuthorizeOrganization(persist bool) error {
-	token, err := ident.CreateToken(RequireUserAccessToken(), map[string]interface{}{
-		"scope":           "offline_access",
-		"organization_id": OrganizationID,
-	})
-	if err != nil {
-		log.Printf("failed to authorize API access token on behalf of organization %s; %s", OrganizationID, err.Error())
-		os.Exit(1)
-	}
-
-	if token.AccessToken != nil {
-		OrganizationAccessToken = *token.AccessToken
-
-		if token.RefreshToken != nil {
-			OrganizationRefreshToken = *token.RefreshToken
+	if accessToken == "" || refreshToken == "" || isTokenExpired(accessToken) || isTokenExpired(refreshToken) {
+		t, err := ident.CreateToken(RequireUserAccessToken(), map[string]interface{}{
+			"organization_id": OrganizationID,
+			"scope":           "offline_access",
+		})
+		if err != nil {
+			return nil, err
 		}
 
-		if persist {
-			// FIXME-- DRY this up (also exists in api_tokens_init.go)
-			orgAPIAccessTokenKey := BuildConfigKeyWithID(AccessTokenConfigKey, OrganizationID)
-			orgAPIRefreshTokenKey := BuildConfigKeyWithID(RefreshTokenConfigKey, OrganizationID)
+		accessToken = *t.AccessToken
+		refreshToken = *t.RefreshToken
 
-			if token.AccessToken != nil {
-				// fmt.Printf("Access token authorized for organization: %s\t%s\n", OrganizationID, *token.AccessToken)
-				if !viper.IsSet(orgAPIAccessTokenKey) {
-					viper.Set(orgAPIAccessTokenKey, *token.AccessToken)
-					viper.WriteConfig()
-				}
-				if token.RefreshToken != nil {
-					// fmt.Printf("Refresh token authorized for organization: %s\t%s\n", OrganizationID, *token.RefreshToken)
-					if !viper.IsSet(orgAPIRefreshTokenKey) {
-						viper.Set(orgAPIRefreshTokenKey, *token.RefreshToken)
-						viper.WriteConfig()
-					}
-				}
-			}
-		}
+		viper.Set(accessTokenKey, accessToken)
+		viper.Set(refreshTokenKey, refreshToken)
+		viper.WriteConfig()
 	}
 
-	return nil
+	return &ident.Token{
+		AccessToken:  &accessToken,
+		RefreshToken: &refreshToken,
+	}, nil
 }
 
 func RequireAPIToken() string {

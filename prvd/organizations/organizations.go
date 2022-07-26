@@ -23,8 +23,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// var organization provide.Organization
-
 var OrganizationsCmd = &cobra.Command{
 	Use:   "organizations",
 	Short: "Manage organizations",

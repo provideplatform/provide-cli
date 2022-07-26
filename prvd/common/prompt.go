@@ -27,6 +27,7 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
+	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/nchain"
 	"github.com/provideplatform/provide-go/api/vault"
@@ -37,6 +38,7 @@ const requireAccountSelectLabel = "Select an account"
 const requireApplicationSelectLabel = "Select an application"
 const requireConnectorSelectLabel = "Select a connector"
 const requireNetworkSelectLabel = "Select a network"
+const requireL2NetworkSelectLabel = "Select an l2 network"
 const requireOrganizationSelectLabel = "Select an organization"
 const requireVaultSelectLabel = "Select a vault"
 const requireWalletSelectLabel = "Select a wallet"
@@ -109,19 +111,36 @@ func RequireApplication() error {
 		return err
 	}
 
+	Application = apps[i]
 	ApplicationID = apps[i].ID.String()
 	return nil
 }
 
 // RequireWorkgroup is equivalent to a required --workgroup flag
-// (yes, this is identical to RequireApplication() with exception to the Printf content...)
 func RequireWorkgroup() error {
-	if ApplicationID != "" {
-		return nil
+	if WorkgroupID != "" {
+		token, err := ResolveOrganizationToken()
+		if err != nil {
+			return err
+		}
+
+		wg, err := baseline.GetWorkgroupDetails(*token.AccessToken, WorkgroupID, map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+
+		raw, err := json.Marshal(wg)
+		if err != nil {
+			return err
+		}
+
+		err = json.Unmarshal(raw, &Workgroup)
+		return err
 	}
 
 	var token string
 
+	// FIXME-- should check if token is in memory
 	tkn, err := ident.CreateToken(RequireUserAccessToken(), map[string]interface{}{
 		"scope":           "offline_access",
 		"organization_id": OrganizationID,
@@ -133,10 +152,8 @@ func RequireWorkgroup() error {
 	}
 
 	opts := make([]string, 0)
-	apps, _ := ident.ListApplications(token, map[string]interface{}{
-		"type": "baseline",
-	})
-	for _, app := range apps {
+	workgroups, _ := baseline.ListWorkgroups(token, map[string]interface{}{})
+	for _, app := range workgroups {
 		opts = append(opts, *app.Name)
 	}
 
@@ -150,8 +167,16 @@ func RequireWorkgroup() error {
 		return err
 	}
 
-	ApplicationID = apps[i].ID.String()
-	return nil
+	WorkgroupID = workgroups[i].ID.String()
+
+	wg := workgroups[i]
+	raw, err := json.Marshal(wg)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(raw, &Workgroup)
+	return err
 }
 
 // RequireConnector is equivalent to a required --connector flag
@@ -206,8 +231,8 @@ func RequireNetwork() error {
 	return nil
 }
 
-// RequirePublicNetwork is equivalent to a required --network flag; but list options filtered to show only public networks
-func RequirePublicNetwork() error {
+// RequireL1Network is equivalent to a required --network flag; but list options filtered to show only public l1 networks
+func RequireL1Network() error {
 	if NetworkID != "" {
 		return nil
 	}
@@ -215,6 +240,7 @@ func RequirePublicNetwork() error {
 	opts := make([]string, 0)
 	networks, _ := nchain.ListNetworks(RequireUserAccessToken(), map[string]interface{}{
 		"public": "true",
+		"layer2": "false",
 	})
 	for _, network := range networks {
 		opts = append(opts, *network.Name)
@@ -234,10 +260,48 @@ func RequirePublicNetwork() error {
 	return nil
 }
 
+// RequireL2Network is equivalent to a required --l2 flag; but list options filtered to show only public l2 networks
+func RequireL2Network() error {
+	if L2NetworkID != "" {
+		return nil
+	}
+
+	opts := make([]string, 0)
+	networks, _ := nchain.ListNetworks(RequireUserAccessToken(), map[string]interface{}{
+		"public": "true",
+		"layer2": "true",
+	})
+	for _, network := range networks {
+		opts = append(opts, *network.Name)
+	}
+
+	prompt := promptui.Select{
+		Label: requireNetworkSelectLabel,
+		Items: opts,
+	}
+
+	i, _, err := prompt.Run()
+	if err != nil {
+		return err
+	}
+
+	L2NetworkID = networks[i].ID.String()
+	return nil
+}
+
 // RequireOrganization is equivalent to a required --organization flag
 func RequireOrganization() error {
 	if OrganizationID != "" {
-		return nil
+		// TODO-- should also check if Organization is set; if so, check that IDs match, else refetch and re-set Organization -- same for other similar Require() methods
+		org, _ := ident.GetOrganizationDetails(RequireUserAccessToken(), OrganizationID, map[string]interface{}{})
+
+		raw, err := json.Marshal(org)
+		if err != nil {
+			return err
+		}
+
+		err = json.Unmarshal(raw, &Organization)
+		return err
 	}
 
 	opts := make([]string, 0)
@@ -256,11 +320,16 @@ func RequireOrganization() error {
 		return err
 	}
 
-	Organization = orgs[i]
-	if orgs[i].ID != nil {
-		OrganizationID = *orgs[i].ID
+	OrganizationID = *orgs[i].ID
+
+	org := orgs[i]
+	raw, err := json.Marshal(org)
+	if err != nil {
+		return err
 	}
-	return nil
+
+	err = json.Unmarshal(raw, &Organization)
+	return err
 }
 
 // RequireVault is equivalent to a required --vault flag
@@ -342,10 +411,54 @@ func RequireWallet() error {
 }
 
 var MandatoryValidation = func(input string) error {
-	if len(input) < 1 {
-		return errors.New("password must have more than 6 characters")
+	if input == "" {
+		return errors.New("required")
 	}
 	return nil
+}
+
+var EmailValidation = func(input string) error {
+	if input == "" {
+		return errors.New("email is required")
+	}
+
+	re := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	if !re.MatchString(input) {
+		return errors.New("invalid email")
+	}
+
+	return nil
+
+}
+
+// RequireTermsOfServiceAgreement is equivalent to a required --terms flag
+func RequireTermsOfServiceAgreement() bool {
+	prompt := promptui.Prompt{
+		IsConfirm: true,
+		Label:     "I have read and accept the terms of service (https://provide.services/terms)",
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		return false
+	}
+
+	return strings.ToLower(result) == "y" // this may be redundant bc if err != nil, then result != "y"
+}
+
+// RequirePrivacyPolicyAgreement is equivalent to a required --privacy flag
+func RequirePrivacyPolicyAgreement() bool {
+	prompt := promptui.Prompt{
+		IsConfirm: true,
+		Label:     "I have read and accept the privacy policy (https://provide.services/privacy-policy)",
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		return false
+	}
+
+	return strings.ToLower(result) == "y"
 }
 
 var MandatoryNumberValidation = func(input string) error {
@@ -395,7 +508,6 @@ var HexValidation = func(input string) error {
 }
 
 func FreeInput(label string, defaultValue string, validate func(string) error) string {
-
 	var prompt = promptui.Prompt{}
 	if label == "Password" {
 		prompt = promptui.Prompt{

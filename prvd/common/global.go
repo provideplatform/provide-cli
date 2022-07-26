@@ -17,6 +17,8 @@
 package common
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -34,19 +36,25 @@ const DefaultPage = 1
 const DefaultRpp = 25
 
 var (
-	Application   *ident.Application
 	ApplicationID string
+	Application   *ident.Application
+
+	WorkgroupID string
+	Workgroup   *WorkgroupType
 
 	OrganizationID string
-	Organization   *ident.Organization
+	Organization   *OrganizationType
 
 	UserID string
 	User   *ident.User
+
+	SubjectAccountID string
 
 	AccountID   string
 	ConnectorID string
 	ContractID  string
 	NetworkID   string
+	L2NetworkID string
 	NodeID      string
 	WalletID    string
 
@@ -109,4 +117,11 @@ func IsReleaseRepositoryContext() bool {
 	}
 
 	return false
+}
+
+// SHA256 is a convenience method to return the sha256 hash of the given input
+func SHA256(str string) string {
+	digest := sha256.New()
+	digest.Write([]byte(str))
+	return hex.EncodeToString(digest.Sum(nil))
 }

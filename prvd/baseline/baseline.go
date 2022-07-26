@@ -19,7 +19,9 @@ package baseline
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/provideplatform/provide-cli/prvd/baseline/domain_models"
 	"github.com/provideplatform/provide-cli/prvd/baseline/stack"
+	"github.com/provideplatform/provide-cli/prvd/baseline/subject_accounts"
 	"github.com/provideplatform/provide-cli/prvd/baseline/workflows"
 	"github.com/provideplatform/provide-cli/prvd/baseline/workgroups"
 	"github.com/provideplatform/provide-cli/prvd/common"
@@ -54,5 +56,7 @@ func init() {
 	BaselineCmd.AddCommand(stack.StackCmd)
 	BaselineCmd.AddCommand(workgroups.WorkgroupsCmd)
 	BaselineCmd.AddCommand(workflows.WorkflowsCmd)
+	BaselineCmd.AddCommand(subject_accounts.SubjectAccountsCmd)
+	BaselineCmd.AddCommand(domain_models.DomainModelsCmd)
 	BaselineCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the optional flags")
 }

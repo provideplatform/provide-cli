@@ -33,29 +33,6 @@ var emptyPromptLabel = "What would you like to do"
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepSend:
-		if common.ApplicationID == "" {
-			common.RequireWorkgroup()
-		}
-		if common.OrganizationID == "" {
-			common.RequireOrganization()
-		}
-		if messageType == "" {
-			opts := make([]string, 0)
-			for k := range items {
-				opts = append(opts, k)
-			}
-			value := common.SelectInput(opts, custodyPromptLabel)
-			messageType = items[value]
-		}
-		if id == "" {
-			id = common.FreeInput("ID", "", common.MandatoryValidation)
-		}
-		if baselineID == "" {
-			baselineID = common.FreeInput("Baseline ID", "", common.NoValidation)
-		}
-		if data == "" {
-			data = common.FreeInput("Data", "", common.JSONValidation)
-		}
 		sendMessageRun(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)

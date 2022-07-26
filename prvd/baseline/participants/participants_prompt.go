@@ -17,58 +17,52 @@
 package participants
 
 import (
-	"fmt"
-	"strconv"
-
+	participants_invitations "github.com/provideplatform/provide-cli/prvd/baseline/participants/invitations"
+	participants_organizations "github.com/provideplatform/provide-cli/prvd/baseline/participants/organizations"
+	participants_users "github.com/provideplatform/provide-cli/prvd/baseline/participants/users"
 	"github.com/provideplatform/provide-cli/prvd/common"
 
 	"github.com/spf13/cobra"
 )
 
-const promptStepInvite = "Invite"
-const promptStepList = "List"
+const promptStepUsers = "Users"
+const promptStepOrganizations = "Organizations"
+const promptStepInvitations = "Invitations"
 
-var emptyPromptArgs = []string{promptStepInvite, promptStepList}
+var emptyPromptArgs = []string{promptStepUsers, promptStepOrganizations, promptStepInvitations}
 var emptyPromptLabel = "What would you like to do"
 
-var custodyPromptArgs = []string{"No", "Yes"}
-var custodyPromptLabel = "Would you like the participant to be a managed tenant?"
+var Optional bool
+var paginate bool
+
+// var custodyPromptArgs = []string{"No", "Yes"}
+// var custodyPromptLabel = "Would you like the participant to be a managed tenant?"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	switch step {
-	case promptStepInvite:
-		if Optional {
-			fmt.Println("Optional Flags:")
-			if common.ApplicationID == "" {
-				common.RequireApplication()
-			}
-			if common.OrganizationID == "" {
-				common.RequireOrganization()
-			}
-			if !managedTenant {
-				managedTenant = common.SelectInput(custodyPromptArgs, custodyPromptLabel) == "Yes"
-			}
-			if name == "" {
-				name = common.FreeInput("Wallet Name", "", common.NoValidation)
-			}
-			if email == "" {
-				email = common.FreeInput("Wallet Purpose", "", common.NoValidation)
-			}
-			if permissions == 0 {
-				permissions, _ = strconv.Atoi(common.FreeInput("Wallet Purpose", "0", common.NoValidation))
-			}
-		}
-		inviteParticipantRun(cmd, args)
-	case promptStepList:
-		if Optional {
-			fmt.Println("Optional Flags:")
-			if common.ApplicationID == "" {
-				common.RequireApplication()
-			}
-		}
-		page, rpp = common.PromptPagination(paginate, page, rpp)
-		listParticipantsRun(cmd, args)
+	// case promptStepInviteUser:
+	// 	inviteUserRun(cmd, args)
+	// case promptStepInviteOrganization:
+	// 	inviteOrganizationRun(cmd, args)
+	// case promptStepList:
+	// 	if Optional {
+	// 		fmt.Println("Optional Flags:")
+	// 		if common.ApplicationID == "" {
+	// 			common.RequireApplication()
+	// 		}
+	// 	}
+	// 	page, rpp = common.PromptPagination(paginate, page, rpp)
+	// 	listParticipantsRun(cmd, args)
+	case promptStepUsers:
+		participants_users.Optional = Optional
+		participants_users.ParticipantsUsersCmd.Run(cmd, args)
+	case promptStepOrganizations:
+		participants_organizations.Optional = Optional
+		participants_organizations.ParticipantsOrganizationsCmd.Run(cmd, args)
+	case promptStepInvitations:
+		participants_invitations.Optional = Optional
+		participants_invitations.ParticipantsInvitationsCmd.Run(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)
 		generalPrompt(cmd, args, result)
