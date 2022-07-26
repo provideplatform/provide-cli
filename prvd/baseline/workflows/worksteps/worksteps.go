@@ -35,7 +35,7 @@ var WorkstepsCmd = &cobra.Command{
 }
 
 func init() {
-	//  WorkstepsCmd.AddCommand(listBaselineWorkstepsCmd)
+	WorkstepsCmd.AddCommand(listBaselineWorkstepsCmd)
 	//  WorkstepsCmd.AddCommand(detailBaselineWorkstepCmd)
 	WorkstepsCmd.AddCommand(initBaselineWorkstepCmd)
 	WorkstepsCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")

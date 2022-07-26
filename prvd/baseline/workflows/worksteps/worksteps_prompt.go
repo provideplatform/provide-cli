@@ -34,8 +34,8 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	switch step {
 	case promptStepInit:
 		initWorkstepRun(cmd, args)
-		//  case promptStepList:
-		// 	 listWorkstepsRun(cmd, args)
+	case promptStepList:
+		listWorkstepsRun(cmd, args)
 		//  case promptStepDetails:
 		// 	 fetchWorkstepDetailsRun(cmd, args)
 	case "":
