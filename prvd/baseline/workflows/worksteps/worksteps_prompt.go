@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package workflows
+package worksteps
 
 import (
-	"github.com/provideplatform/provide-cli/prvd/baseline/workflows/messages"
-	"github.com/provideplatform/provide-cli/prvd/baseline/workflows/worksteps"
 	"github.com/provideplatform/provide-cli/prvd/common"
 
 	"github.com/spf13/cobra"
@@ -28,26 +26,18 @@ const promptStepInit = "Initialize"
 const promptStepList = "List"
 const promptStepDetails = "Details"
 
-const promptStepWorksteps = "Worksteps"
-const promptStepMessages = "Messages"
-
-var emptyPromptArgs = []string{promptStepInit, promptStepList, promptStepDetails, promptStepMessages}
+var emptyPromptArgs = []string{promptStepInit, promptStepList, promptStepDetails}
 var emptyPromptLabel = "What would you like to do"
 
 // General Endpoints
 func generalPrompt(cmd *cobra.Command, args []string, step string) {
 	switch step {
 	case promptStepInit:
-		initWorkflowRun(cmd, args)
-	case promptStepList:
-		listWorkflowsRun(cmd, args)
-	case promptStepDetails:
-		fetchWorkflowDetailsRun(cmd, args)
-	case promptStepWorksteps:
-		worksteps.WorkstepsCmd.Run(cmd, args)
-	case promptStepMessages:
-		messages.Optional = Optional
-		messages.MessagesCmd.Run(cmd, args)
+		initWorkstepRun(cmd, args)
+		//  case promptStepList:
+		// 	 listWorkstepsRun(cmd, args)
+		//  case promptStepDetails:
+		// 	 fetchWorkstepDetailsRun(cmd, args)
 	case "":
 		result := common.SelectInput(emptyPromptArgs, emptyPromptLabel)
 		generalPrompt(cmd, args, result)

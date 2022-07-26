@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package workflows
+package worksteps
 
 import (
-	"github.com/provideplatform/provide-cli/prvd/baseline/workflows/messages"
-	"github.com/provideplatform/provide-cli/prvd/baseline/workflows/worksteps"
 	"github.com/provideplatform/provide-cli/prvd/common"
 	"github.com/spf13/cobra"
 )
 
 var paginate bool
 
-var WorkflowsCmd = &cobra.Command{
-	Use:   "workflows",
-	Short: "Interact with a baseline workflows",
-	Long:  `Create, manage and interact with workflows via the baseline protocol.`,
+var WorkstepsCmd = &cobra.Command{
+	Use:   "worksteps",
+	Short: "Interact with a baseline worksteps",
+	Long:  `Create, manage and interact with workflow worksteps via the baseline protocol.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		common.CmdExistsOrExit(cmd, args)
 
@@ -37,11 +35,9 @@ var WorkflowsCmd = &cobra.Command{
 }
 
 func init() {
-	WorkflowsCmd.AddCommand(listBaselineWorkflowsCmd)
-	WorkflowsCmd.AddCommand(detailBaselineWorkflowCmd)
-	WorkflowsCmd.AddCommand(initBaselineWorkflowCmd)
-	WorkflowsCmd.AddCommand(worksteps.WorkstepsCmd)
-	WorkflowsCmd.AddCommand(messages.MessagesCmd)
-	WorkflowsCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
+	//  WorkstepsCmd.AddCommand(listBaselineWorkstepsCmd)
+	//  WorkstepsCmd.AddCommand(detailBaselineWorkstepCmd)
+	WorkstepsCmd.AddCommand(initBaselineWorkstepCmd)
+	WorkstepsCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 
 }
