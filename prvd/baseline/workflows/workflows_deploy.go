@@ -64,6 +64,10 @@ func deployWorkflowRun(cmd *cobra.Command, args []string) {
 		log.Print("failed to deploy workflow; cannot deploy a workflow instance")
 		os.Exit(1)
 	}
+	if *w.Status != "draft" {
+		log.Print("failed to deploy workflow; cannot deploy a non-draft instance")
+		os.Exit(1)
+	}
 
 	ws, err := baseline.ListWorksteps(*token.AccessToken, workflowID, map[string]interface{}{})
 	if err != nil {

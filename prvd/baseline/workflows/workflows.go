@@ -41,8 +41,8 @@ func init() {
 	WorkflowsCmd.AddCommand(detailBaselineWorkflowCmd)
 	WorkflowsCmd.AddCommand(initBaselineWorkflowCmd)
 	WorkflowsCmd.AddCommand(deployBaselineWorkflowCmd)
+	WorkflowsCmd.AddCommand(versionBaselineWorkflowCmd)
 	WorkflowsCmd.AddCommand(worksteps.WorkstepsCmd)
 	WorkflowsCmd.AddCommand(messages.MessagesCmd)
 	WorkflowsCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
-
 }

@@ -28,6 +28,7 @@ const promptStepInit = "Initialize"
 const promptStepList = "List"
 const promptStepDetails = "Details"
 const promptStepDeploy = "Deploy"
+const promptStepVersion = "Version"
 
 const promptStepWorksteps = "Worksteps"
 const promptStepMessages = "Messages"
@@ -46,6 +47,8 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 		fetchWorkflowDetailsRun(cmd, args)
 	case promptStepDeploy:
 		deployWorkflowRun(cmd, args)
+	case promptStepVersion:
+		versionWorkflowRun(cmd, args)
 	case promptStepWorksteps:
 		worksteps.WorkstepsCmd.Run(cmd, args)
 	case promptStepMessages:
