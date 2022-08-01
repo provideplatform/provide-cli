@@ -185,6 +185,9 @@ var withLocalIdent bool
 var withLocalNChain bool
 var withLocalPrivacy bool
 
+var withoutRequireOrganizationKeys bool
+var withoutRequireSubjectAccount bool
+
 var startBaselineStackCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start the baseline stack",
@@ -398,8 +401,13 @@ func runStackStart(cmd *cobra.Command, args []string) {
 			wg.Wait()
 			log.Printf("%s local baseline instance started", name)
 
-			requireOrganizationKeys()
-			requireBPISubjectAccount()
+			if !withoutRequireOrganizationKeys {
+				requireOrganizationKeys()
+			}
+
+			if !withoutRequireSubjectAccount {
+				requireBPISubjectAccount()
+			}
 		},
 		func(reason *string) {
 			if reason != nil {
@@ -1567,6 +1575,9 @@ func init() {
 	startBaselineStackCmd.Flags().IntVar(&vaultPort, "vault-local-port", 8084, "port for the local vault service")
 
 	startBaselineStackCmd.Flags().StringVar(&organizationRefreshToken, "organization-refresh-token", os.Getenv("PROVIDE_ORGANIZATION_REFRESH_TOKEN"), "refresh token to vend access tokens for use with the local organization")
+
+	startBaselineStackCmd.Flags().BoolVar(&withoutRequireOrganizationKeys, "without-require-organization-keys", false, "when true, no initial keys are required for the organization upon starting the stack")
+	startBaselineStackCmd.Flags().BoolVar(&withoutRequireSubjectAccount, "without-require-subject-account", false, "when true, no initial subject account is required upon starting the stack")
 
 	defaultBaselineOrganizationAddress := "0x"
 	if os.Getenv("BASELINE_ORGANIZATION_ADDRESS") != "" {
