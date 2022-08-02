@@ -63,6 +63,8 @@ var (
 
 	Email    string
 	Password string
+
+	UserAccessToken string
 )
 
 func init() {
