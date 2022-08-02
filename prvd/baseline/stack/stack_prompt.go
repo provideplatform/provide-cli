@@ -50,7 +50,9 @@ var SoRPromptLabel = "Select a Sor"
 func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 	switch step := currentStep; step {
 	case promptStepStart:
+		common.RequireUserAccessToken()
 		common.RequireOrganization()
+
 		if Optional {
 			if name == "" {
 				name = common.FreeInput("Name", "", common.NoValidation)

@@ -37,10 +37,15 @@ valid access/refresh token pair which can be used to make API calls.`,
 }
 
 func authenticate(cmd *cobra.Command, args []string) {
-	email = common.FreeInput("Email", "", common.MandatoryValidation)
-	passwd = common.FreeInput("Password", "", common.MandatoryValidation)
+	if common.Email == "" {
+		common.Email = common.FreeInput("Email", "", common.MandatoryValidation)
+	}
 
-	resp, err := provide.Authenticate(email, passwd, "")
+	if common.Password == "" {
+		common.Password = common.FreeInput("Password", "", common.MandatoryValidation)
+	}
+
+	resp, err := provide.Authenticate(common.Email, common.Password, "")
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
@@ -54,4 +59,9 @@ func authenticate(cmd *cobra.Command, args []string) {
 	}
 
 	log.Printf("Authentication successful")
+}
+
+func init() {
+	AuthenticateCmd.Flags().StringVar(&common.Email, "email", "", "account email")
+	AuthenticateCmd.Flags().StringVar(&common.Password, "password", "", "account password")
 }

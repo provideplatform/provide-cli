@@ -37,18 +37,22 @@ var initCmd = &cobra.Command{
 
 var firstName string
 var lastName string
-var email string
-var passwd string
 
 func create(cmd *cobra.Command, args []string) {
 	firstName = common.FreeInput("First Name", "", common.MandatoryValidation)
 	lastName = common.FreeInput("Last Name", "", common.MandatoryValidation)
-	email = common.FreeInput("Email", "", common.EmailValidation)
-	passwd = common.FreeInput("Password", "", common.MandatoryValidation)
+
+	if common.Email == "" {
+		common.Email = common.FreeInput("Email", "", common.EmailValidation)
+	}
+
+	if common.Password == "" {
+		common.Password = common.FreeInput("Password", "", common.MandatoryValidation)
+	}
 
 	resp, err := provide.CreateUser("", map[string]interface{}{
-		"email":      email,
-		"password":   passwd,
+		"email":      common.Email,
+		"password":   common.Password,
 		"first_name": firstName,
 		"last_name":  lastName,
 	})
@@ -57,11 +61,18 @@ func create(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	_, err = provide.Authenticate(email, passwd, "")
+	_, err = provide.Authenticate(common.Email, common.Password, "")
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
 
 	fmt.Printf("created user: %s", *resp.ID)
+}
+
+func init() {
+	initCmd.Flags().StringVar(&common.Email, "email", "", "account email")
+	initCmd.Flags().StringVar(&common.Password, "password", "", "account password")
+	initCmd.Flags().StringVar(&firstName, "first-name", "", "account first name")
+	initCmd.Flags().StringVar(&lastName, "last-name", "", "account last name")
 }

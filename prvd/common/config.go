@@ -97,12 +97,30 @@ func RequireUserAccessToken() string {
 		token = viper.GetString(AccessTokenConfigKey)
 	}
 
-	if token == "" || isTokenExpired(token) {
-		log.Printf("Authorized API access token required in prvd configuration; run 'authenticate'")
-		os.Exit(1)
-	}
+	if token == "" {
+		if Email == "" {
+			Email = FreeInput("Email", "", MandatoryValidation)
+		}
 
-	if isTokenExpired(token) {
+		if Password == "" {
+			Password = FreeInput("Password", "", MandatoryValidation)
+		}
+
+		resp, err := ident.Authenticate(Email, Password, "")
+		if err != nil {
+			log.Printf("authenticate failed; %s", err.Error())
+			os.Exit(1)
+		}
+
+		if resp.Token.AccessToken != nil && resp.Token.RefreshToken != nil {
+			CacheAccessRefreshToken(resp.Token, nil)
+		} else if resp.Token.Token != nil {
+			viper.Set(AccessTokenConfigKey, *resp.Token.Token)
+			viper.WriteConfig()
+		}
+
+		token = *resp.Token.AccessToken
+	} else if isTokenExpired(token) {
 		refreshToken(token, nil)
 		token = viper.GetString(AccessTokenConfigKey)
 	}
