@@ -26,14 +26,14 @@ mod:
 test: build
 	# TODO
 
-build-exe-macos: clean mod
+build-macos: clean mod
 	go fmt ./...
 	GOOS=darwin GOARCH=amd64 go build -o bin/prvd-amd64-darwin cmd/prvd/main.go
 
-build-exe-windows: clean mod
+build-windows: clean mod
 	go fmt ./...
-	GOOS=windows GOARCH=amd64 go build -o bin/prvd-amd64-windows.exe cmd/prvd/main.go
+	GOOS=windows GOARCH=amd64 go build -o bin/prvd-amd64-windows cmd/prvd/main.go
 
-build-exe-linux: clean mod
+build-linux: clean mod
 	go fmt ./...
 	GOOS=linux GOARCH=amd64 go build -o bin/prvd-amd64-linux cmd/prvd/main.go
