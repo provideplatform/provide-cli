@@ -1129,10 +1129,10 @@ func writeNATSConfig() *string {
 	}
 	path := strings.Split(os.TempDir(), string(os.PathSeparator))
 	path = append(path, "nats-server.conf")
-	sep := []string{string(os.PathSeparator)}
+	sep := []string{}
 	path = append(sep, path...)
 	tmp := filepath.Join(path...)
-	err := ioutil.WriteFile(filepath.FromSlash(strings.ReplaceAll(strings.ReplaceAll(tmp, string(os.PathSeparator), "/"), filepath.VolumeName(tmp), "")), cfg, 0644)
+	err := ioutil.WriteFile(filepath.FromSlash(strings.ReplaceAll(tmp, string(os.PathSeparator), "/")), cfg, 0644)
 	if err != nil {
 		log.Printf("failed to write local nats-server.conf; %s", err.Error())
 		os.Exit(1)
