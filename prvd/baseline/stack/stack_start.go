@@ -25,6 +25,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -1137,7 +1138,10 @@ func writeNATSConfig() *string {
 	}
 	path := strings.Split(os.TempDir(), string(os.PathSeparator))
 	path = append(path, "nats-server.conf")
-	sep := []string{string(os.PathSeparator)}
+	sep := []string{}
+	if !strings.EqualFold(runtime.GOOS, "windows") {
+		sep = []string{string(os.PathSeparator)}
+	}
 	path = append(sep, path...)
 	tmp := filepath.Join(path...)
 	err := ioutil.WriteFile(tmp, cfg, 0644)
