@@ -1127,21 +1127,17 @@ func writeNATSConfig() *string {
 	if !natsWebsocketTLS {
 		cfg = []byte("max_payload: 100Mb\nmax_pending: 104857600\nwebsocket {\n    listen: \"0.0.0.0:4221\"\n    no_tls: true\n}\n")
 	}
-	path := strings.Split(os.TempDir(), string(os.PathSeparator))
-	path = append(path, "nats-server.conf")
-	sep := []string{}
-	path = append(sep, path...)
-	tmp := filepath.Join(path...)
-	err := ioutil.WriteFile(filepath.FromSlash(strings.ReplaceAll(tmp, string(os.PathSeparator), "/")), cfg, 0644)
+	path := filepath.FromSlash(fmt.Sprintf("%s/nats-server.conf", os.TempDir()))
+	err := ioutil.WriteFile(path, cfg, 0644)
 	if err != nil {
 		log.Printf("failed to write local nats-server.conf; %s", err.Error())
 		os.Exit(1)
 	}
 
-	if tmp == "" {
+	if path == "" {
 		return nil
 	}
-	return &tmp
+	return &path
 }
 
 func runNATS(docker *client.Client, wg *sync.WaitGroup) {
