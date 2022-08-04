@@ -97,10 +97,6 @@ func RequireUserAccessToken() string {
 		token = viper.GetString(AccessTokenConfigKey)
 	}
 
-	if UserAccessToken != "" {
-		token = UserAccessToken // persist token ??
-	}
-
 	if token == "" {
 		if Email == "" {
 			Email = FreeInput("Email", "", MandatoryValidation)
