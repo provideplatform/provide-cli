@@ -166,7 +166,7 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			if baselineRegistryContractAddress == "0x" {
 				baselineOrganizationAddress = common.FreeInput("Baseline Registry Contract Address", "0x", common.HexValidation)
 			}
-			if baselineWorkgroupID == "" {
+			if common.WorkgroupID == "" {
 				baselineOrganizationAddress = common.FreeInput("Baseline Workgroup ID", "", common.HexValidation)
 			}
 			if nchainBaselineNetworkID == "0x" {

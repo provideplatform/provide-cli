@@ -92,6 +92,10 @@ func InitConfig() {
 }
 
 func RequireUserAccessToken() string {
+	if UserAccessToken != "" {
+		return UserAccessToken
+	}
+
 	token := ""
 	if viper.IsSet(AccessTokenConfigKey) {
 		token = viper.GetString(AccessTokenConfigKey)
