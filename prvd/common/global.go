@@ -60,9 +60,6 @@ var (
 
 	Manifest *provide.Manifest
 	Verbose  bool
-
-	Email    string
-	Password string
 )
 
 func init() {

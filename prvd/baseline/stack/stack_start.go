@@ -1490,9 +1490,6 @@ func sorURLPrompt() {
 }
 
 func init() {
-	startBaselineStackCmd.Flags().StringVar(&common.Email, "email", "", "account name")
-	startBaselineStackCmd.Flags().StringVar(&common.Password, "password", "", "account password")
-
 	startBaselineStackCmd.Flags().StringVar(&name, "name", "baseline-local", "name of the baseline stack instance")
 
 	startBaselineStackCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
