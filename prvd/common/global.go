@@ -45,8 +45,9 @@ var (
 	OrganizationID string
 	Organization   *OrganizationType
 
-	UserID string
-	User   *ident.User
+	UserID          string
+	User            *ident.User
+	UserAccessToken string
 
 	SubjectAccountID string
 

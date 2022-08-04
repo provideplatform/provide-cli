@@ -146,7 +146,6 @@ var baselineOrganizationAddress string
 
 // var baselineOrganizationAPIEndpoint string
 var baselineRegistryContractAddress string
-var baselineWorkgroupID string
 
 var nchainBaselineNetworkID string
 
@@ -544,7 +543,7 @@ func requireBPISubjectAccount() error {
 	}
 
 	var sacct *baseline.SubjectAccount
-	subjectAccountID := baseline.SubjectAccountIDFactory(common.OrganizationID, baselineWorkgroupID)
+	subjectAccountID := baseline.SubjectAccountIDFactory(common.OrganizationID, common.WorkgroupID)
 
 	sacct, err = baseline.GetSubjectAccountDetails(*token.AccessToken, common.OrganizationID, subjectAccountID, map[string]interface{}{})
 	if err == nil && sacct != nil && sacct.ID != nil {
@@ -566,7 +565,7 @@ func requireBPISubjectAccount() error {
 			// OrganizationWebsocketEndpoint *string `json:"organization_websocket_endpoint,omitempty"`
 			RegistryContractAddress: &baselineRegistryContractAddress,
 			SOR:                     sorConfigFactory(),
-			WorkgroupID:             &baselineWorkgroupID,
+			WorkgroupID:             &common.WorkgroupID,
 		},
 		"subject_id": common.OrganizationID,
 	})
@@ -668,26 +667,25 @@ func authorizeContext() {
 }
 
 func authorizeWorkgroupContext() {
-	if baselineWorkgroupID == "" {
+	if common.WorkgroupID == "" {
 		err := common.RequireWorkgroup()
 		if err != nil {
 			log.Printf("failed to require workgroup; %s", err.Error())
 			os.Exit(1)
 		}
-		baselineWorkgroupID = common.WorkgroupID
 	}
 
 	var contracts []*nchain.Contract
 
 	token, err := common.ResolveOrganizationToken()
 	if err != nil {
-		log.Printf("failed to resolve workgroup: %s; %s", baselineWorkgroupID, err.Error())
+		log.Printf("failed to resolve workgroup: %s; %s", common.WorkgroupID, err.Error())
 		os.Exit(1)
 	}
 
-	workgroup, err := ident.GetApplicationDetails(*token.AccessToken, baselineWorkgroupID, map[string]interface{}{})
+	workgroup, err := ident.GetApplicationDetails(*token.AccessToken, common.WorkgroupID, map[string]interface{}{})
 	if err != nil {
-		log.Printf("failed to resolve workgroup: %s; %s", baselineWorkgroupID, err.Error())
+		log.Printf("failed to resolve workgroup: %s; %s", common.WorkgroupID, err.Error())
 		os.Exit(1)
 	}
 
@@ -705,7 +703,7 @@ func authorizeWorkgroupContext() {
 			"organization_id": common.OrganizationID,
 		})
 		if err != nil {
-			log.Printf("failed to authorize API access token on behalf of workgroup %s; %s", baselineWorkgroupID, err.Error())
+			log.Printf("failed to authorize API access token on behalf of workgroup %s; %s", common.WorkgroupID, err.Error())
 			os.Exit(1)
 		}
 
@@ -1684,6 +1682,7 @@ func init() {
 	startBaselineStackCmd.Flags().BoolVar(&withLocalVault, "with-local-vault", false, "when true, vault service is run locally")
 	startBaselineStackCmd.Flags().IntVar(&vaultPort, "vault-local-port", 8084, "port for the local vault service")
 
+	startBaselineStackCmd.Flags().StringVar(&common.UserAccessToken, "access-token", "", "access token for the user; useful for running non-interactively")
 	startBaselineStackCmd.Flags().StringVar(&organizationRefreshToken, "organization-refresh-token", os.Getenv("PROVIDE_ORGANIZATION_REFRESH_TOKEN"), "refresh token to vend access tokens for use with the local organization")
 
 	startBaselineStackCmd.Flags().BoolVar(&withoutRequireOrganizationKeys, "without-require-organization-keys", false, "when true, no initial keys are required for the organization upon starting the stack")
@@ -1707,7 +1706,7 @@ func init() {
 
 	startBaselineStackCmd.Flags().StringVar(&baselineOrganizationAddress, "organization-address", defaultBaselineOrganizationAddress, "public baseline regsitry address of the organization")
 	startBaselineStackCmd.Flags().StringVar(&baselineRegistryContractAddress, "registry-contract-address", defaultBaselineRegistryContractAddress, "public baseline regsitry contract address")
-	startBaselineStackCmd.Flags().StringVar(&baselineWorkgroupID, "workgroup", "", "baseline workgroup identifier")
+	startBaselineStackCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "baseline workgroup identifier")
 
 	startBaselineStackCmd.Flags().StringVar(&nchainBaselineNetworkID, "nchain-network-id", "", "nchain network id of the baseline mainnet")
 	startBaselineStackCmd.Flags().BoolVarP(&Optional, "prompt-all", "", false, "when true, prompts for all optional flags")
