@@ -187,6 +187,7 @@ var withLocalPrivacy bool
 
 var withoutRequireOrganizationKeys bool
 var withoutRequireSubjectAccount bool
+var withoutRequireWorkgroup bool
 
 var startBaselineStackCmd = &cobra.Command{
 	Use:   "start",
@@ -607,8 +608,10 @@ func configureNetwork(docker *client.Client) {
 }
 
 func authorizeContext() {
-	// log.Printf("authorizing workgroup context")
-	authorizeWorkgroupContext()
+	if !withoutRequireWorkgroup {
+		// log.Printf("authorizing workgroup context")
+		authorizeWorkgroupContext()
+	}
 
 	// log.Printf("authorizing organization context")
 	common.AuthorizeOrganizationContext(false)
@@ -1578,6 +1581,7 @@ func init() {
 
 	startBaselineStackCmd.Flags().BoolVar(&withoutRequireOrganizationKeys, "without-require-organization-keys", false, "when true, no initial keys are required for the organization upon starting the stack")
 	startBaselineStackCmd.Flags().BoolVar(&withoutRequireSubjectAccount, "without-require-subject-account", false, "when true, no initial subject account is required upon starting the stack")
+	startBaselineStackCmd.Flags().BoolVar(&withoutRequireWorkgroup, "without-require-workgroup", false, "when true, no workgroup is required to start the stack")
 
 	defaultBaselineOrganizationAddress := "0x"
 	if os.Getenv("BASELINE_ORGANIZATION_ADDRESS") != "" {
