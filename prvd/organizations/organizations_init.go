@@ -17,11 +17,13 @@
 package organizations
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/provideplatform/provide-cli/prvd/common"
-	provide "github.com/provideplatform/provide-go/api/ident"
+	"github.com/provideplatform/provide-go/api/ident"
+	"github.com/provideplatform/provide-go/api/vault"
 
 	"github.com/spf13/cobra"
 )
@@ -53,13 +55,27 @@ func createOrganizationRun(cmd *cobra.Command, args []string) {
 		"name":   organizationName,
 		"config": organizationConfigFactory(),
 	}
-	organization, err := provide.CreateOrganization(token, params)
+	organization, err := ident.CreateOrganization(token, params)
 	if err != nil {
 		log.Printf("Failed to initialize organization; %s", err.Error())
 		os.Exit(1)
 	}
 
 	common.OrganizationID = *organization.ID
+
+	orgToken, err := common.ResolveOrganizationToken()
+	if err != nil {
+		log.Printf("failed to initialize organization; %s", err.Error())
+		os.Exit(1)
+	}
+
+	if _, err := vault.CreateVault(*orgToken.AccessToken, map[string]interface{}{
+		"name": fmt.Sprintf("%s vault", organizationName),
+	}); err != nil {
+		log.Printf("failed to create organization vault; %s", err.Error())
+		os.Exit(1)
+	}
+
 	log.Printf("initialized organization: %s\t%s\n", organizationName, common.OrganizationID)
 }
 
