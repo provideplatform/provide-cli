@@ -45,6 +45,10 @@ func ListContainers(docker *client.Client, stack string) []types.Container {
 			},
 			{
 				Key:   "name",
+				Value: fmt.Sprintf("%s-elasticsearch", strings.ReplaceAll(stack, " ", "")),
+			},
+			{
+				Key:   "name",
 				Value: fmt.Sprintf("%s-nats", strings.ReplaceAll(stack, " ", "")),
 			},
 			{

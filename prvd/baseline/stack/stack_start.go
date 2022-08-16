@@ -54,9 +54,11 @@ const identContainerImage = "provide/ident"
 const nchainContainerImage = "provide/nchain"
 const privacyContainerImage = "provide/privacy"
 const vaultContainerImage = "provide/vault"
+const elasticContainerImage = "docker.elastic.co/elasticsearch/elasticsearch:8.3.3"
 const postgresContainerImage = "postgres"
 const natsContainerImage = "provide/nats-server:2.7.2-PRVD"
 const redisContainerImage = "redis"
+const defaultElasticReachabilityTimeout = time.Second * 5
 const defaultNatsServerName = "prvd"
 const defaultNatsReachabilityTimeout = time.Second * 5
 const defaultPostgresReachabilityTimeout = time.Second * 5
@@ -80,6 +82,7 @@ PUl1cxrvY7BHh4obNa6Bf8ECAwEAAQ==
 const defaultNATSStreamingClusterID = "provide"
 
 const apiContainerPort = 8080
+const elasticContainerPort = 9200
 const natsContainerPort = 4222
 const natsWebsocketContainerPort = 4221
 const postgresContainerPort = 5432
@@ -98,6 +101,9 @@ var identPort int
 var nchainPort int
 var privacyPort int
 var vaultPort int
+
+var elasticHostname string
+var elasticPort int
 var natsPort int
 var natsWebsocketPort int
 var natsWebsocketTLS bool
@@ -192,7 +198,7 @@ var withoutRequireWorkgroup bool
 var startBaselineStackCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start the baseline stack",
-	Long:  `Start a local baseline stack instance and connect to internal systems of record`,
+	Long:  `Start a local BPI stack instance and connect to internal systems of record`,
 	Run:   startStack,
 }
 
@@ -220,6 +226,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 	images = append(
 		images,
 		baselineContainerImage,
+		elasticContainerImage,
 		natsContainerImage,
 		postgresContainerImage,
 		redisContainerImage,
@@ -299,7 +306,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 		go func() {
 			err := pullImage(docker, img)
 			if err != nil {
-				log.Printf("failed to pull local baseline container image: %s; %s", img, err.Error())
+				log.Printf("failed to pull local BPI container image: %s; %s", img, err.Error())
 				os.Exit(1)
 			}
 			wg.Done()
@@ -314,6 +321,20 @@ func runStackStart(cmd *cobra.Command, args []string) {
 			wg.Wait()
 
 			// run local deps
+			wg.Add(1)
+			go runElasticsearch(docker, wg)
+
+			// FIXME-- DRY this up...
+			elasticReachable := false
+			for !elasticReachable {
+				host := fmt.Sprintf("localhost:%v", elasticPort)
+				conn, err := net.DialTimeout("tcp", host, defaultElasticReachabilityTimeout)
+				if err == nil {
+					conn.Close()
+					elasticReachable = true
+				}
+			}
+
 			wg.Add(1)
 			go runNATS(docker, wg)
 
@@ -392,7 +413,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 				go runVaultAPI(docker, wg)
 			}
 
-			// run proxy
+			// run BPI
 			wg.Add(1)
 			go runBaselineAPI(docker, wg)
 
@@ -400,7 +421,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 			go runBaselineConsumer(docker, wg)
 
 			wg.Wait()
-			log.Printf("%s local baseline instance started", name)
+			log.Printf("%s local BPI instance started", name)
 
 			if !withoutRequireOrganizationKeys {
 				requireOrganizationKeys()
@@ -604,7 +625,7 @@ func configureNetwork(docker *client.Client) {
 	}
 
 	dockerNetworkID = network.ID
-	log.Printf("configured network for local baseline instance: %s", name)
+	log.Printf("configured network for local BPI instance: %s", name)
 }
 
 func authorizeContext() {
@@ -869,7 +890,7 @@ func runBaselineAPI(docker *client.Client, wg *sync.WaitGroup) {
 	)
 
 	if err != nil {
-		log.Printf("failed to create local baseline API container; %s", err.Error())
+		log.Printf("failed to create local BPI API container; %s", err.Error())
 		os.Exit(1)
 	}
 
@@ -896,7 +917,7 @@ func runBaselineConsumer(docker *client.Client, wg *sync.WaitGroup) {
 	)
 
 	if err != nil {
-		log.Printf("failed to create local baseline consumer container; %s", err.Error())
+		log.Printf("failed to create local BPI consumer container; %s", err.Error())
 		os.Exit(1)
 	}
 
@@ -1133,6 +1154,28 @@ func runVaultAPI(docker *client.Client, wg *sync.WaitGroup) {
 	}
 }
 
+func writeElasticserarchConfig() *string {
+	cfg := []byte("max_payload: 100Mb\nmax_pending: 104857600\n")
+	if !natsWebsocketTLS {
+		cfg = []byte("max_payload: 100Mb\nmax_pending: 104857600\nwebsocket {\n    listen: \"0.0.0.0:4221\"\n    no_tls: true\n}\n")
+	}
+	path := strings.Split(os.TempDir(), string(os.PathSeparator))
+	path = append(path, "nats-server.conf")
+	sep := []string{string(os.PathSeparator)}
+	path = append(sep, path...)
+	tmp := filepath.Join(path...)
+	err := ioutil.WriteFile(filepath.FromSlash(strings.ReplaceAll(tmp, string(os.PathSeparator), "/")), cfg, 0644)
+	if err != nil {
+		log.Printf("failed to write local nats-server.conf; %s", err.Error())
+		os.Exit(1)
+	}
+
+	if tmp == "" {
+		return nil
+	}
+	return &tmp
+}
+
 func writeNATSConfig() *string {
 	cfg := []byte("max_payload: 100Mb\nmax_pending: 104857600\n")
 	if !natsWebsocketTLS {
@@ -1153,6 +1196,46 @@ func writeNATSConfig() *string {
 		return nil
 	}
 	return &tmp
+}
+
+func runElasticsearch(docker *client.Client, wg *sync.WaitGroup) {
+	// cfgPath := writeElasticsearchConfig()
+	mountPoints := map[string]string{}
+
+	// if cfgPath != nil {
+	// 	mountPoints[*cfgPath] = "/etc/elasticsearch.conf"
+	// }
+
+	err := runContainer(
+		docker,
+		fmt.Sprintf("%s-elasticsearch", strings.ReplaceAll(name, " ", "")),
+		elasticHostname,
+		elasticContainerImage,
+		nil,
+		&[]string{
+			"-e", "bootstrap.memory_lock=true",
+			"-p", fmt.Sprintf("%d", elasticContainerPort),
+			"--ulimit", "nofile=65535:65535",
+		},
+		&[]string{"CMD", "nc", "-zv", "localhost", fmt.Sprintf("%d", elasticPort)},
+		nil,
+		mountPoints,
+		[]portMapping{
+			{
+				hostPort:      elasticPort,
+				containerPort: elasticContainerPort,
+			},
+		}...,
+	)
+
+	if err != nil {
+		log.Printf("failed to create local BPI elasticsearch container; %s", err.Error())
+		os.Exit(1)
+	}
+
+	if wg != nil {
+		wg.Done()
+	}
 }
 
 func runNATS(docker *client.Client, wg *sync.WaitGroup) {
@@ -1193,7 +1276,7 @@ func runNATS(docker *client.Client, wg *sync.WaitGroup) {
 	)
 
 	if err != nil {
-		log.Printf("failed to create local baseline NATS container; %s", err.Error())
+		log.Printf("failed to create local BPI NATS container; %s", err.Error())
 		os.Exit(1)
 	}
 
@@ -1252,7 +1335,7 @@ func runRedis(docker *client.Client, wg *sync.WaitGroup) {
 	)
 
 	if err != nil {
-		log.Printf("failed to create local baseline redis container; %s", err.Error())
+		log.Printf("failed to create local BPI redis container; %s", err.Error())
 		os.Exit(1)
 	}
 
@@ -1262,7 +1345,7 @@ func runRedis(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func pullImage(docker *client.Client, image string) error {
-	log.Printf("pulling local baseline container image: %s", image)
+	log.Printf("pulling local BPI container image: %s", image)
 	reader, err := docker.ImagePull(context.Background(), image, types.ImagePullOptions{})
 	if err != nil {
 		return err
@@ -1287,7 +1370,7 @@ func runContainer(
 	mounts map[string]string,
 	ports ...portMapping,
 ) error {
-	log.Printf("running local baseline container image: %s", image)
+	log.Printf("running local BPI container image: %s", image)
 	portBinding := nat.PortMap{}
 	for _, mapping := range ports {
 		port, _ := nat.NewPort("tcp", strconv.Itoa(mapping.containerPort))
@@ -1511,7 +1594,7 @@ func init() {
 	startBaselineStackCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	// runBaselineStackCmd.MarkFlagRequired("organization")
 
-	startBaselineStackCmd.Flags().StringVar(&common.APIEndpoint, "api-endpoint", "", "local baseline API endpoint for use by one or more authorized systems of record")
+	startBaselineStackCmd.Flags().StringVar(&common.APIEndpoint, "api-endpoint", "", "local BPI API endpoint for use by one or more authorized systems of record")
 	startBaselineStackCmd.Flags().StringVar(&common.MessagingEndpoint, "messaging-endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
 	startBaselineStackCmd.Flags().BoolVar(&common.Tunnel, "tunnel", false, "when true, a tunnel is established to expose the API and messaging endpoints to the WAN")
 	startBaselineStackCmd.Flags().BoolVar(&common.ExposeAPITunnel, "api-tunnel", false, "when true, a tunnel is established to expose the API endpoint to the WAN")
@@ -1522,15 +1605,18 @@ func init() {
 	startBaselineStackCmd.Flags().StringVar(&sorURL, "sor-url", "https://", "url of the primary internal system of record being baselined")
 	startBaselineStackCmd.Flags().StringVar(&sorOrganizationCode, "sor-organization-code", "", "organization code specific to the system of record")
 
-	startBaselineStackCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the local baseline API container")
-	startBaselineStackCmd.Flags().IntVar(&port, "port", 8080, "host port on which to expose the local baseline API service")
+	startBaselineStackCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the local BPI API container")
+	startBaselineStackCmd.Flags().IntVar(&port, "port", 8080, "host port on which to expose the local BPI API service")
 
-	startBaselineStackCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the local baseline consumer container")
-	startBaselineStackCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the local baseline NATS container")
+	startBaselineStackCmd.Flags().StringVar(&elasticHostname, "elasticsearch-hostname", fmt.Sprintf("%s-elasticsearch", name), "hostname for the local BPI elasticsearch container")
+	startBaselineStackCmd.Flags().IntVar(&elasticPort, "elasticsearch-port", 9200, "host port on which to expose the local elasticsearch service")
+
+	startBaselineStackCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the local BPI consumer container")
+	startBaselineStackCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the local BPI NATS container")
 	startBaselineStackCmd.Flags().IntVar(&natsPort, "nats-port", 4222, "host port on which to expose the local NATS service")
 	startBaselineStackCmd.Flags().BoolVar(&natsWebsocketTLS, "nats-ws-tls", false, "when true, NATS websocket service uses TLS")
 	startBaselineStackCmd.Flags().IntVar(&natsWebsocketPort, "nats-ws-port", 4221, "host port on which to expose the local NATS websocket service")
-	startBaselineStackCmd.Flags().StringVar(&natsAuthToken, "nats-auth-token", "testtoken", "authorization token for the local baseline NATS service; will be passed as the -auth argument to NATS")
+	startBaselineStackCmd.Flags().StringVar(&natsAuthToken, "nats-auth-token", "testtoken", "authorization token for the local BPI NATS service; will be passed as the -auth argument to NATS")
 
 	startBaselineStackCmd.Flags().StringVar(&postgresDatabase, "postgres-database", "baseline", "name for the local postgres database")
 	startBaselineStackCmd.Flags().StringVar(&postgresHostname, "postgres-hostname", fmt.Sprintf("%s-postgres", name), "hostname for the local postgres container")
@@ -1538,14 +1624,14 @@ func init() {
 	startBaselineStackCmd.Flags().StringVar(&postgresUser, "postgres-user", "baseline", "name for the local postgres user")
 	startBaselineStackCmd.Flags().StringVar(&postgresPassword, "postgres-password", "prvdp455", "password for the local postgres user")
 
-	startBaselineStackCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the local baseline redis container")
+	startBaselineStackCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the local BPI redis container")
 	startBaselineStackCmd.Flags().IntVar(&redisPort, "redis-port", 6379, "host port on which to expose the local redis service")
-	startBaselineStackCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisContainerPort), "list of clustered redis hosts in the local baseline stack")
+	startBaselineStackCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisContainerPort), "list of clustered redis hosts in the local BPI stack")
 
 	startBaselineStackCmd.Flags().BoolVar(&autoRemove, "autoremove", false, "when true, containers are automatically pruned upon exit")
 	startBaselineStackCmd.Flags().BoolVar(&prune, "prune", false, "when true, previously-created docker resources are pruned prior to stack initialization")
 
-	startBaselineStackCmd.Flags().StringVar(&logLevel, "log-level", "DEBUG", "log level to set within the running local baseline stack")
+	startBaselineStackCmd.Flags().StringVar(&logLevel, "log-level", "DEBUG", "log level to set within the running local BPI stack")
 	startBaselineStackCmd.Flags().StringVar(&syslogEndpoint, "syslog-endpoint", "", "syslog endpoint to which syslog udp packets will be sent")
 	startBaselineStackCmd.Flags().StringVar(&databaseLogging, "database-logging", "false", "when true, query logging is enabled within the local stack")
 
