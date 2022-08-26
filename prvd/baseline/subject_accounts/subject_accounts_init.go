@@ -24,6 +24,7 @@ import (
 
 	"github.com/provideplatform/provide-cli/prvd/common"
 	"github.com/provideplatform/provide-go/api/baseline"
+	"github.com/provideplatform/provide-go/api/nchain"
 	"github.com/spf13/cobra"
 )
 
@@ -58,13 +59,31 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 
 	token, err := common.ResolveOrganizationToken()
 
+	contracts, err := nchain.ListContracts(*token.AccessToken, map[string]interface{}{
+		"type": "organization-registry",
+	})
+	if err != nil {
+		fmt.Printf("failed to create subject account; %s", err.Error())
+		os.Exit(1)
+	}
+
+	if len(contracts) == 0 {
+		fmt.Println("failed to create subject account; failed to resolve organization registry contract")
+		os.Exit(1)
+	}
+
+	if len(contracts) > 1 {
+		fmt.Println("failed to create subject account; resolved ambiguous organization registry contracts")
+		os.Exit(1)
+	}
+
 	sa, err := baseline.CreateSubjectAccount(*token.AccessToken, common.OrganizationID, map[string]interface{}{
 		"metadata": map[string]interface{}{
 			"organization_id":            common.OrganizationID,
 			"organization_address":       common.Organization.Metadata.Address,
 			"organization_refresh_token": *token.RefreshToken,
 			"workgroup_id":               common.WorkgroupID,
-			"registry_contract_address":  common.Organization.Metadata.Address,
+			"registry_contract_address":  *contracts[0].Address,
 			"network_id":                 common.NetworkID,
 		},
 	})
