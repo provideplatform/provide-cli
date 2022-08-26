@@ -213,7 +213,7 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 
 	common.WorkgroupID = wg.ID.String()
 
-	common.InitWorkgroupContract()
+	registryContract := common.InitWorkgroupContract()
 
 	sa, err := baseline.CreateSubjectAccount(*token.AccessToken, common.OrganizationID, map[string]interface{}{
 		"metadata": map[string]interface{}{
@@ -221,7 +221,7 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 			"organization_address":       *secp256k1Key.Address,
 			"organization_refresh_token": *token.AccessToken,
 			"workgroup_id":               common.WorkgroupID,
-			"registry_contract_address":  *secp256k1Key.Address,
+			"registry_contract_address":  *registryContract.Address,
 			"network_id":                 common.NetworkID,
 		},
 	})

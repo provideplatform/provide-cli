@@ -127,7 +127,7 @@ func inviteOrganizationRun(cmd *cobra.Command, args []string) {
 		"organization_name": orgName,
 		"application_id":    common.WorkgroupID, // FIXME-- should be workgroup id
 		"params": map[string]interface{}{
-			"authorized_bearer_token":    authorizedBearerToken,
+			"verifiable_credential":      authorizedBearerToken,
 			"is_organization_invite":     true,
 			"operator_separation_degree": common.Organization.Metadata.Workgroups[wgID].OperatorSeparationDegree + 1,
 			"workgroup":                  common.Workgroup,
