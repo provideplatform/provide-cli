@@ -104,6 +104,9 @@ var vaultPort int
 
 var elasticHostname string
 var elasticPort int
+var elasticUsername string
+var elasticPassword string
+
 var natsPort int
 var natsWebsocketPort int
 var natsWebsocketTLS bool
@@ -841,6 +844,9 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("DATABASE_SUPERUSER=%s", "prvd"),
 		fmt.Sprintf("DATABASE_SUPERUSER_PASSWORD=%s", "prvdp455"),
 		fmt.Sprintf("DATABASE_LOGGING=%s", databaseLogging),
+		fmt.Sprintf("ELASTICSEARCH_HOSTS=%s:%d", elasticHostname, elasticPort),
+		fmt.Sprintf("ELASTICSEARCH_USERNAME=%s", elasticUsername),
+		fmt.Sprintf("ELASTICSEARCH_PASSWORD=%s", elasticPassword),
 		fmt.Sprintf("IDENT_API_HOST=%s", identAPIHost),
 		fmt.Sprintf("IDENT_API_SCHEME=%s", identAPIScheme),
 		fmt.Sprintf("JWT_SIGNER_PUBLIC_KEY=%s", strings.ReplaceAll(jwtSignerPublicKey, "\\n", "\n")),
@@ -1212,13 +1218,17 @@ func runElasticsearch(docker *client.Client, wg *sync.WaitGroup) {
 		elasticHostname,
 		elasticContainerImage,
 		nil,
-		&[]string{
-			"-e", "bootstrap.memory_lock=true",
-			"-p", fmt.Sprintf("%d", elasticContainerPort),
-			"--ulimit", "nofile=65535:65535",
-		},
-		&[]string{"CMD", "nc", "-zv", "localhost", fmt.Sprintf("%d", elasticPort)},
 		nil,
+		&[]string{"CMD", "nc", "-zv", "localhost", fmt.Sprintf("%d", elasticPort)},
+		&[]string{
+			// "bootstrap.memory_lock=true",
+			// "-p", fmt.Sprintf("%d", elasticContainerPort),
+			// "--ulimit", "nofile=65535:65535",
+			// "http.host=0.0.0.0",
+			// "transport.host=0.0.0.0",
+			// "xpack.security.enabled=false",
+			// "xpack.security.http.ssl.enabled=false",
+		},
 		mountPoints,
 		[]portMapping{
 			{
@@ -1610,6 +1620,8 @@ func init() {
 
 	startBaselineStackCmd.Flags().StringVar(&elasticHostname, "elasticsearch-hostname", fmt.Sprintf("%s-elasticsearch", name), "hostname for the local BPI elasticsearch container")
 	startBaselineStackCmd.Flags().IntVar(&elasticPort, "elasticsearch-port", 9200, "host port on which to expose the local elasticsearch service")
+	startBaselineStackCmd.Flags().StringVar(&elasticUsername, "elasticsearch-username", "", "username of the local elasticsearch service for basic authorization")
+	startBaselineStackCmd.Flags().StringVar(&elasticPassword, "elasticsearch-password", "", "password of the local elasticsearch service for basic authorization")
 
 	startBaselineStackCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the local BPI consumer container")
 	startBaselineStackCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the local BPI NATS container")
