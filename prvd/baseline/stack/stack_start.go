@@ -1225,6 +1225,7 @@ func runElasticsearch(docker *client.Client, wg *sync.WaitGroup) {
 		nil,
 		&[]string{"CMD", "nc", "-zv", "localhost", fmt.Sprintf("%d", elasticPort)},
 		&[]string{
+			fmt.Sprintf("ELASTIC_PASSWORD=%s", elasticPassword),
 			// "bootstrap.memory_lock=true",
 			// "-p", fmt.Sprintf("%d", elasticContainerPort),
 			// "--ulimit", "nofile=65535:65535",
@@ -1624,10 +1625,10 @@ func init() {
 
 	startBaselineStackCmd.Flags().StringVar(&elasticHostname, "elasticsearch-hostname", fmt.Sprintf("%s-elasticsearch", name), "hostname for the local BPI elasticsearch container")
 	startBaselineStackCmd.Flags().IntVar(&elasticPort, "elasticsearch-port", 9200, "host port on which to expose the local elasticsearch service")
-	startBaselineStackCmd.Flags().StringVar(&elasticUsername, "elasticsearch-username", "", "username of the local elasticsearch service for basic authorization")
-	startBaselineStackCmd.Flags().StringVar(&elasticPassword, "elasticsearch-password", "", "password of the local elasticsearch service for basic authorization")
+	startBaselineStackCmd.Flags().StringVar(&elasticUsername, "elasticsearch-username", "elastic", "username of the local elasticsearch service for basic authorization")
+	startBaselineStackCmd.Flags().StringVar(&elasticPassword, "elasticsearch-password", "3l4s71c", "password of the local elasticsearch service for basic authorization")
 	startBaselineStackCmd.Flags().BoolVar(&elasticAcceptSelfSignedCertificate, "elasticsearch-ssl-insecure", false, "accept self-signed certificate when connecting to the local elasticsearch service")
-	startBaselineStackCmd.Flags().StringVar(&elasticAPIScheme, "elasticsearch-scheme", "", "protocol scheme of the elasticsearch service")
+	startBaselineStackCmd.Flags().StringVar(&elasticAPIScheme, "elasticsearch-scheme", "https", "protocol scheme of the elasticsearch service")
 
 	startBaselineStackCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the local BPI consumer container")
 	startBaselineStackCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the local BPI NATS container")
