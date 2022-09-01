@@ -106,6 +106,8 @@ var elasticHostname string
 var elasticPort int
 var elasticUsername string
 var elasticPassword string
+var elasticAPIScheme string
+var elasticAcceptSelfSignedCertificate bool
 
 var natsPort int
 var natsWebsocketPort int
@@ -844,6 +846,8 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("DATABASE_SUPERUSER=%s", "prvd"),
 		fmt.Sprintf("DATABASE_SUPERUSER_PASSWORD=%s", "prvdp455"),
 		fmt.Sprintf("DATABASE_LOGGING=%s", databaseLogging),
+		fmt.Sprintf("ELASTICSEARCH_ACCEPT_SELF_SIGNED_CERTIFICATE=%t", elasticAcceptSelfSignedCertificate),
+		fmt.Sprintf("ELASTICSEARCH_API_SCHEME=%s", elasticAPIScheme),
 		fmt.Sprintf("ELASTICSEARCH_HOSTS=%s:%d", elasticHostname, elasticPort),
 		fmt.Sprintf("ELASTICSEARCH_USERNAME=%s", elasticUsername),
 		fmt.Sprintf("ELASTICSEARCH_PASSWORD=%s", elasticPassword),
@@ -1622,6 +1626,8 @@ func init() {
 	startBaselineStackCmd.Flags().IntVar(&elasticPort, "elasticsearch-port", 9200, "host port on which to expose the local elasticsearch service")
 	startBaselineStackCmd.Flags().StringVar(&elasticUsername, "elasticsearch-username", "", "username of the local elasticsearch service for basic authorization")
 	startBaselineStackCmd.Flags().StringVar(&elasticPassword, "elasticsearch-password", "", "password of the local elasticsearch service for basic authorization")
+	startBaselineStackCmd.Flags().BoolVar(&elasticAcceptSelfSignedCertificate, "elasticsearch-ssl-insecure", false, "accept self-signed certificate when connecting to the local elasticsearch service")
+	startBaselineStackCmd.Flags().StringVar(&elasticAPIScheme, "elasticsearch-scheme", "", "protocol scheme of the elasticsearch service")
 
 	startBaselineStackCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the local BPI consumer container")
 	startBaselineStackCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the local BPI NATS container")
