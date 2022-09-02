@@ -662,6 +662,8 @@ func authorizeContext() {
 				os.Exit(1)
 			}
 		}
+	} else if organizationRefreshToken != "" && vaultRefreshToken == "" {
+		vaultRefreshToken = organizationRefreshToken
 	}
 }
 
