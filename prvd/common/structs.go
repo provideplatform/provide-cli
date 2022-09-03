@@ -50,7 +50,7 @@ type OrganizationType struct {
 // Organization metadata
 type OrganizationMetadata struct {
 	Address           string                                       `json:"address"`
-	APIEndpoint       string                                       `json:"api_endpoint"`
+	BPIEndpoint       string                                       `json:"bpi_endpoint"`
 	Domain            string                                       `json:"domain"`
 	MessagingEndpoint string                                       `json:"messaging_endpoint"`
 	Workgroups        map[uuid.UUID]*OrganizationWorkgroupMetadata `json:"workgroups"`
