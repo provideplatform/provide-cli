@@ -414,45 +414,65 @@ func resolveBaselineOrgRegistryContractArtifact() *nchain.CompiledArtifact {
 // prior to the runloop and signal handling is installed
 func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), apiPort, messagingPort, websocketMessagingPort int) {
 	run := func() {
-		org, err := ident.GetOrganizationDetails(OrganizationAccessToken, OrganizationID, map[string]interface{}{})
-		if err != nil {
-			log.Printf("failed to retrieve organization: %s; %s", OrganizationID, err.Error())
+		if OrganizationID == "" {
+			fmt.Println("WARNING: failed to set organization endpoints; organization id not set")
 			os.Exit(1)
 		}
 
-		if org.Metadata == nil {
-			org.Metadata = map[string]interface{}{}
+		if WorkgroupID == "" {
+			fmt.Println("WARNING: failed to set organization endpoints; workgroup id not set")
+			os.Exit(1)
+		}
+
+		wgID, err := uuid.FromString(WorkgroupID)
+		if err != nil {
+			log.Printf("WARNING: failed to update organization; %s", err.Error())
+			os.Exit(1)
+		}
+
+		if Organization.Metadata == nil {
+			Organization.Metadata = &OrganizationMetadata{}
+		} else if Organization.Metadata.Workgroups == nil {
+			Organization.Metadata.Workgroups = map[uuid.UUID]*OrganizationWorkgroupMetadata{}
+		} else if Organization.Metadata.Workgroups[wgID] == nil {
+			Organization.Metadata.Workgroups[wgID] = &OrganizationWorkgroupMetadata{}
 		}
 
 		key, err := RequireOrganizationKeypair("secp256k1")
-		if err == nil {
-			org.Metadata["address"] = key.Address
-			ResolvedBaselineOrgAddress = *key.Address
+		if err != nil {
+			log.Printf("WARNING: failed to update organization; %s", err.Error())
+			os.Exit(1)
 		}
 
+		Organization.Metadata.Address = *key.Address
+		ResolvedBaselineOrgAddress = *key.Address
+
 		if APIEndpoint != "" {
-			org.Metadata["api_endpoint"] = APIEndpoint
+			Organization.Metadata.APIEndpoint = APIEndpoint
 		} else {
-			org.Metadata["api_endpoint"] = "http://localhost:8080"
+			Organization.Metadata.APIEndpoint = "http://localhost:8080"
 		}
 
 		if MessagingEndpoint != "" {
-			org.Metadata["messaging_endpoint"] = MessagingEndpoint
+			Organization.Metadata.MessagingEndpoint = MessagingEndpoint
 		} else {
-			org.Metadata["messaging_endpoint"] = "nats://localhost:4222"
+			Organization.Metadata.MessagingEndpoint = "nats://localhost:4222"
 		}
 
-		if _, domainOk := org.Metadata["domain"].(string); !domainOk {
-			org.Metadata["domain"] = "baseline.local"
+		Organization.Metadata.Domain = "baseline.local"
+
+		Organization.Metadata.Workgroups[wgID].BPIEndpoint = &APIEndpoint
+
+		var org map[string]interface{}
+		raw, _ := json.Marshal(Organization)
+		json.Unmarshal(raw, &org)
+
+		if err := ident.UpdateOrganization(OrganizationAccessToken, OrganizationID, org); err != nil {
+			log.Printf("WARNING: failed to update organization; %s", err.Error())
+			os.Exit(1)
 		}
 
-		// err = ident.UpdateOrganization(RequireUserAccessToken(), OrganizationID, map[string]interface{}{
-		// 	"metadata": org.Metadata,
-		// })
-		// if err != nil {
-		// 	log.Printf("failed to update messaging endpoint for organization: %s; %s", OrganizationID, err.Error())
-		// 	os.Exit(1)
-		// }
+		log.Printf("successfully set BPI endpoint %s on organization %s\n", APIEndpoint, OrganizationID)
 
 		if fn != nil {
 			fn()
@@ -589,35 +609,6 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 
 				MessagingEndpoint = *tunnelClient.Tunnels[i].RemoteAddr
 				log.Printf("established tunnel connection for messaging endpoint: %s\n", MessagingEndpoint)
-			}
-
-			wgID, err := uuid.FromString(WorkgroupID)
-			if err != nil {
-				log.Printf("WARNING: failed to update organization; %s", err.Error())
-				os.Exit(1)
-			}
-
-			if Organization.Metadata == nil {
-				Organization.Metadata = &OrganizationMetadata{}
-			} else if Organization.Metadata.Workgroups == nil {
-				Organization.Metadata.Workgroups = map[uuid.UUID]*OrganizationWorkgroupMetadata{}
-			} else if Organization.Metadata.Workgroups[wgID] == nil {
-				Organization.Metadata.Workgroups[wgID] = &OrganizationWorkgroupMetadata{}
-			}
-
-			if APIEndpoint != "" {
-				Organization.Metadata.Workgroups[wgID].BPIEndpoint = &APIEndpoint
-
-				var org map[string]interface{}
-				raw, _ := json.Marshal(Organization)
-				json.Unmarshal(raw, &org)
-
-				if err := ident.UpdateOrganization(OrganizationAccessToken, OrganizationID, org); err != nil {
-					log.Printf("WARNING: failed to update organization; %s", err.Error())
-					os.Exit(1)
-				}
-
-				log.Printf("successfully set BPI endpoint %s on organization %s\n", APIEndpoint, OrganizationID)
 			}
 		}()
 
