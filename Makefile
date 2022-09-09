@@ -1,4 +1,4 @@
-.PHONY: build clean install mod test
+.PHONY: build clean install mod test build-exes
 
 clean:
 	rm -rf ./.bin 2>/dev/null || true
@@ -25,3 +25,9 @@ mod:
 
 test: build
 	# TODO
+
+build-exes: clean mod
+	go fmt ./...
+	GOOS=darwin GOARCH=amd64 go build -o bin/prvd-amd64-darwin cmd/prvd/main.go
+	GOOS=windows GOARCH=amd64 go build -o bin/prvd-amd64-windows cmd/prvd/main.go
+	GOOS=linux GOARCH=amd64 go build -o bin/prvd-amd64-linux cmd/prvd/main.go
