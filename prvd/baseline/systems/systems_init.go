@@ -118,7 +118,8 @@ func initSystemRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	if sa.ID == nil {
+	isOnboarded := sa.ID != nil
+	if !isOnboarded {
 		raw, _ := json.Marshal(params)
 
 		secretParams := map[string]interface{}{

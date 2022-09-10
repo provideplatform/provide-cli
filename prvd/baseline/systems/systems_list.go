@@ -23,6 +23,7 @@ import (
 	"os"
 
 	"github.com/provideplatform/provide-cli/prvd/common"
+	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/provideplatform/provide-go/api/vault"
 	"github.com/spf13/cobra"
 )
@@ -49,49 +50,70 @@ func listSystemsRun(cmd *cobra.Command, args []string) {
 		common.RequireWorkgroup()
 	}
 
-	vaultID := common.Organization.Metadata.Workgroups[common.Workgroup.ID].VaultID
-	systemIDs := common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs
-
-	isOperator := common.Organization.Metadata.Workgroups[common.Workgroup.ID].OperatorSeparationDegree == 0
-	if isOperator {
-		vaultID = common.Workgroup.Config.VaultID
-		systemIDs = common.Workgroup.Config.SystemSecretIDs
-	}
-
 	common.AuthorizeOrganizationContext(true)
 
 	token, err := common.ResolveOrganizationToken()
 	if err != nil {
-		log.Printf("failed to retrieve systems; %s", err.Error())
+		fmt.Printf("failed to initialize system; %s", err.Error())
 		os.Exit(1)
 	}
 
-	secrets := make([]*vault.Secret, 0)
+	subjectAccountID := common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID))
+	sa, err := baseline.GetSubjectAccountDetails(*token.AccessToken, common.OrganizationID, subjectAccountID, map[string]interface{}{})
+	if err != nil {
+		fmt.Printf("failed to initialize system; %s", err.Error())
+		os.Exit(1)
+	}
 
-	for _, secretID := range systemIDs {
-		secret, err := vault.FetchSecret(*token.AccessToken, vaultID.String(), secretID.String(), map[string]interface{}{})
+	isOnboarded := sa.ID != nil
+	if !isOnboarded {
+		vaultID := common.Organization.Metadata.Workgroups[common.Workgroup.ID].VaultID
+		systemIDs := common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs
+
+		isOperator := common.Organization.Metadata.Workgroups[common.Workgroup.ID].OperatorSeparationDegree == 0
+		if isOperator {
+			vaultID = common.Workgroup.Config.VaultID
+			systemIDs = common.Workgroup.Config.SystemSecretIDs
+		}
+
+		secrets := make([]*vault.Secret, 0)
+
+		for _, secretID := range systemIDs {
+			secret, err := vault.FetchSecret(*token.AccessToken, vaultID.String(), secretID.String(), map[string]interface{}{})
+			if err != nil {
+				log.Printf("failed to retrieve systems; %s", err.Error())
+				os.Exit(1)
+			}
+			secrets = append(secrets, secret)
+		}
+
+		if len(secrets) == 0 {
+			fmt.Print("No systems of record found\n")
+			return
+		}
+
+		for _, secret := range secrets {
+			var value map[string]interface{}
+			err := json.Unmarshal([]byte(*secret.Value), &value)
+			if err != nil {
+				log.Printf("failed to retrieve systems; %s", err.Error())
+				os.Exit(1)
+			}
+
+			result, _ := json.MarshalIndent(value, "", "\t")
+			fmt.Printf("%s\n", string(result))
+		}
+	} else {
+		systems, err := baseline.ListSystems(*token.AccessToken, common.WorkgroupID, map[string]interface{}{})
 		if err != nil {
 			log.Printf("failed to retrieve systems; %s", err.Error())
 			os.Exit(1)
 		}
-		secrets = append(secrets, secret)
-	}
 
-	if len(secrets) == 0 {
-		fmt.Print("No systems of record found\n")
-		return
-	}
-
-	for _, secret := range secrets {
-		var value map[string]interface{}
-		err := json.Unmarshal([]byte(*secret.Value), &value)
-		if err != nil {
-			log.Printf("failed to retrieve systems; %s", err.Error())
-			os.Exit(1)
+		for _, system := range systems {
+			result, _ := json.MarshalIndent(system, "", "\t")
+			fmt.Printf("%s\n", string(result))
 		}
-
-		result, _ := json.MarshalIndent(value, "", "\t")
-		fmt.Printf("%s\n", string(result))
 	}
 }
 
