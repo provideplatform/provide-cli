@@ -22,9 +22,12 @@ import (
 	"log"
 	"os"
 
+	uuid "github.com/kthomas/go.uuid"
 	"github.com/provideplatform/provide-cli/prvd/common"
 	"github.com/provideplatform/provide-go/api/baseline"
+	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/nchain"
+	"github.com/provideplatform/provide-go/api/vault"
 	"github.com/spf13/cobra"
 )
 
@@ -91,6 +94,69 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Printf("failed to initialize baseline subject account; %s", err.Error())
 		os.Exit(1)
+	}
+
+	// TODO-- make utility function to DRY this up
+	vaultID := common.Organization.Metadata.Workgroups[common.Workgroup.ID].VaultID
+	systemIDs := common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs
+
+	isOperator := common.Organization.Metadata.Workgroups[common.Workgroup.ID].OperatorSeparationDegree == 0
+	if isOperator {
+		vaultID = common.Workgroup.Config.VaultID
+		systemIDs = common.Workgroup.Config.SystemSecretIDs
+	}
+
+	if len(systemIDs) > 0 && vaultID != nil {
+		for _, secretID := range systemIDs {
+			secret, err := vault.FetchSecret(*token.AccessToken, vaultID.String(), secretID.String(), map[string]interface{}{})
+			if err != nil {
+				log.Printf("failed to initialize baseline subject account; %s", err.Error())
+				os.Exit(1)
+			}
+
+			var systemParams map[string]interface{}
+			err = json.Unmarshal([]byte(*secret.Value), &systemParams)
+			if err != nil {
+				log.Printf("failed to initialize baseline subject account; %s", err.Error())
+				os.Exit(1)
+			}
+
+			if _, err := baseline.CreateSystem(*token.AccessToken, common.WorkgroupID, systemParams); err != nil {
+				log.Printf("failed to initialize baseline subject account; %s", err.Error())
+				os.Exit(1)
+			}
+
+			if err := vault.DeleteSecret(*token.AccessToken, vaultID.String(), secretID.String()); err != nil {
+				log.Printf("failed to initialize baseline subject account; %s", err.Error())
+				os.Exit(1)
+			}
+		}
+
+		common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs = make([]*uuid.UUID, 0)
+
+		var organizationParams map[string]interface{}
+		raw, _ := json.Marshal(common.Organization)
+		json.Unmarshal(raw, &organizationParams)
+
+		if err := ident.UpdateOrganization(*token.AccessToken, common.OrganizationID, organizationParams); err != nil {
+			log.Printf("failed to initialize baseline subject account; %s", err.Error())
+			os.Exit(1)
+		}
+
+		if isOperator {
+			common.Workgroup.Config.SystemSecretIDs = make([]*uuid.UUID, 0)
+
+			var workgroupParams map[string]interface{}
+			raw, _ := json.Marshal(common.Workgroup)
+			json.Unmarshal(raw, &workgroupParams)
+
+			if err := baseline.UpdateWorkgroup(*token.AccessToken, common.WorkgroupID, workgroupParams); err != nil {
+				log.Printf("failed to initialize baseline subject account; %s", err.Error())
+				os.Exit(1)
+			}
+		}
+
+		fmt.Printf("successfully saved systems of records to subject account %s\n", *sa.ID)
 	}
 
 	result, _ := json.MarshalIndent(sa, "", "\t")
