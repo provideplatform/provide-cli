@@ -47,15 +47,26 @@ var systemInboundEndpointURL string
 var systemOutboundMiddleware string
 var systemOutboundEndpointURL string
 
-var systemAuthMethods []string
+var noMiddlewareAuthMethod string
+var noMiddlewareUsername string
+var noMiddlewarePassword string
+var noMiddlewareRequireClientCredentials bool
+var noMiddlewareClientID string
+var noMiddlewareClientSecret string
 
-var systemUsernames []string
-var systemPasswords []string
+var inboundAuthMethod string
+var inboundUsername string
+var inboundPassword string
+var inboundRequireClientCredentials bool
+var inboundClientID string
+var inboundClientSecret string
 
-var systemRequireClientCredentials []bool
-
-var systemClientIDs []string
-var systemClientSecrets []string
+var outboundAuthMethod string
+var outboundUsername string
+var outboundPassword string
+var outboundRequireClientCredentials bool
+var outboundClientID string
+var outboundClientSecret string
 
 const sapSystemIdentifier = "sap"
 const servicenowSystemIdentifier = "servicenow"
@@ -227,20 +238,20 @@ func systemPrompt(params *map[string]interface{}, token string) {
 	case systemNoMiddlewareIdentifier:
 		systemNoMiddlewarePrompt()
 
-		systemAuthMethodsPrompt(&systemAuthMethods[0], &systemUsernames[0], &systemPasswords[0])
+		systemAuthMethodsPrompt(&noMiddlewareAuthMethod, &noMiddlewareUsername, &noMiddlewarePassword)
 
-		systemClientCredentialsPrompt(&systemRequireClientCredentials[0], &systemClientIDs[0], &systemClientSecrets[0])
+		systemClientCredentialsPrompt(&noMiddlewareRequireClientCredentials, &noMiddlewareClientID, &noMiddlewareClientSecret)
 
 		systemAuth := map[string]interface{}{
-			"method":                   systemAuthMethods[0],
-			"username":                 systemUsernames[0],
-			"password":                 systemPasswords[0],
-			"require_user_credentials": systemRequireClientCredentials[0],
+			"method":                   noMiddlewareAuthMethod,
+			"username":                 noMiddlewareUsername,
+			"password":                 noMiddlewarePassword,
+			"require_user_credentials": noMiddlewareRequireClientCredentials,
 		}
 
-		if systemRequireClientCredentials[0] {
-			systemAuth["client_id"] = systemClientIDs[0]
-			systemAuth["client_secret"] = systemClientSecrets[0]
+		if noMiddlewareRequireClientCredentials {
+			systemAuth["client_id"] = noMiddlewareClientID
+			systemAuth["client_secret"] = noMiddlewareClientSecret
 		}
 
 		reachabilityParams := map[string]interface{}{
@@ -270,20 +281,20 @@ func systemPrompt(params *map[string]interface{}, token string) {
 	case systemInboundOnlyMiddlewareIdentifier:
 		systemInboundOnlyPrompt()
 
-		systemAuthMethodsPrompt(&systemAuthMethods[0], &systemUsernames[0], &systemPasswords[0])
+		systemAuthMethodsPrompt(&inboundAuthMethod, &inboundPassword, &inboundUsername)
 
-		systemClientCredentialsPrompt(&systemRequireClientCredentials[0], &systemClientIDs[0], &systemClientSecrets[0])
+		systemClientCredentialsPrompt(&inboundRequireClientCredentials, &inboundClientID, &inboundClientSecret)
 
 		inboundMiddlewareAuth := map[string]interface{}{
-			"method":                   systemAuthMethods[0],
-			"username":                 systemUsernames[0],
-			"password":                 systemPasswords[0],
-			"require_user_credentials": systemRequireClientCredentials[0],
+			"method":                   inboundAuthMethod,
+			"username":                 inboundUsername,
+			"password":                 inboundPassword,
+			"require_user_credentials": inboundRequireClientCredentials,
 		}
 
-		if systemRequireClientCredentials[0] {
-			inboundMiddlewareAuth["client_id"] = systemClientIDs[0]
-			inboundMiddlewareAuth["client_secret"] = systemClientSecrets[0]
+		if inboundRequireClientCredentials {
+			inboundMiddlewareAuth["client_id"] = inboundClientID
+			inboundMiddlewareAuth["client_secret"] = inboundClientSecret
 		}
 
 		reachabilityParams := map[string]interface{}{
@@ -318,20 +329,20 @@ func systemPrompt(params *map[string]interface{}, token string) {
 	case systemOutboundOnlyMiddlewareIdentifier:
 		systemOutboundOnlyPrompt()
 
-		systemAuthMethodsPrompt(&systemAuthMethods[0], &systemUsernames[0], &systemPasswords[0])
+		systemAuthMethodsPrompt(&outboundAuthMethod, &outboundUsername, &outboundPassword)
 
-		systemClientCredentialsPrompt(&systemRequireClientCredentials[0], &systemClientIDs[0], &systemClientSecrets[0])
+		systemClientCredentialsPrompt(&outboundRequireClientCredentials, &outboundClientID, &outboundClientSecret)
 
 		outboundMiddlewareAuth := map[string]interface{}{
-			"method":                   systemAuthMethods[0],
-			"username":                 systemUsernames[0],
-			"password":                 systemPasswords[0],
-			"require_user_credentials": systemRequireClientCredentials[0],
+			"method":                   outboundAuthMethod,
+			"username":                 outboundUsername,
+			"password":                 outboundPassword,
+			"require_user_credentials": outboundRequireClientCredentials,
 		}
 
-		if systemRequireClientCredentials[0] {
-			outboundMiddlewareAuth["client_id"] = systemClientIDs[0]
-			outboundMiddlewareAuth["client_secret"] = systemClientSecrets[0]
+		if outboundRequireClientCredentials {
+			outboundMiddlewareAuth["client_id"] = outboundClientID
+			outboundMiddlewareAuth["client_secret"] = outboundClientSecret
 		}
 
 		reachabilityParams := map[string]interface{}{
@@ -366,20 +377,20 @@ func systemPrompt(params *map[string]interface{}, token string) {
 	case systemInboundAndOutboundMiddlewareIdentifier:
 		systemInboundOnlyPrompt()
 
-		systemAuthMethodsPrompt(&systemAuthMethods[0], &systemUsernames[0], &systemPasswords[0])
+		systemAuthMethodsPrompt(&inboundAuthMethod, &inboundPassword, &inboundUsername)
 
-		systemClientCredentialsPrompt(&systemRequireClientCredentials[0], &systemClientIDs[0], &systemClientSecrets[0])
+		systemClientCredentialsPrompt(&inboundRequireClientCredentials, &inboundClientID, &inboundClientSecret)
 
 		inboundMiddlewareAuth := map[string]interface{}{
-			"method":                   systemAuthMethods[0],
-			"username":                 systemUsernames[0],
-			"password":                 systemPasswords[0],
-			"require_user_credentials": systemRequireClientCredentials[0],
+			"method":                   inboundAuthMethod,
+			"username":                 inboundUsername,
+			"password":                 inboundPassword,
+			"require_user_credentials": inboundRequireClientCredentials,
 		}
 
-		if systemRequireClientCredentials[0] {
-			inboundMiddlewareAuth["client_id"] = systemClientIDs[0]
-			inboundMiddlewareAuth["client_secret"] = systemClientSecrets[0]
+		if inboundRequireClientCredentials {
+			inboundMiddlewareAuth["client_id"] = inboundClientID
+			inboundMiddlewareAuth["client_secret"] = inboundClientSecret
 		}
 
 		reachabilityParams := map[string]interface{}{
@@ -396,20 +407,20 @@ func systemPrompt(params *map[string]interface{}, token string) {
 
 		systemOutboundOnlyPrompt()
 
-		systemAuthMethodsPrompt(&systemAuthMethods[1], &systemUsernames[1], &systemPasswords[1])
+		systemAuthMethodsPrompt(&outboundAuthMethod, &outboundUsername, &outboundPassword)
 
-		systemClientCredentialsPrompt(&systemRequireClientCredentials[1], &systemClientIDs[1], &systemClientSecrets[1])
+		systemClientCredentialsPrompt(&outboundRequireClientCredentials, &outboundClientID, &outboundClientSecret)
 
 		outboundMiddlewareAuth := map[string]interface{}{
-			"method":                   systemAuthMethods[1],
-			"username":                 systemUsernames[1],
-			"password":                 systemPasswords[1],
-			"require_user_credentials": systemRequireClientCredentials[1],
+			"method":                   outboundAuthMethod,
+			"username":                 outboundUsername,
+			"password":                 outboundPassword,
+			"require_user_credentials": outboundRequireClientCredentials,
 		}
 
-		if systemRequireClientCredentials[1] {
-			outboundMiddlewareAuth["client_id"] = systemClientIDs[1]
-			outboundMiddlewareAuth["client_secret"] = systemClientSecrets[1]
+		if outboundRequireClientCredentials {
+			outboundMiddlewareAuth["client_id"] = outboundClientID
+			outboundMiddlewareAuth["client_secret"] = outboundClientSecret
 		}
 
 		reachabilityParams = map[string]interface{}{
@@ -765,13 +776,26 @@ func init() {
 	initBaselineSystemCmd.Flags().StringVar(&systemOutboundMiddleware, "outbound-middleware", "", "system outbound middleware type")
 	initBaselineSystemCmd.Flags().StringVar(&systemOutboundEndpointURL, "outbound-endpoint", "", "system outbound middleware endpoint url")
 
-	initBaselineSystemCmd.Flags().StringArrayVar(&systemAuthMethods, "auth-methods", []string{basicAuthMethodIdentifier, basicAuthMethodIdentifier}, "system authentication methods")
-	initBaselineSystemCmd.Flags().StringArrayVar(&systemUsernames, "auth-usernames", []string{"", ""}, "system authentication usernames")
-	initBaselineSystemCmd.Flags().StringArrayVar(&systemPasswords, "auth-passwords", []string{"", ""}, "system authentication passwords")
+	initBaselineSystemCmd.Flags().StringVar(&noMiddlewareAuthMethod, "auth-method", "", "no middleware authentication method")
+	initBaselineSystemCmd.Flags().StringVar(&noMiddlewareUsername, "auth-username", "", "no middleware authentication username")
+	initBaselineSystemCmd.Flags().StringVar(&noMiddlewarePassword, "auth-password", "", "no middleware authentication password")
+	initBaselineSystemCmd.Flags().BoolVar(&noMiddlewareRequireClientCredentials, "require-client-credentials", false, "require no middleware client credentials")
+	initBaselineSystemCmd.Flags().StringVar(&noMiddlewareClientID, "client-id", "", "no middleware system client id")
+	initBaselineSystemCmd.Flags().StringVar(&noMiddlewareClientSecret, "client-secret", "", "no middleware system client secret")
 
-	initBaselineSystemCmd.Flags().BoolSliceVar(&systemRequireClientCredentials, "require-client-credentials", []bool{false, false}, "require system client credentials")
-	initBaselineSystemCmd.Flags().StringArrayVar(&systemClientIDs, "client-ids", []string{"", ""}, "system client ids")
-	initBaselineSystemCmd.Flags().StringArrayVar(&systemClientSecrets, "client-secrets", []string{"", ""}, "system client secrets")
+	initBaselineSystemCmd.Flags().StringVar(&inboundAuthMethod, "inbound-auth-method", "", "inbound middleware authentication method")
+	initBaselineSystemCmd.Flags().StringVar(&inboundUsername, "inbound-auth-username", "", "inbound middleware authentication username")
+	initBaselineSystemCmd.Flags().StringVar(&inboundPassword, "inbound-auth-password", "", "inbound middleware authentication password")
+	initBaselineSystemCmd.Flags().BoolVar(&inboundRequireClientCredentials, "inbound-require-client-credentials", false, "require inbound middleware client credentials")
+	initBaselineSystemCmd.Flags().StringVar(&inboundClientID, "inbound-client-id", "", "inbound middleware system client id")
+	initBaselineSystemCmd.Flags().StringVar(&inboundClientSecret, "inbound-client-secret", "", "inbound middleware system client secret")
+
+	initBaselineSystemCmd.Flags().StringVar(&outboundAuthMethod, "oubound-auth-method", "", "outbound authentication method")
+	initBaselineSystemCmd.Flags().StringVar(&outboundUsername, "oubound-auth-username", "", "outbound authentication username")
+	initBaselineSystemCmd.Flags().StringVar(&outboundPassword, "oubound-auth-password", "", "outbound authentication password")
+	initBaselineSystemCmd.Flags().BoolVar(&outboundRequireClientCredentials, "oubound-require-client-credentials", false, "require outbound client credentials")
+	initBaselineSystemCmd.Flags().StringVar(&outboundClientID, "oubound-client-id", "", "outbound system client id")
+	initBaselineSystemCmd.Flags().StringVar(&outboundClientSecret, "oubound-client-secret", "", "outbound system client secret")
 
 	initBaselineSystemCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }
