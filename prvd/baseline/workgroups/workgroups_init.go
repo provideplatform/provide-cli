@@ -223,8 +223,13 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 			"workgroup_id":               common.WorkgroupID,
 			"registry_contract_address":  *registryContract.Address,
 			"network_id":                 common.NetworkID,
+			"organization_domain":        "baseline.local",
 		},
 	})
+	if err != nil {
+		fmt.Printf("failed to initialize baseline workgroup; %s", err.Error())
+		os.Exit(1)
+	}
 
 	//common.RequireOrganizationEndpoints(nil)
 	result, _ := json.MarshalIndent(wg, "", "\t")

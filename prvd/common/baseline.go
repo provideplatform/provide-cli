@@ -68,7 +68,11 @@ import (
 // ██████╔╝██║  ██║███████║███████╗███████╗██║██║ ╚████║███████╗
 // ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝╚═╝  ╚═══╝╚══════╝
 
+const defaultBaselineRegistryContractType = "registry"
+const defaultBaselineOrgRegistryContractType = "organization-registry"
+
 const defaultBaselineRegistryContractName = "Shuttle"
+const defaultBaselineOrgRegistryContractName = "OrgRegistry"
 
 const requireContractSleepInterval = time.Second * 1
 const requireContractTickerInterval = time.Second * 5
@@ -161,30 +165,35 @@ func InitWorkgroupContract() *nchain.Contract {
 		os.Exit(1)
 	}
 
-	compiledArtifact := resolveBaselineRegistryContractArtifact()
+	compiledArtifact := resolveBaselineOrgRegistryContractArtifact()
 	if compiledArtifact == nil {
-		log.Printf("failed to deploy global baseline organization registry contract")
+		log.Printf("failed to resolve global baseline organization registry contract artifact")
 		os.Exit(1)
 	}
 
-	log.Printf("deploying global baseline organization registry contract: %s", defaultBaselineRegistryContractName)
+	contractAddresses := map[string]interface{}{
+		"66d44f30-9092-4182-a3c4-bc02736d6ae5": "0xb36f2e167c3aa09e3a517b7c3a1cacc6c62ba2ae", // ropsten
+		"8d31bf48-df6b-4a71-9d7c-3cb291111e27": "0x525d68bb355edb112c5833759478e77c9dd6c382", // kovan
+	}
+
+	address, addressOk := contractAddresses[NetworkID]
+	if !addressOk {
+		log.Printf("failed to resolve global baseline organization registry contract artifact; %s network not suppored", NetworkID)
+		os.Exit(1)
+	}
+
+	fmt.Printf("registering organization details on global organization registry contract; network id: %s; contract address: %s", NetworkID, address)
 	contract, err := nchain.CreateContract(OrganizationAccessToken, map[string]interface{}{
-		"address":    "0x",
-		"name":       defaultBaselineRegistryContractName,
+		"address":    address,
+		"name":       defaultBaselineOrgRegistryContractName,
 		"network_id": NetworkID,
 		"params": map[string]interface{}{
 			"argv":              []interface{}{},
 			"compiled_artifact": compiledArtifact,
 			"wallet_id":         wallet.ID,
 		},
-		"type": "registry",
+		"type": defaultBaselineOrgRegistryContractType,
 	})
-	if err != nil {
-		log.Printf("failed to initialize registry contract; %s", err.Error())
-		os.Exit(1)
-	}
-
-	err = RequireContract(util.StringOrNil(contract.ID.String()), nil, true)
 	if err != nil {
 		log.Printf("failed to initialize registry contract; %s", err.Error())
 		os.Exit(1)
@@ -365,6 +374,26 @@ func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 					}
 				}
 			}
+		}
+	}
+
+	return registryArtifact
+}
+
+func resolveBaselineOrgRegistryContractArtifact() *nchain.CompiledArtifact {
+	capabilities, err := commonutil.ResolveCapabilitiesManifest()
+	if err != nil {
+		return nil
+	}
+
+	var registryArtifact *nchain.CompiledArtifact
+	if baseline, baselineOk := capabilities["baseline"].(map[string]interface{}); baselineOk {
+		if contracts, contractsOk := baseline["contracts"].([]interface{}); contractsOk {
+			var artifact nchain.CompiledArtifact
+			raw, _ := json.Marshal(contracts[1])
+			json.Unmarshal(raw, &artifact)
+
+			return &artifact
 		}
 	}
 

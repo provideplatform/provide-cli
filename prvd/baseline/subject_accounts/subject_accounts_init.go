@@ -85,6 +85,7 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 			"workgroup_id":               common.WorkgroupID,
 			"registry_contract_address":  *contracts[0].Address,
 			"network_id":                 common.NetworkID,
+			"organization_domain":        "baseline.local",
 		},
 	})
 	if err != nil {
