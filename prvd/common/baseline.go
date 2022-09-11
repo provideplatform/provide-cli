@@ -97,6 +97,8 @@ var VaultID string
 
 var ResolvedBaselineOrgAddress string // HACK
 
+var OrgRegistryContractAddress string
+
 func AuthorizeApplicationContext() {
 	RequireWorkgroup()
 
@@ -166,44 +168,51 @@ func InitWorkgroupContract() *nchain.Contract {
 	}
 
 	compiledArtifact := resolveBaselineOrgRegistryContractArtifact()
+	contractName := defaultBaselineOrgRegistryContractName
+	contractType := defaultBaselineOrgRegistryContractType
+
+	if OrgRegistryContractAddress == "0x" {
+		compiledArtifact = resolveBaselineRegistryContractArtifact()
+		contractName = defaultBaselineRegistryContractName
+		contractType = defaultBaselineRegistryContractType
+	}
+
 	if compiledArtifact == nil {
 		log.Printf("failed to resolve global baseline organization registry contract artifact")
 		os.Exit(1)
 	}
 
-	contractAddresses := map[string]interface{}{
-		"66d44f30-9092-4182-a3c4-bc02736d6ae5": "0xb36f2e167c3aa09e3a517b7c3a1cacc6c62ba2ae", // ropsten
-		"8d31bf48-df6b-4a71-9d7c-3cb291111e27": "0x525d68bb355edb112c5833759478e77c9dd6c382", // kovan
-	}
-
-	address, addressOk := contractAddresses[NetworkID]
-	if !addressOk {
-		log.Printf("failed to resolve global baseline organization registry contract artifact; %s network not suppored", NetworkID)
-		os.Exit(1)
-	}
-
-	fmt.Printf("registering organization details on global organization registry contract; network id: %s; contract address: %s", NetworkID, address)
 	contract, err := nchain.CreateContract(OrganizationAccessToken, map[string]interface{}{
-		"address":    address,
-		"name":       defaultBaselineOrgRegistryContractName,
+		"address":    OrgRegistryContractAddress,
+		"name":       contractName,
 		"network_id": NetworkID,
 		"params": map[string]interface{}{
 			"argv":              []interface{}{},
 			"compiled_artifact": compiledArtifact,
 			"wallet_id":         wallet.ID,
 		},
-		"type": defaultBaselineOrgRegistryContractType,
+		"type": contractType,
 	})
 	if err != nil {
 		log.Printf("failed to initialize registry contract; %s", err.Error())
 		os.Exit(1)
 	}
 
+	if OrgRegistryContractAddress == "0x" {
+		contract, err := RequireContract(nil, common.StringOrNil(defaultBaselineOrgRegistryContractType), true)
+		if err != nil {
+			log.Printf("failed to initialize registry contract; %s", err.Error())
+			os.Exit(1)
+		}
+
+		return contract
+	}
+
 	return contract
 }
 
 func RegisterWorkgroupOrganization(workgroupID string) {
-	err := RequireContract(nil, util.StringOrNil("organization-registry"), false)
+	_, err := RequireContract(nil, util.StringOrNil(defaultBaselineOrgRegistryContractType), false)
 	if err != nil {
 		log.Printf("failed to initialize registry contract; %s", err.Error())
 		os.Exit(1)
@@ -291,7 +300,7 @@ func RequireOrganizationKeypair(spec string) (*vault.Key, error) {
 	return key, nil
 }
 
-func RequireContract(contractID, contractType *string, printCreationTxLink bool) error {
+func RequireContract(contractID, contractType *string, printCreationTxLink bool) (*nchain.Contract, error) {
 	startTime := time.Now()
 	timer := time.NewTicker(requireContractTickerInterval)
 
@@ -313,8 +322,9 @@ func RequireContract(contractID, contractType *string, printCreationTxLink bool)
 				}
 			}
 
-			if err == nil && contract != nil && contract.TransactionID != nil {
-				if !printed && printCreationTxLink {
+			// FIXME-- KT-- review removal of contract.TransactionID != nil condition
+			if err == nil && contract != nil {
+				if !printed && printCreationTxLink && contract.TransactionID != nil {
 					tx, _ := nchain.GetTransactionDetails(OrganizationAccessToken, contract.TransactionID.String(), map[string]interface{}{})
 					if tx.Hash != nil {
 						etherscanBaseURL := EtherscanBaseURL(tx.NetworkID.String())
@@ -334,13 +344,13 @@ func RequireContract(contractID, contractType *string, printCreationTxLink bool)
 						log.Printf("%s", string(txraw))
 					}
 
-					return nil
+					return contract, nil
 				}
 			}
 		default:
 			if startTime.Add(requireContractTimeout).Before(time.Now()) {
 				log.Printf("WARNING: workgroup contract deployment timed out")
-				return errors.New("workgroup contract deployment timed out")
+				return nil, errors.New("workgroup contract deployment timed out")
 			} else {
 				time.Sleep(requireContractSleepInterval)
 			}

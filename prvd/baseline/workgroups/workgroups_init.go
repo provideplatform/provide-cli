@@ -327,6 +327,7 @@ func init() {
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.L2NetworkID, "l2", "", "nchain l2 network id of the baseline layer 2 to use for this workgroup")
 	initBaselineWorkgroupCmd.Flags().BoolVarP(&hasAgreedToTermsOfService, "terms", "", false, "accept the terms of service (https://provide.services/terms)")
 	initBaselineWorkgroupCmd.Flags().BoolVarP(&hasAgreedToPrivacyPolicy, "privacy", "", false, "accept the privacy policy (https://provide.services/privacy-policy)")
+	initBaselineWorkgroupCmd.Flags().StringVar(&common.OrgRegistryContractAddress, "org-registry-contract-address", "0x", "organization registry contract address")
 
 	initBaselineWorkgroupCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }
