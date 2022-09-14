@@ -97,8 +97,6 @@ var VaultID string
 
 var ResolvedBaselineOrgAddress string // HACK
 
-var OrgRegistryContractAddress string
-
 func AuthorizeApplicationContext() {
 	RequireWorkgroup()
 
@@ -158,7 +156,7 @@ func AuthorizeOrganizationContext(persist bool) {
 	}
 }
 
-func InitWorkgroupContract() *nchain.Contract {
+func InitWorkgroupContract(contractAddress string) *nchain.Contract {
 	wallet, err := nchain.CreateWallet(OrganizationAccessToken, map[string]interface{}{
 		"purpose": 44,
 	})
@@ -171,7 +169,7 @@ func InitWorkgroupContract() *nchain.Contract {
 	contractName := defaultBaselineOrgRegistryContractName
 	contractType := defaultBaselineOrgRegistryContractType
 
-	if OrgRegistryContractAddress == "0x" {
+	if contractAddress == "0x" {
 		compiledArtifact = resolveBaselineRegistryContractArtifact()
 		contractName = defaultBaselineRegistryContractName
 		contractType = defaultBaselineRegistryContractType
@@ -183,7 +181,7 @@ func InitWorkgroupContract() *nchain.Contract {
 	}
 
 	contract, err := nchain.CreateContract(OrganizationAccessToken, map[string]interface{}{
-		"address":    OrgRegistryContractAddress,
+		"address":    contractAddress,
 		"name":       contractName,
 		"network_id": NetworkID,
 		"params": map[string]interface{}{
@@ -198,7 +196,7 @@ func InitWorkgroupContract() *nchain.Contract {
 		os.Exit(1)
 	}
 
-	if OrgRegistryContractAddress == "0x" {
+	if contractAddress == "0x" {
 		contract, err := RequireContract(nil, common.StringOrNil(defaultBaselineOrgRegistryContractType), true)
 		if err != nil {
 			log.Printf("failed to initialize registry contract; %s", err.Error())

@@ -23,6 +23,7 @@ import (
 	"os"
 
 	uuid "github.com/kthomas/go.uuid"
+	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
 	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/provideplatform/provide-go/api/ident"
@@ -30,6 +31,8 @@ import (
 	"github.com/provideplatform/provide-go/api/vault"
 	"github.com/spf13/cobra"
 )
+
+var orgDomain string
 
 var Optional bool
 var paginate bool
@@ -58,6 +61,13 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 	if common.NetworkID == "" {
 		common.RequireL1Network()
 	}
+
+	if common.Organization.Metadata != nil && common.Organization.Metadata.Domain != "" {
+		orgDomain = common.Organization.Metadata.Domain
+	} else if orgDomain == "" {
+		orgDomainPrompt()
+	}
+
 	common.AuthorizeOrganizationContext(true)
 
 	token, err := common.ResolveOrganizationToken()
@@ -88,7 +98,7 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 			"workgroup_id":               common.WorkgroupID,
 			"registry_contract_address":  *contracts[0].Address,
 			"network_id":                 common.NetworkID,
-			"organization_domain":        "baseline.local",
+			"organization_domain":        orgDomain,
 		},
 	})
 	if err != nil {
@@ -132,6 +142,7 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 			}
 		}
 
+		common.Organization.Metadata.Domain = orgDomain
 		common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs = make([]*uuid.UUID, 0)
 
 		var organizationParams map[string]interface{}
@@ -163,10 +174,33 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 	fmt.Printf("%s\n", string(result))
 }
 
+func orgDomainPrompt() {
+	prompt := promptui.Prompt{
+		Label: "Organization Domain",
+		Validate: func(s string) error {
+			if s == "" {
+				return fmt.Errorf("org domain cannot be empty")
+			}
+
+			return nil
+		},
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	orgDomain = result
+}
+
 func init() {
 	initBaselineSubjectAccountCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	initBaselineSubjectAccountCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
 	initBaselineSubjectAccountCmd.Flags().StringVar(&common.NetworkID, "network", "", "nchain network id of the baseline mainnet to use for this workgroup")
+
+	initBaselineSubjectAccountCmd.Flags().StringVar(&orgDomain, "org-domain", "", "organization domain to use for this subject account, if it is not set on the organization")
 
 	initBaselineSubjectAccountCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }
