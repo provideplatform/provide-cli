@@ -60,7 +60,7 @@ func fetchSubjectAccountDetailsRun(cmd *cobra.Command, args []string) {
 	}
 
 	if sa.ID == nil {
-		fmt.Print("subject account not found")
+		fmt.Println("subject account not found")
 		return
 	}
 

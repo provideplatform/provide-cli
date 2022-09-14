@@ -48,6 +48,11 @@ var babyJubJubKeyID string
 var secp256k1KeyID string
 var hdwalletID string
 var rsa4096KeyID string
+
+var baselineRegistryContractAddress string
+
+var orgDomain string
+
 var Optional bool
 var paginate bool
 
@@ -98,6 +103,12 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 			fmt.Print("failed to initialize baseline workgroup; must accept the privacy policy")
 			os.Exit(1)
 		}
+	}
+
+	if common.Organization.Metadata != nil && common.Organization.Metadata.Domain != "" {
+		orgDomain = common.Organization.Metadata.Domain
+	} else if orgDomain == "" {
+		orgDomainPrompt()
 	}
 
 	common.AuthorizeOrganizationContext(true)
@@ -188,6 +199,7 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 		common.Organization.Metadata.Workgroups = map[uuid.UUID]*common.OrganizationWorkgroupMetadata{}
 	}
 
+	common.Organization.Metadata.Domain = orgDomain
 	common.Organization.Metadata.Workgroups[wg.ID] = &common.OrganizationWorkgroupMetadata{
 		OperatorSeparationDegree: uint32(0),
 		VaultID:                  &orgVault.ID,
@@ -213,7 +225,7 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 
 	common.WorkgroupID = wg.ID.String()
 
-	registryContract := common.InitWorkgroupContract()
+	registryContract := common.InitWorkgroupContract(baselineRegistryContractAddress)
 
 	sa, err := baseline.CreateSubjectAccount(*token.AccessToken, common.OrganizationID, map[string]interface{}{
 		"metadata": map[string]interface{}{
@@ -223,12 +235,38 @@ func initWorkgroupRun(cmd *cobra.Command, args []string) {
 			"workgroup_id":               common.WorkgroupID,
 			"registry_contract_address":  *registryContract.Address,
 			"network_id":                 common.NetworkID,
+			"organization_domain":        orgDomain,
 		},
 	})
+	if err != nil {
+		fmt.Printf("failed to initialize baseline workgroup; %s", err.Error())
+		os.Exit(1)
+	}
 
 	//common.RequireOrganizationEndpoints(nil)
 	result, _ := json.MarshalIndent(wg, "", "\t")
 	fmt.Printf("%s\nsubject account id: %s\n", string(result), *sa.ID)
+}
+
+func orgDomainPrompt() {
+	prompt := promptui.Prompt{
+		Label: "Organization Domain",
+		Validate: func(s string) error {
+			if s == "" {
+				return fmt.Errorf("org domain cannot be empty")
+			}
+
+			return nil
+		},
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	orgDomain = result
 }
 
 func requireOrganizationKeys() error {
@@ -322,6 +360,9 @@ func init() {
 	initBaselineWorkgroupCmd.Flags().StringVar(&common.L2NetworkID, "l2", "", "nchain l2 network id of the baseline layer 2 to use for this workgroup")
 	initBaselineWorkgroupCmd.Flags().BoolVarP(&hasAgreedToTermsOfService, "terms", "", false, "accept the terms of service (https://provide.services/terms)")
 	initBaselineWorkgroupCmd.Flags().BoolVarP(&hasAgreedToPrivacyPolicy, "privacy", "", false, "accept the privacy policy (https://provide.services/privacy-policy)")
+	initBaselineWorkgroupCmd.Flags().StringVar(&baselineRegistryContractAddress, "registry-contract-address", "0x", "organization registry contract address")
+
+	initBaselineWorkgroupCmd.Flags().StringVar(&orgDomain, "organization-domain", "", "organization domain to use for this subject account, if it is not set on the organization")
 
 	initBaselineWorkgroupCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }

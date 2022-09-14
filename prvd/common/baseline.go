@@ -68,7 +68,11 @@ import (
 // ██████╔╝██║  ██║███████║███████╗███████╗██║██║ ╚████║███████╗
 // ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝╚═╝  ╚═══╝╚══════╝
 
+const defaultBaselineRegistryContractType = "registry"
+const defaultBaselineOrgRegistryContractType = "organization-registry"
+
 const defaultBaselineRegistryContractName = "Shuttle"
+const defaultBaselineOrgRegistryContractName = "OrgRegistry"
 
 const requireContractSleepInterval = time.Second * 1
 const requireContractTickerInterval = time.Second * 5
@@ -152,7 +156,7 @@ func AuthorizeOrganizationContext(persist bool) {
 	}
 }
 
-func InitWorkgroupContract() *nchain.Contract {
+func InitWorkgroupContract(contractAddress string) *nchain.Contract {
 	wallet, err := nchain.CreateWallet(OrganizationAccessToken, map[string]interface{}{
 		"purpose": 44,
 	})
@@ -161,40 +165,53 @@ func InitWorkgroupContract() *nchain.Contract {
 		os.Exit(1)
 	}
 
-	compiledArtifact := resolveBaselineRegistryContractArtifact()
+	compiledArtifact := resolveBaselineOrgRegistryContractArtifact()
+	contractName := defaultBaselineOrgRegistryContractName
+	contractType := defaultBaselineOrgRegistryContractType
+
+	if contractAddress == "0x" {
+		compiledArtifact = resolveBaselineRegistryContractArtifact()
+		contractName = defaultBaselineRegistryContractName
+		contractType = defaultBaselineRegistryContractType
+	}
+
 	if compiledArtifact == nil {
-		log.Printf("failed to deploy global baseline organization registry contract")
+		log.Printf("failed to resolve global baseline organization registry contract artifact")
 		os.Exit(1)
 	}
 
 	log.Printf("deploying global baseline organization registry contract: %s", defaultBaselineRegistryContractName)
 	contract, err := nchain.CreateContract(OrganizationAccessToken, map[string]interface{}{
-		"address":    "0x",
-		"name":       defaultBaselineRegistryContractName,
+		"address":    contractAddress,
+		"name":       contractName,
 		"network_id": NetworkID,
 		"params": map[string]interface{}{
 			"argv":              []interface{}{},
 			"compiled_artifact": compiledArtifact,
 			"wallet_id":         wallet.ID,
 		},
-		"type": "registry",
+		"type": contractType,
 	})
 	if err != nil {
 		log.Printf("failed to initialize registry contract; %s", err.Error())
 		os.Exit(1)
 	}
 
-	err = RequireContract(util.StringOrNil(contract.ID.String()), nil, true)
-	if err != nil {
-		log.Printf("failed to initialize registry contract; %s", err.Error())
-		os.Exit(1)
+	if contractAddress == "0x" {
+		contract, err := RequireContract(nil, common.StringOrNil(defaultBaselineOrgRegistryContractType), true)
+		if err != nil {
+			log.Printf("failed to initialize registry contract; %s", err.Error())
+			os.Exit(1)
+		}
+
+		return contract
 	}
 
 	return contract
 }
 
 func RegisterWorkgroupOrganization(workgroupID string) {
-	err := RequireContract(nil, util.StringOrNil("organization-registry"), false)
+	_, err := RequireContract(nil, util.StringOrNil(defaultBaselineOrgRegistryContractType), false)
 	if err != nil {
 		log.Printf("failed to initialize registry contract; %s", err.Error())
 		os.Exit(1)
@@ -282,7 +299,7 @@ func RequireOrganizationKeypair(spec string) (*vault.Key, error) {
 	return key, nil
 }
 
-func RequireContract(contractID, contractType *string, printCreationTxLink bool) error {
+func RequireContract(contractID, contractType *string, printCreationTxLink bool) (*nchain.Contract, error) {
 	startTime := time.Now()
 	timer := time.NewTicker(requireContractTickerInterval)
 
@@ -304,8 +321,9 @@ func RequireContract(contractID, contractType *string, printCreationTxLink bool)
 				}
 			}
 
-			if err == nil && contract != nil && contract.TransactionID != nil {
-				if !printed && printCreationTxLink {
+			// FIXME-- KT-- review removal of contract.TransactionID != nil condition
+			if err == nil && contract != nil {
+				if !printed && printCreationTxLink && contract.TransactionID != nil {
 					tx, _ := nchain.GetTransactionDetails(OrganizationAccessToken, contract.TransactionID.String(), map[string]interface{}{})
 					if tx.Hash != nil {
 						etherscanBaseURL := EtherscanBaseURL(tx.NetworkID.String())
@@ -325,13 +343,13 @@ func RequireContract(contractID, contractType *string, printCreationTxLink bool)
 						log.Printf("%s", string(txraw))
 					}
 
-					return nil
+					return contract, nil
 				}
 			}
 		default:
 			if startTime.Add(requireContractTimeout).Before(time.Now()) {
 				log.Printf("WARNING: workgroup contract deployment timed out")
-				return errors.New("workgroup contract deployment timed out")
+				return nil, errors.New("workgroup contract deployment timed out")
 			} else {
 				time.Sleep(requireContractSleepInterval)
 			}
@@ -365,6 +383,26 @@ func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 					}
 				}
 			}
+		}
+	}
+
+	return registryArtifact
+}
+
+func resolveBaselineOrgRegistryContractArtifact() *nchain.CompiledArtifact {
+	capabilities, err := commonutil.ResolveCapabilitiesManifest()
+	if err != nil {
+		return nil
+	}
+
+	var registryArtifact *nchain.CompiledArtifact
+	if baseline, baselineOk := capabilities["baseline"].(map[string]interface{}); baselineOk {
+		if contracts, contractsOk := baseline["contracts"].([]interface{}); contractsOk {
+			var artifact nchain.CompiledArtifact
+			raw, _ := json.Marshal(contracts[1])
+			json.Unmarshal(raw, &artifact)
+
+			return &artifact
 		}
 	}
 

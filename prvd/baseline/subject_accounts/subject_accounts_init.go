@@ -22,11 +22,17 @@ import (
 	"log"
 	"os"
 
+	uuid "github.com/kthomas/go.uuid"
+	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
 	"github.com/provideplatform/provide-go/api/baseline"
+	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/nchain"
+	"github.com/provideplatform/provide-go/api/vault"
 	"github.com/spf13/cobra"
 )
+
+var orgDomain string
 
 var Optional bool
 var paginate bool
@@ -55,6 +61,13 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 	if common.NetworkID == "" {
 		common.RequireL1Network()
 	}
+
+	if common.Organization.Metadata != nil && common.Organization.Metadata.Domain != "" {
+		orgDomain = common.Organization.Metadata.Domain
+	} else if orgDomain == "" {
+		orgDomainPrompt()
+	}
+
 	common.AuthorizeOrganizationContext(true)
 
 	token, err := common.ResolveOrganizationToken()
@@ -85,6 +98,7 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 			"workgroup_id":               common.WorkgroupID,
 			"registry_contract_address":  *contracts[0].Address,
 			"network_id":                 common.NetworkID,
+			"organization_domain":        orgDomain,
 		},
 	})
 	if err != nil {
@@ -92,14 +106,101 @@ func createSubjectAccountRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	// TODO-- make utility function to DRY this up
+	vaultID := common.Organization.Metadata.Workgroups[common.Workgroup.ID].VaultID
+	systemIDs := common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs
+
+	isOperator := common.Organization.Metadata.Workgroups[common.Workgroup.ID].OperatorSeparationDegree == 0
+	if isOperator {
+		vaultID = common.Workgroup.Config.VaultID
+		systemIDs = common.Workgroup.Config.SystemSecretIDs
+	}
+
+	if len(systemIDs) > 0 && vaultID != nil {
+		for _, secretID := range systemIDs {
+			secret, err := vault.FetchSecret(*token.AccessToken, vaultID.String(), secretID.String(), map[string]interface{}{})
+			if err != nil {
+				log.Printf("failed to initialize baseline subject account; %s", err.Error())
+				os.Exit(1)
+			}
+
+			var systemParams map[string]interface{}
+			err = json.Unmarshal([]byte(*secret.Value), &systemParams)
+			if err != nil {
+				log.Printf("failed to initialize baseline subject account; %s", err.Error())
+				os.Exit(1)
+			}
+
+			if _, err := baseline.CreateSystem(*token.AccessToken, common.WorkgroupID, systemParams); err != nil {
+				log.Printf("failed to initialize baseline subject account; %s", err.Error())
+				os.Exit(1)
+			}
+
+			if err := vault.DeleteSecret(*token.AccessToken, vaultID.String(), secretID.String()); err != nil {
+				log.Printf("failed to initialize baseline subject account; %s", err.Error())
+				os.Exit(1)
+			}
+		}
+
+		common.Organization.Metadata.Domain = orgDomain
+		common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs = make([]*uuid.UUID, 0)
+
+		var organizationParams map[string]interface{}
+		raw, _ := json.Marshal(common.Organization)
+		json.Unmarshal(raw, &organizationParams)
+
+		if err := ident.UpdateOrganization(*token.AccessToken, common.OrganizationID, organizationParams); err != nil {
+			log.Printf("failed to initialize baseline subject account; %s", err.Error())
+			os.Exit(1)
+		}
+
+		if isOperator {
+			common.Workgroup.Config.SystemSecretIDs = make([]*uuid.UUID, 0)
+
+			var workgroupParams map[string]interface{}
+			raw, _ := json.Marshal(common.Workgroup)
+			json.Unmarshal(raw, &workgroupParams)
+
+			if err := baseline.UpdateWorkgroup(*token.AccessToken, common.WorkgroupID, workgroupParams); err != nil {
+				log.Printf("failed to initialize baseline subject account; %s", err.Error())
+				os.Exit(1)
+			}
+		}
+
+		fmt.Printf("successfully saved systems of records to subject account %s\n", *sa.ID)
+	}
+
 	result, _ := json.MarshalIndent(sa, "", "\t")
 	fmt.Printf("%s\n", string(result))
+}
+
+func orgDomainPrompt() {
+	prompt := promptui.Prompt{
+		Label: "Organization Domain",
+		Validate: func(s string) error {
+			if s == "" {
+				return fmt.Errorf("org domain cannot be empty")
+			}
+
+			return nil
+		},
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+		return
+	}
+
+	orgDomain = result
 }
 
 func init() {
 	initBaselineSubjectAccountCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	initBaselineSubjectAccountCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
 	initBaselineSubjectAccountCmd.Flags().StringVar(&common.NetworkID, "network", "", "nchain network id of the baseline mainnet to use for this workgroup")
+
+	initBaselineSubjectAccountCmd.Flags().StringVar(&orgDomain, "organization-domain", "", "organization domain to use for this subject account, if it is not set on the organization")
 
 	initBaselineSubjectAccountCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }

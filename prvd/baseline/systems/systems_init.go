@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"strings"
 
 	uuid "github.com/kthomas/go.uuid"
 	"github.com/manifoldco/promptui"
@@ -34,37 +33,50 @@ import (
 
 var systemType string
 
-var sapDescription string
+var systemName string
+var systemDescription string
 
-var sapMiddlewareType string
+var systemMiddlewareType string
 
-var sapEndpointURL string
+var systemEndpointURL string
 
-// could combine the inbound and outbound sap vars into sapEndpointURL slices similar to sapAuthMethods, sapUsernames, etc
-var sapInboundMiddleware string
-var sapInboundEndpointURL string
+// could combine the inbound and outbound system vars into systemEndpointURL slices similar to systemAuthMethods, systemUsernames, etc
+var systemInboundMiddleware string
+var systemInboundEndpointURL string
 
-var sapOutboundMiddleware string
-var sapOutboundEndpointURL string
+var systemOutboundMiddleware string
+var systemOutboundEndpointURL string
 
-var sapAuthMethods []string
+var noMiddlewareAuthMethod string
+var noMiddlewareUsername string
+var noMiddlewarePassword string
+var noMiddlewareRequireClientCredentials bool
+var noMiddlewareClientID string
+var noMiddlewareClientSecret string
 
-var sapUsernames []string
-var sapPasswords []string
+var inboundAuthMethod string
+var inboundUsername string
+var inboundPassword string
+var inboundRequireClientCredentials bool
+var inboundClientID string
+var inboundClientSecret string
 
-var sapRequireClientCredentials []bool
-
-var sapClientIDs []string
-var sapClientSecrets []string
+var outboundAuthMethod string
+var outboundUsername string
+var outboundPassword string
+var outboundRequireClientCredentials bool
+var outboundClientID string
+var outboundClientSecret string
 
 const sapSystemIdentifier = "sap"
+const servicenowSystemIdentifier = "servicenow"
 
-const sapNoMiddlewareIdentifier = "No Middleware"
-const sapInboundOnlyMiddlewareIdentifier = "Inbound Only"
-const sapOutboundOnlyMiddlewareIdentifier = "Outbound Only"
-const sapInboundAndOutboundMiddlewareIdentifier = "Inbound & Outbound"
+const systemNoMiddlewareIdentifier = "No Middleware"
+const systemInboundOnlyMiddlewareIdentifier = "Inbound Only"
+const systemOutboundOnlyMiddlewareIdentifier = "Outbound Only"
+const systemInboundAndOutboundMiddlewareIdentifier = "Inbound & Outbound"
 
-const sapAuthMethodsIdentifier = "Basic Auth"
+const basicAuthMethodIdentifier = "Basic Auth"
 
 var initBaselineSystemCmd = &cobra.Command{
 	Use:   "init",
@@ -96,22 +108,8 @@ func initSystemRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	var value string
-
-	switch strings.ToLower(systemType) {
-	case sapSystemIdentifier:
-		sapPrompt(&value, *token.AccessToken)
-	default:
-		fmt.Print("failed to initialize system; invalid system type")
-		os.Exit(1)
-	}
-
-	params := map[string]interface{}{
-		"description": sapDescription,
-		"name":        "system",
-		"type":        "system",
-		"value":       value,
-	}
+	var params map[string]interface{}
+	systemPrompt(&params, *token.AccessToken)
 
 	vaults, err := vault.ListVaults(*token.AccessToken, map[string]interface{}{})
 	if err != nil {
@@ -119,48 +117,82 @@ func initSystemRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	secret, err := vault.CreateSecret(*token.AccessToken, vaults[0].ID.String(), params)
+	if len(vaults) == 0 {
+		fmt.Printf("failed to initialize system; workgroup must have a vault")
+		os.Exit(1)
+	}
+
+	subjectAccountID := common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID))
+	sa, err := baseline.GetSubjectAccountDetails(*token.AccessToken, common.OrganizationID, subjectAccountID, map[string]interface{}{})
 	if err != nil {
 		fmt.Printf("failed to initialize system; %s", err.Error())
 		os.Exit(1)
 	}
 
-	isOperator := common.Organization.Metadata.Workgroups[common.Workgroup.ID].OperatorSeparationDegree == 0
-	if isOperator {
-		if common.Workgroup.Config.SystemSecretIDs == nil {
-			common.Workgroup.Config.SystemSecretIDs = make([]*uuid.UUID, 0)
+	isOnboarded := sa.ID != nil
+	if !isOnboarded {
+		raw, _ := json.Marshal(params)
+
+		secretParams := map[string]interface{}{
+			"type":  systemType,
+			"name":  systemName,
+			"value": string(raw),
 		}
 
-		common.Workgroup.Config.SystemSecretIDs = append(common.Workgroup.Config.SystemSecretIDs, &secret.ID)
-
-		var wgInterface map[string]interface{}
-		raw, _ := json.Marshal(common.Workgroup)
-		json.Unmarshal(raw, &wgInterface)
-
-		if err := baseline.UpdateWorkgroup(*token.AccessToken, common.Workgroup.ID.String(), wgInterface); err != nil {
+		secret, err := vault.CreateSecret(*token.AccessToken, vaults[0].ID.String(), secretParams)
+		if err != nil {
 			fmt.Printf("failed to initialize system; %s", err.Error())
 			os.Exit(1)
 		}
+
+		isOperator := common.Organization.Metadata.Workgroups[common.Workgroup.ID].OperatorSeparationDegree == 0
+		if isOperator {
+			if common.Workgroup.Config.SystemSecretIDs == nil {
+				common.Workgroup.Config.SystemSecretIDs = make([]*uuid.UUID, 0)
+			}
+
+			common.Workgroup.Config.SystemSecretIDs = append(common.Workgroup.Config.SystemSecretIDs, &secret.ID)
+
+			var wgInterface map[string]interface{}
+			raw, _ := json.Marshal(common.Workgroup)
+			json.Unmarshal(raw, &wgInterface)
+
+			if err := baseline.UpdateWorkgroup(*token.AccessToken, common.Workgroup.ID.String(), wgInterface); err != nil {
+				fmt.Printf("failed to initialize system; %s", err.Error())
+				os.Exit(1)
+			}
+		}
+
+		common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs = append(common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs, &secret.ID)
+
+		var orgInterface map[string]interface{}
+		raw, _ = json.Marshal(common.Organization)
+		json.Unmarshal(raw, &orgInterface)
+
+		if err := ident.UpdateOrganization(*token.AccessToken, *common.Organization.ID, orgInterface); err != nil {
+			fmt.Printf("failed to initialize system; %s", err.Error())
+			os.Exit(1)
+		}
+
+		result, _ := json.MarshalIndent(secret, "", "\t")
+		fmt.Printf("system secret: %s\n", string(result))
+	} else {
+		params["vault_id"] = vaults[0].ID
+		system, err := baseline.CreateSystem(*token.AccessToken, common.WorkgroupID, params)
+		if err != nil {
+			fmt.Printf("failed to initialize system; %s", err.Error())
+			os.Exit(1)
+		}
+
+		result, _ := json.MarshalIndent(system, "", "\t")
+		fmt.Printf("system: %s\n", string(result))
 	}
-
-	common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs = append(common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs, &secret.ID)
-
-	var orgInterface map[string]interface{}
-	raw, _ := json.Marshal(common.Organization)
-	json.Unmarshal(raw, &orgInterface)
-
-	if err := ident.UpdateOrganization(*token.AccessToken, *common.Organization.ID, orgInterface); err != nil {
-		fmt.Printf("failed to initialize system; %s", err.Error())
-		os.Exit(1)
-	}
-
-	result, _ := json.MarshalIndent(secret, "", "\t")
-	fmt.Printf("%s\n", string(result))
 }
 
 func systemTypePrompt() {
-	systemTypes := make([]string, 1)
+	systemTypes := make([]string, 2)
 	systemTypes[0] = sapSystemIdentifier
+	systemTypes[1] = servicenowSystemIdentifier
 
 	prompt := promptui.Select{
 		Label: "System Type",
@@ -176,14 +208,14 @@ func systemTypePrompt() {
 	systemType = systemTypes[i]
 }
 
-func sapPrompt(params *string, token string) {
+func systemPrompt(params *map[string]interface{}, token string) {
 	middlewareTypes := make([]string, 4)
-	middlewareTypes[0] = sapNoMiddlewareIdentifier
-	middlewareTypes[1] = sapInboundOnlyMiddlewareIdentifier
-	middlewareTypes[2] = sapOutboundOnlyMiddlewareIdentifier
-	middlewareTypes[3] = sapInboundAndOutboundMiddlewareIdentifier
+	middlewareTypes[0] = systemNoMiddlewareIdentifier
+	middlewareTypes[1] = systemInboundOnlyMiddlewareIdentifier
+	middlewareTypes[2] = systemOutboundOnlyMiddlewareIdentifier
+	middlewareTypes[3] = systemInboundAndOutboundMiddlewareIdentifier
 
-	if sapMiddlewareType == "" {
+	if systemMiddlewareType == "" {
 		prompt := promptui.Select{
 			Label: "Middleware Type",
 			Items: middlewareTypes,
@@ -195,37 +227,38 @@ func sapPrompt(params *string, token string) {
 			os.Exit(1)
 		}
 
-		sapMiddlewareType = middlewareTypes[i]
+		systemMiddlewareType = middlewareTypes[i]
 	}
 
-	switch sapMiddlewareType {
-	case sapNoMiddlewareIdentifier:
-		sapDescriptionPrompt()
+	systemNamePrompt()
 
-		sapNoMiddlewarePrompt()
+	systemDescriptionPrompt()
 
-		sapAuthMethodsPrompt(&sapAuthMethods[0], &sapUsernames[0], &sapPasswords[0])
+	switch systemMiddlewareType {
+	case systemNoMiddlewareIdentifier:
+		systemNoMiddlewarePrompt()
 
-		sapClientCredentialsPrompt(&sapRequireClientCredentials[0], &sapClientIDs[0], &sapClientSecrets[0])
+		systemAuthMethodsPrompt(&noMiddlewareAuthMethod, &noMiddlewareUsername, &noMiddlewarePassword)
+
+		systemClientCredentialsPrompt(&noMiddlewareRequireClientCredentials, &noMiddlewareClientID, &noMiddlewareClientSecret)
 
 		systemAuth := map[string]interface{}{
-			"method":                   sapAuthMethods[0],
-			"username":                 sapUsernames[0],
-			"password":                 sapPasswords[0],
-			"require_user_credentials": sapRequireClientCredentials[0],
+			"method":                   noMiddlewareAuthMethod,
+			"username":                 noMiddlewareUsername,
+			"password":                 noMiddlewarePassword,
+			"require_user_credentials": noMiddlewareRequireClientCredentials,
 		}
 
-		if sapRequireClientCredentials[0] {
-			systemAuth["client_id"] = sapClientIDs[0]
-			systemAuth["client_secret"] = sapClientSecrets[0]
+		if noMiddlewareRequireClientCredentials {
+			systemAuth["client_id"] = noMiddlewareClientID
+			systemAuth["client_secret"] = noMiddlewareClientSecret
 		}
 
 		reachabilityParams := map[string]interface{}{
+			"type":         systemType,
+			"name":         systemName,
 			"auth":         systemAuth,
-			"endpoint_url": sapEndpointURL,
-			"name":         "system",
-			"type":         systemType,
-			"description":  sapDescription,
+			"endpoint_url": systemEndpointURL,
 		}
 
 		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
@@ -234,51 +267,41 @@ func sapPrompt(params *string, token string) {
 		}
 
 		system := map[string]interface{}{
-			"name":        "system",
-			"description": sapDescription,
-			"type":        "system",
-			"value": map[string]interface{}{
-				"auth":         systemAuth,
-				"endpoint_url": sapEndpointURL,
-				"name":         sapSystemIdentifier,
-				"system":       strings.ToUpper(sapSystemIdentifier),
-				"type":         sapNoMiddlewareIdentifier,
-			},
+			"type":         systemType,
+			"name":         systemName,
+			"auth":         systemAuth,
+			"endpoint_url": systemEndpointURL,
 		}
 
-		value, err := json.Marshal(system)
-		if err != nil {
-			fmt.Printf("failed to initialize system; %s", err.Error())
-			os.Exit(1)
+		if systemDescription != "" {
+			system["description"] = systemDescription
 		}
-		*params = string(value)
-	case sapInboundOnlyMiddlewareIdentifier:
-		sapDescriptionPrompt()
 
-		sapInboundOnlyPrompt()
+		*params = system
+	case systemInboundOnlyMiddlewareIdentifier:
+		systemInboundOnlyPrompt()
 
-		sapAuthMethodsPrompt(&sapAuthMethods[0], &sapUsernames[0], &sapPasswords[0])
+		systemAuthMethodsPrompt(&inboundAuthMethod, &inboundPassword, &inboundUsername)
 
-		sapClientCredentialsPrompt(&sapRequireClientCredentials[0], &sapClientIDs[0], &sapClientSecrets[0])
+		systemClientCredentialsPrompt(&inboundRequireClientCredentials, &inboundClientID, &inboundClientSecret)
 
 		inboundMiddlewareAuth := map[string]interface{}{
-			"method":                   sapAuthMethods[0],
-			"username":                 sapUsernames[0],
-			"password":                 sapPasswords[0],
-			"require_user_credentials": sapRequireClientCredentials[0],
+			"method":                   inboundAuthMethod,
+			"username":                 inboundUsername,
+			"password":                 inboundPassword,
+			"require_user_credentials": inboundRequireClientCredentials,
 		}
 
-		if sapRequireClientCredentials[0] {
-			inboundMiddlewareAuth["client_id"] = sapClientIDs[0]
-			inboundMiddlewareAuth["client_secret"] = sapClientSecrets[0]
+		if inboundRequireClientCredentials {
+			inboundMiddlewareAuth["client_id"] = inboundClientID
+			inboundMiddlewareAuth["client_secret"] = inboundClientSecret
 		}
 
 		reachabilityParams := map[string]interface{}{
-			"auth":         inboundMiddlewareAuth,
-			"endpoint_url": sapInboundEndpointURL,
-			"name":         "system",
+			"name":         systemName,
 			"type":         systemType,
-			"description":  sapDescription,
+			"auth":         inboundMiddlewareAuth,
+			"endpoint_url": systemInboundEndpointURL,
 		}
 
 		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
@@ -287,56 +310,46 @@ func sapPrompt(params *string, token string) {
 		}
 
 		system := map[string]interface{}{
-			"name":        "system",
-			"description": sapDescription,
-			"type":        "system",
-			"value": map[string]interface{}{
-				"name":   sapSystemIdentifier,
-				"system": strings.ToUpper(sapSystemIdentifier),
-				"type":   sapInboundOnlyMiddlewareIdentifier,
-				"middleware": map[string]interface{}{
-					"inbound": map[string]interface{}{
-						"auth": inboundMiddlewareAuth,
-						"name": sapInboundMiddleware,
-						"url":  sapInboundEndpointURL,
-					},
+			"type": systemType,
+			"name": systemName,
+			"middleware": map[string]interface{}{
+				"inbound": map[string]interface{}{
+					"name": systemInboundMiddleware,
+					"url":  systemInboundEndpointURL,
+					"auth": inboundMiddlewareAuth,
 				},
 			},
 		}
 
-		value, err := json.Marshal(system)
-		if err != nil {
-			fmt.Printf("failed to initialize system; %s", err.Error())
-			os.Exit(1)
+		if systemDescription != "" {
+			system["description"] = systemDescription
 		}
-		*params = string(value)
-	case sapOutboundOnlyMiddlewareIdentifier:
-		sapDescriptionPrompt()
 
-		sapOutboundOnlyPrompt()
+		*params = system
+	case systemOutboundOnlyMiddlewareIdentifier:
+		systemOutboundOnlyPrompt()
 
-		sapAuthMethodsPrompt(&sapAuthMethods[0], &sapUsernames[0], &sapPasswords[0])
+		systemAuthMethodsPrompt(&outboundAuthMethod, &outboundUsername, &outboundPassword)
 
-		sapClientCredentialsPrompt(&sapRequireClientCredentials[0], &sapClientIDs[0], &sapClientSecrets[0])
+		systemClientCredentialsPrompt(&outboundRequireClientCredentials, &outboundClientID, &outboundClientSecret)
 
 		outboundMiddlewareAuth := map[string]interface{}{
-			"method":                   sapAuthMethods[0],
-			"username":                 sapUsernames[0],
-			"password":                 sapPasswords[0],
-			"require_user_credentials": sapRequireClientCredentials[0],
+			"method":                   outboundAuthMethod,
+			"username":                 outboundUsername,
+			"password":                 outboundPassword,
+			"require_user_credentials": outboundRequireClientCredentials,
 		}
 
-		if sapRequireClientCredentials[0] {
-			outboundMiddlewareAuth["client_id"] = sapClientIDs[0]
-			outboundMiddlewareAuth["client_secret"] = sapClientSecrets[0]
+		if outboundRequireClientCredentials {
+			outboundMiddlewareAuth["client_id"] = outboundClientID
+			outboundMiddlewareAuth["client_secret"] = outboundClientSecret
 		}
 
 		reachabilityParams := map[string]interface{}{
+			"type":         systemType,
+			"name":         systemName,
 			"auth":         outboundMiddlewareAuth,
-			"endpoint_url": sapOutboundEndpointURL,
-			"name":         "system",
-			"type":         systemType,
-			"description":  sapDescription,
+			"endpoint_url": systemOutboundEndpointURL,
 		}
 
 		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
@@ -345,56 +358,46 @@ func sapPrompt(params *string, token string) {
 		}
 
 		system := map[string]interface{}{
-			"name":        "system",
-			"description": sapDescription,
-			"type":        "system",
-			"value": map[string]interface{}{
-				"name":   sapSystemIdentifier,
-				"system": strings.ToUpper(sapSystemIdentifier),
-				"type":   sapOutboundOnlyMiddlewareIdentifier,
-				"middleware": map[string]interface{}{
-					"outbound": map[string]interface{}{
-						"auth": outboundMiddlewareAuth,
-						"name": sapOutboundMiddleware,
-						"url":  sapOutboundEndpointURL,
-					},
+			"type": systemType,
+			"name": systemName,
+			"middleware": map[string]interface{}{
+				"outbound": map[string]interface{}{
+					"name": systemOutboundMiddleware,
+					"url":  systemOutboundEndpointURL,
+					"auth": outboundMiddlewareAuth,
 				},
 			},
 		}
 
-		value, err := json.Marshal(system)
-		if err != nil {
-			fmt.Printf("failed to initialize system; %s", err.Error())
-			os.Exit(1)
+		if systemDescription != "" {
+			system["description"] = systemDescription
 		}
-		*params = string(value)
-	case sapInboundAndOutboundMiddlewareIdentifier:
-		sapDescriptionPrompt()
 
-		sapInboundOnlyPrompt()
+		*params = system
+	case systemInboundAndOutboundMiddlewareIdentifier:
+		systemInboundOnlyPrompt()
 
-		sapAuthMethodsPrompt(&sapAuthMethods[0], &sapUsernames[0], &sapPasswords[0])
+		systemAuthMethodsPrompt(&inboundAuthMethod, &inboundPassword, &inboundUsername)
 
-		sapClientCredentialsPrompt(&sapRequireClientCredentials[0], &sapClientIDs[0], &sapClientSecrets[0])
+		systemClientCredentialsPrompt(&inboundRequireClientCredentials, &inboundClientID, &inboundClientSecret)
 
 		inboundMiddlewareAuth := map[string]interface{}{
-			"method":                   sapAuthMethods[0],
-			"username":                 sapUsernames[0],
-			"password":                 sapPasswords[0],
-			"require_user_credentials": sapRequireClientCredentials[0],
+			"method":                   inboundAuthMethod,
+			"username":                 inboundUsername,
+			"password":                 inboundPassword,
+			"require_user_credentials": inboundRequireClientCredentials,
 		}
 
-		if sapRequireClientCredentials[0] {
-			inboundMiddlewareAuth["client_id"] = sapClientIDs[0]
-			inboundMiddlewareAuth["client_secret"] = sapClientSecrets[0]
+		if inboundRequireClientCredentials {
+			inboundMiddlewareAuth["client_id"] = inboundClientID
+			inboundMiddlewareAuth["client_secret"] = inboundClientSecret
 		}
 
 		reachabilityParams := map[string]interface{}{
-			"auth":         inboundMiddlewareAuth,
-			"endpoint_url": sapInboundEndpointURL,
-			"name":         "system",
 			"type":         systemType,
-			"description":  sapDescription,
+			"name":         systemName,
+			"auth":         inboundMiddlewareAuth,
+			"endpoint_url": systemInboundEndpointURL,
 		}
 
 		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
@@ -402,33 +405,29 @@ func sapPrompt(params *string, token string) {
 			os.Exit(1)
 		}
 
-		sapOutboundOnlyPrompt()
+		systemOutboundOnlyPrompt()
 
-		sapAuthMethodsPrompt(&sapAuthMethods[1], &sapUsernames[1], &sapPasswords[1])
+		systemAuthMethodsPrompt(&outboundAuthMethod, &outboundUsername, &outboundPassword)
 
-		sapClientCredentialsPrompt(&sapRequireClientCredentials[1], &sapClientIDs[1], &sapClientSecrets[1])
+		systemClientCredentialsPrompt(&outboundRequireClientCredentials, &outboundClientID, &outboundClientSecret)
 
 		outboundMiddlewareAuth := map[string]interface{}{
-			"method":                   sapAuthMethods[1],
-			"username":                 sapUsernames[1],
-			"password":                 sapPasswords[1],
-			"require_user_credentials": sapRequireClientCredentials[1],
+			"method":                   outboundAuthMethod,
+			"username":                 outboundUsername,
+			"password":                 outboundPassword,
+			"require_user_credentials": outboundRequireClientCredentials,
 		}
 
-		if sapRequireClientCredentials[1] {
-			outboundMiddlewareAuth["client_id"] = sapClientIDs[1]
-			outboundMiddlewareAuth["client_secret"] = sapClientSecrets[1]
+		if outboundRequireClientCredentials {
+			outboundMiddlewareAuth["client_id"] = outboundClientID
+			outboundMiddlewareAuth["client_secret"] = outboundClientSecret
 		}
 
 		reachabilityParams = map[string]interface{}{
-			"subject_account_id": common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID)),
-			"system": map[string]interface{}{
-				"auth":         outboundMiddlewareAuth,
-				"endpoint_url": sapOutboundEndpointURL,
-				"name":         "system",
-				"type":         systemType,
-				"description":  sapDescription,
-			},
+			"auth":         outboundMiddlewareAuth,
+			"endpoint_url": systemOutboundEndpointURL,
+			"name":         systemName,
+			"type":         systemType,
 		}
 
 		if err := baseline.SystemReachability(token, reachabilityParams); err != nil {
@@ -437,43 +436,36 @@ func sapPrompt(params *string, token string) {
 		}
 
 		system := map[string]interface{}{
-			"name":        "system",
-			"description": sapDescription,
-			"type":        "system",
-			"value": map[string]interface{}{
-				"name":   sapSystemIdentifier,
-				"system": strings.ToUpper(sapSystemIdentifier),
-				"type":   sapInboundAndOutboundMiddlewareIdentifier,
-				"middleware": map[string]interface{}{
-					"inbound": map[string]interface{}{
-						"auth": inboundMiddlewareAuth,
-						"name": sapInboundMiddleware,
-						"url":  sapInboundEndpointURL,
-					},
-					"outbound": map[string]interface{}{
-						"auth": outboundMiddlewareAuth,
-						"name": sapOutboundMiddleware,
-						"url":  sapOutboundEndpointURL,
-					},
+			"type": systemType,
+			"name": systemName,
+			"middleware": map[string]interface{}{
+				"inbound": map[string]interface{}{
+					"auth": inboundMiddlewareAuth,
+					"name": systemInboundMiddleware,
+					"url":  systemInboundEndpointURL,
+				},
+				"outbound": map[string]interface{}{
+					"auth": outboundMiddlewareAuth,
+					"name": systemOutboundMiddleware,
+					"url":  systemOutboundEndpointURL,
 				},
 			},
 		}
 
-		value, err := json.Marshal(system)
-		if err != nil {
-			fmt.Printf("failed to initialize system; %s", err.Error())
-			os.Exit(1)
+		if systemDescription != "" {
+			system["description"] = systemDescription
 		}
-		*params = string(value)
+
+		*params = system
 	default:
 		fmt.Print("failed to initialize system; invalid middleware type")
 	}
 }
 
-func sapDescriptionPrompt() {
-	if sapDescription == "" {
+func systemNamePrompt() {
+	if systemName == "" {
 		prompt := promptui.Prompt{
-			Label:    "System Description",
+			Label:    "Name",
 			Validate: common.MandatoryValidation,
 		}
 
@@ -483,14 +475,30 @@ func sapDescriptionPrompt() {
 			return
 		}
 
-		sapDescription = result
+		systemName = result
 	}
 }
 
-func sapNoMiddlewarePrompt() {
-	if sapEndpointURL == "" {
+func systemDescriptionPrompt() {
+	if systemDescription == "" {
 		prompt := promptui.Prompt{
-			Label: "SAP Endpoint URL",
+			Label: "Description",
+		}
+
+		result, err := prompt.Run()
+		if err != nil {
+			os.Exit(1)
+			return
+		}
+
+		systemDescription = result
+	}
+}
+
+func systemNoMiddlewarePrompt() {
+	if systemEndpointURL == "" {
+		prompt := promptui.Prompt{
+			Label: "Endpoint URL",
 			Validate: func(s string) error {
 				if s == "" {
 					return fmt.Errorf("endpoint url is required")
@@ -510,18 +518,18 @@ func sapNoMiddlewarePrompt() {
 			os.Exit(1)
 		}
 
-		sapEndpointURL = result
+		systemEndpointURL = result
 	}
 }
 
-func sapInboundOnlyPrompt() {
+func systemInboundOnlyPrompt() {
 	middlewareOpts := make([]string, 2)
 	middlewareOpts[0] = "Mulesoft"
 	middlewareOpts[1] = "SAPPI"
 
-	if sapInboundMiddleware == "" {
+	if systemInboundMiddleware == "" {
 		prompt := promptui.Select{
-			Label: "SAP Inbound Middleware Type",
+			Label: "Inbound Middleware Type",
 			Items: middlewareOpts,
 		}
 
@@ -531,27 +539,27 @@ func sapInboundOnlyPrompt() {
 			os.Exit(1)
 		}
 
-		sapInboundMiddleware = middlewareOpts[i]
+		systemInboundMiddleware = middlewareOpts[i]
 	} else {
 		isValid := false
 		for _, opt := range middlewareOpts {
-			if sapInboundMiddleware == opt {
+			if systemInboundMiddleware == opt {
 				isValid = true
 			}
 		}
 
 		if !isValid {
-			fmt.Print("failed to initialize system; invalid sap inbound middleware type")
+			fmt.Print("failed to initialize system; invalid system inbound middleware type")
 			os.Exit(1)
 		}
 	}
 
-	if sapInboundEndpointURL == "" {
+	if systemInboundEndpointURL == "" {
 		prompt := promptui.Prompt{
-			Label: "SAP Inbound Middleware URL",
+			Label: "Inbound Middleware URL",
 			Validate: func(s string) error {
 				if s == "" {
-					return fmt.Errorf("sap inbound middleware url is required")
+					return fmt.Errorf("inbound middleware url is required")
 				}
 
 				if _, err := url.ParseRequestURI(s); err != nil {
@@ -568,23 +576,23 @@ func sapInboundOnlyPrompt() {
 			os.Exit(1)
 		}
 
-		sapInboundEndpointURL = result
+		systemInboundEndpointURL = result
 	} else {
-		if _, err := url.ParseRequestURI(sapInboundEndpointURL); err != nil {
+		if _, err := url.ParseRequestURI(systemInboundEndpointURL); err != nil {
 			fmt.Printf("failed to initialize system; %s", err.Error())
 			os.Exit(1)
 		}
 	}
 }
 
-func sapOutboundOnlyPrompt() {
+func systemOutboundOnlyPrompt() {
 	middlewareOpts := make([]string, 2)
 	middlewareOpts[0] = "Mulesoft"
 	middlewareOpts[1] = "SAPPI"
 
-	if sapOutboundMiddleware == "" {
+	if systemOutboundMiddleware == "" {
 		prompt := promptui.Select{
-			Label: "SAP Outbound Middleware Type",
+			Label: "Outbound Middleware Type",
 			Items: middlewareOpts,
 		}
 
@@ -594,27 +602,27 @@ func sapOutboundOnlyPrompt() {
 			os.Exit(1)
 		}
 
-		sapOutboundMiddleware = middlewareOpts[i]
+		systemOutboundMiddleware = middlewareOpts[i]
 	} else {
 		isValid := false
 		for _, opt := range middlewareOpts {
-			if sapOutboundMiddleware == opt {
+			if systemOutboundMiddleware == opt {
 				isValid = true
 			}
 		}
 
 		if !isValid {
-			fmt.Print("failed to initialize system; invalid sap outbound middleware type")
+			fmt.Print("failed to initialize system; invalid system outbound middleware type")
 			os.Exit(1)
 		}
 	}
 
-	if sapOutboundEndpointURL == "" {
+	if systemOutboundEndpointURL == "" {
 		prompt := promptui.Prompt{
-			Label: "SAP Outbound Middleware URL",
+			Label: "Outbound Middleware URL",
 			Validate: func(s string) error {
 				if s == "" {
-					return fmt.Errorf("sap outbound middleware url is required")
+					return fmt.Errorf("outbound middleware url is required")
 				}
 
 				if _, err := url.ParseRequestURI(s); err != nil {
@@ -631,18 +639,18 @@ func sapOutboundOnlyPrompt() {
 			os.Exit(1)
 		}
 
-		sapOutboundEndpointURL = result
+		systemOutboundEndpointURL = result
 	} else {
-		if _, err := url.ParseRequestURI(sapOutboundEndpointURL); err != nil {
+		if _, err := url.ParseRequestURI(systemOutboundEndpointURL); err != nil {
 			fmt.Printf("failed to initialize system; %s", err.Error())
 			os.Exit(1)
 		}
 	}
 }
 
-func sapAuthMethodsPrompt(method, username, password *string) {
+func systemAuthMethodsPrompt(method, username, password *string) {
 	authMethods := make([]string, 1)
-	authMethods[0] = sapAuthMethodsIdentifier
+	authMethods[0] = basicAuthMethodIdentifier
 
 	if *method == "" {
 		prompt := promptui.Select{
@@ -666,7 +674,7 @@ func sapAuthMethodsPrompt(method, username, password *string) {
 		}
 
 		if !isValid {
-			fmt.Print("failed to initialize system; invalid sap authentication method")
+			fmt.Print("failed to initialize system; invalid system authentication method")
 			os.Exit(1)
 		}
 	}
@@ -703,7 +711,7 @@ func sapAuthMethodsPrompt(method, username, password *string) {
 	}
 }
 
-func sapClientCredentialsPrompt(requireCredentials *bool, clientID, clientSecret *string) {
+func systemClientCredentialsPrompt(requireCredentials *bool, clientID, clientSecret *string) {
 	if !*requireCredentials {
 		prompt := promptui.Prompt{
 			IsConfirm: true,
@@ -755,25 +763,39 @@ func init() {
 	initBaselineSystemCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
 	initBaselineSystemCmd.Flags().StringVar(&systemType, "system-type", "", "system type")
 
-	initBaselineSystemCmd.Flags().StringVar(&sapDescription, "description", "", "description")
+	initBaselineSystemCmd.Flags().StringVar(&systemName, "name", "", "name")
+	initBaselineSystemCmd.Flags().StringVar(&systemDescription, "description", "", "description")
 
-	initBaselineSystemCmd.Flags().StringVar(&sapMiddlewareType, "middleware-type", "", "sap middleware type")
+	initBaselineSystemCmd.Flags().StringVar(&systemMiddlewareType, "middleware-type", "", "system middleware type")
 
-	initBaselineSystemCmd.Flags().StringVar(&sapEndpointURL, "middleware-endpoint", "", "sap middleware endpoint url")
+	initBaselineSystemCmd.Flags().StringVar(&systemEndpointURL, "middleware-endpoint", "", "system middleware endpoint url")
 
-	initBaselineSystemCmd.Flags().StringVar(&sapInboundMiddleware, "inbound-middleware", "", "sap inbound middleware type")
-	initBaselineSystemCmd.Flags().StringVar(&sapInboundEndpointURL, "inbound-endpoint", "", "sap inbound middleware endpoint url")
+	initBaselineSystemCmd.Flags().StringVar(&systemInboundMiddleware, "inbound-middleware", "", "system inbound middleware type")
+	initBaselineSystemCmd.Flags().StringVar(&systemInboundEndpointURL, "inbound-endpoint", "", "system inbound middleware endpoint url")
 
-	initBaselineSystemCmd.Flags().StringVar(&sapOutboundMiddleware, "outbound-middleware", "", "sap outbound middleware type")
-	initBaselineSystemCmd.Flags().StringVar(&sapOutboundEndpointURL, "outbound-endpoint", "", "sap outbound middleware endpoint url")
+	initBaselineSystemCmd.Flags().StringVar(&systemOutboundMiddleware, "outbound-middleware", "", "system outbound middleware type")
+	initBaselineSystemCmd.Flags().StringVar(&systemOutboundEndpointURL, "outbound-endpoint", "", "system outbound middleware endpoint url")
 
-	initBaselineSystemCmd.Flags().StringArrayVar(&sapAuthMethods, "auth-methods", []string{"", ""}, "sap authentication methods")
-	initBaselineSystemCmd.Flags().StringArrayVar(&sapUsernames, "auth-usernames", []string{"", ""}, "sap authentication usernames")
-	initBaselineSystemCmd.Flags().StringArrayVar(&sapPasswords, "auth-passwords", []string{"", ""}, "sap authentication passwords")
+	initBaselineSystemCmd.Flags().StringVar(&noMiddlewareAuthMethod, "auth-method", "", "no middleware authentication method")
+	initBaselineSystemCmd.Flags().StringVar(&noMiddlewareUsername, "auth-username", "", "no middleware authentication username")
+	initBaselineSystemCmd.Flags().StringVar(&noMiddlewarePassword, "auth-password", "", "no middleware authentication password")
+	initBaselineSystemCmd.Flags().BoolVar(&noMiddlewareRequireClientCredentials, "require-client-credentials", false, "require no middleware client credentials")
+	initBaselineSystemCmd.Flags().StringVar(&noMiddlewareClientID, "client-id", "", "no middleware system client id")
+	initBaselineSystemCmd.Flags().StringVar(&noMiddlewareClientSecret, "client-secret", "", "no middleware system client secret")
 
-	initBaselineSystemCmd.Flags().BoolSliceVar(&sapRequireClientCredentials, "require-client-credentials", []bool{false, false}, "require sap client credentials")
-	initBaselineSystemCmd.Flags().StringArrayVar(&sapClientIDs, "client-ids", []string{"", ""}, "sap client ids")
-	initBaselineSystemCmd.Flags().StringArrayVar(&sapClientSecrets, "client-secrets", []string{"", ""}, "sap client secrets")
+	initBaselineSystemCmd.Flags().StringVar(&inboundAuthMethod, "inbound-auth-method", "", "inbound middleware authentication method")
+	initBaselineSystemCmd.Flags().StringVar(&inboundUsername, "inbound-auth-username", "", "inbound middleware authentication username")
+	initBaselineSystemCmd.Flags().StringVar(&inboundPassword, "inbound-auth-password", "", "inbound middleware authentication password")
+	initBaselineSystemCmd.Flags().BoolVar(&inboundRequireClientCredentials, "inbound-require-client-credentials", false, "require inbound middleware client credentials")
+	initBaselineSystemCmd.Flags().StringVar(&inboundClientID, "inbound-client-id", "", "inbound middleware system client id")
+	initBaselineSystemCmd.Flags().StringVar(&inboundClientSecret, "inbound-client-secret", "", "inbound middleware system client secret")
+
+	initBaselineSystemCmd.Flags().StringVar(&outboundAuthMethod, "oubound-auth-method", "", "outbound authentication method")
+	initBaselineSystemCmd.Flags().StringVar(&outboundUsername, "oubound-auth-username", "", "outbound authentication username")
+	initBaselineSystemCmd.Flags().StringVar(&outboundPassword, "oubound-auth-password", "", "outbound authentication password")
+	initBaselineSystemCmd.Flags().BoolVar(&outboundRequireClientCredentials, "oubound-require-client-credentials", false, "require outbound client credentials")
+	initBaselineSystemCmd.Flags().StringVar(&outboundClientID, "oubound-client-id", "", "outbound system client id")
+	initBaselineSystemCmd.Flags().StringVar(&outboundClientSecret, "oubound-client-secret", "", "outbound system client secret")
 
 	initBaselineSystemCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }

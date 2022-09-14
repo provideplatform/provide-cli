@@ -24,6 +24,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/provideplatform/provide-cli/prvd/common"
+	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/provideplatform/provide-go/api/vault"
 
 	"github.com/spf13/cobra"
@@ -54,20 +55,6 @@ func fetchSystemDetailsRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	localVaultID := common.Organization.Metadata.Workgroups[common.Workgroup.ID].VaultID
-	localSystemIDs := common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs
-
-	isOperator := common.Organization.Metadata.Workgroups[common.Workgroup.ID].OperatorSeparationDegree == 0
-	if isOperator {
-		localVaultID = common.Workgroup.Config.VaultID
-		localSystemIDs = common.Workgroup.Config.SystemSecretIDs
-	}
-
-	if vaultID != "" && vaultID != localVaultID.String() {
-		fmt.Print("failed to retrieve system details; invalid vault id")
-		os.Exit(1)
-	}
-
 	common.AuthorizeOrganizationContext(true)
 
 	token, err := common.ResolveOrganizationToken()
@@ -76,57 +63,123 @@ func fetchSystemDetailsRun(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	var system vault.Secret
+	subjectAccountID := common.SHA256(fmt.Sprintf("%s.%s", common.OrganizationID, common.WorkgroupID))
+	sa, err := baseline.GetSubjectAccountDetails(*token.AccessToken, common.OrganizationID, subjectAccountID, map[string]interface{}{})
+	if err != nil {
+		fmt.Printf("failed to initialize system; %s", err.Error())
+		os.Exit(1)
+	}
 
-	secrets := make([]*vault.Secret, 0)
-	secretOpts := make([]string, 0)
+	isOnboarded := sa.ID != nil
+	if !isOnboarded {
+		localVaultID := common.Organization.Metadata.Workgroups[common.Workgroup.ID].VaultID
+		localSystemIDs := common.Organization.Metadata.Workgroups[common.Workgroup.ID].SystemSecretIDs
 
-	for _, secretID := range localSystemIDs {
-		secret, err := vault.FetchSecret(*token.AccessToken, localVaultID.String(), secretID.String(), map[string]interface{}{})
+		isOperator := common.Organization.Metadata.Workgroups[common.Workgroup.ID].OperatorSeparationDegree == 0
+		if isOperator {
+			localVaultID = common.Workgroup.Config.VaultID
+			localSystemIDs = common.Workgroup.Config.SystemSecretIDs
+		}
+
+		if vaultID != "" && vaultID != localVaultID.String() {
+			fmt.Print("failed to retrieve system details; invalid vault id")
+			os.Exit(1)
+		}
+
+		var system vault.Secret
+
+		secrets := make([]*vault.Secret, 0)
+		secretOpts := make([]string, 0)
+
+		for _, secretID := range localSystemIDs {
+			secret, err := vault.FetchSecret(*token.AccessToken, localVaultID.String(), secretID.String(), map[string]interface{}{})
+			if err != nil {
+				log.Printf("failed to retrieve systems; %s", err.Error())
+				os.Exit(1)
+			}
+
+			secrets = append(secrets, secret)
+			secretOpts = append(secretOpts, *secret.Description)
+		}
+
+		if systemID != "" {
+			for _, s := range secrets {
+				if systemID == s.ID.String() {
+					system = *s
+				}
+			}
+
+			if system.VaultID == nil {
+				fmt.Print("failed to retrieve system details; invalid system id")
+				os.Exit(1)
+			}
+		} else {
+			prompt := promptui.Select{
+				Label: "Select System",
+				Items: secretOpts,
+			}
+
+			i, _, err := prompt.Run()
+			if err != nil {
+				fmt.Printf("failed to retrieve system details; %s", err.Error())
+				os.Exit(1)
+			}
+
+			system = *secrets[i]
+		}
+
+		var value map[string]interface{}
+		err = json.Unmarshal([]byte(*system.Value), &value)
+		if err != nil {
+			log.Printf("failed to retrieve system details; %s", err.Error())
+			os.Exit(1)
+		}
+
+		result, _ := json.MarshalIndent(value, "", "\t")
+		fmt.Printf("%s\n", string(result))
+	} else {
+		systems, err := baseline.ListSystems(*token.AccessToken, common.WorkgroupID, map[string]interface{}{})
 		if err != nil {
 			log.Printf("failed to retrieve systems; %s", err.Error())
 			os.Exit(1)
 		}
 
-		secrets = append(secrets, secret)
-		secretOpts = append(secretOpts, *secret.Description)
-	}
+		systemOpts := make([]string, 0)
+		for _, system := range systems {
+			systemOpts = append(systemOpts, *system.Name)
+		}
 
-	if systemID != "" {
-		for _, s := range secrets {
-			if systemID == s.ID.String() {
-				system = *s
+		system := &baseline.System{}
+
+		if systemID != "" {
+			for _, s := range systems {
+				if systemID == s.ID.String() {
+					system = s
+				}
 			}
+
+			if system == nil {
+				fmt.Print("failed to retrieve system details; invalid system id")
+				os.Exit(1)
+			}
+		} else {
+			prompt := promptui.Select{
+				Label: "Select System",
+				Items: systemOpts,
+			}
+
+			i, _, err := prompt.Run()
+			if err != nil {
+				fmt.Printf("failed to retrieve system details; %s", err.Error())
+				os.Exit(1)
+			}
+
+			system = systems[i]
 		}
 
-		if system.VaultID == nil {
-			fmt.Print("failed to retrieve system details; invalid system id")
-			os.Exit(1)
-		}
-	} else {
-		prompt := promptui.Select{
-			Label: "Select System",
-			Items: secretOpts,
-		}
-
-		i, _, err := prompt.Run()
-		if err != nil {
-			fmt.Printf("failed to retrieve system details; %s", err.Error())
-			os.Exit(1)
-		}
-
-		system = *secrets[i]
+		result, _ := json.MarshalIndent(system, "", "\t")
+		fmt.Printf("%s\n", string(result))
 	}
-
-	var value map[string]interface{}
-	err = json.Unmarshal([]byte(*system.Value), &value)
-	if err != nil {
-		log.Printf("failed to retrieve system details; %s", err.Error())
-		os.Exit(1)
-	}
-
-	result, _ := json.MarshalIndent(value, "", "\t")
-	fmt.Printf("%s\n", string(result))
 }
 
 func init() {

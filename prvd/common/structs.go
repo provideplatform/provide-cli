@@ -50,6 +50,7 @@ type OrganizationType struct {
 // Organization metadata
 type OrganizationMetadata struct {
 	Address    string                                       `json:"address"`
+	Domain     string                                       `json:"domain"`
 	Workgroups map[uuid.UUID]*OrganizationWorkgroupMetadata `json:"workgroups"`
 }
 
