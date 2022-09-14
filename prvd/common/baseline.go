@@ -180,6 +180,7 @@ func InitWorkgroupContract(contractAddress string) *nchain.Contract {
 		os.Exit(1)
 	}
 
+	log.Printf("deploying global baseline organization registry contract: %s", defaultBaselineRegistryContractName)
 	contract, err := nchain.CreateContract(OrganizationAccessToken, map[string]interface{}{
 		"address":    contractAddress,
 		"name":       contractName,
