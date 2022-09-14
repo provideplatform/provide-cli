@@ -362,7 +362,7 @@ func init() {
 	initBaselineWorkgroupCmd.Flags().BoolVarP(&hasAgreedToPrivacyPolicy, "privacy", "", false, "accept the privacy policy (https://provide.services/privacy-policy)")
 	initBaselineWorkgroupCmd.Flags().StringVar(&baselineRegistryContractAddress, "registry-contract-address", "0x", "organization registry contract address")
 
-	initBaselineWorkgroupCmd.Flags().StringVar(&orgDomain, "org-domain", "", "organization domain to use for this subject account, if it is not set on the organization")
+	initBaselineWorkgroupCmd.Flags().StringVar(&orgDomain, "organization-domain", "", "organization domain to use for this subject account, if it is not set on the organization")
 
 	initBaselineWorkgroupCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }

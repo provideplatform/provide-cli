@@ -200,7 +200,7 @@ func init() {
 	initBaselineSubjectAccountCmd.Flags().StringVar(&common.WorkgroupID, "workgroup", "", "workgroup identifier")
 	initBaselineSubjectAccountCmd.Flags().StringVar(&common.NetworkID, "network", "", "nchain network id of the baseline mainnet to use for this workgroup")
 
-	initBaselineSubjectAccountCmd.Flags().StringVar(&orgDomain, "org-domain", "", "organization domain to use for this subject account, if it is not set on the organization")
+	initBaselineSubjectAccountCmd.Flags().StringVar(&orgDomain, "organization-domain", "", "organization domain to use for this subject account, if it is not set on the organization")
 
 	initBaselineSubjectAccountCmd.Flags().BoolVarP(&Optional, "optional", "", false, "List all the Optional flags")
 }
