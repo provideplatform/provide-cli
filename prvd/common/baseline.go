@@ -432,12 +432,12 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 
 		if Organization.Metadata == nil {
 			Organization.Metadata = &OrganizationMetadata{}
-		} 
-		
+		}
+
 		if Organization.Metadata.Workgroups == nil {
 			Organization.Metadata.Workgroups = map[uuid.UUID]*OrganizationWorkgroupMetadata{}
-		} 
-		
+		}
+
 		if Organization.Metadata.Workgroups[wgID] == nil {
 			Organization.Metadata.Workgroups[wgID] = &OrganizationWorkgroupMetadata{}
 		}
