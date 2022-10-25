@@ -871,6 +871,10 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("VAULT_API_SCHEME=%s", vaultAPIScheme),
 		fmt.Sprintf("VAULT_REFRESH_TOKEN=%s", vaultRefreshToken),
 		fmt.Sprintf("VAULT_SEAL_UNSEAL_KEY=%s", vaultSealUnsealKey),
+
+		"SERVICENOW_LIST_SCHEMAS_API_PATH=api/x_prot9_provide/setup_configuration/ListSchemas",
+		"SERVICENOW_SCHEMA_DETAILS_API_PATH=api/x_prot9_provide/setup_configuration/GetSchemaDetails",
+		"SERVICENOW_HEALTHCHECK_API_PATH=api/now/branding",
 	} {
 		env = append(env, envvar)
 	}
