@@ -49,9 +49,17 @@ type OrganizationType struct {
 
 // Organization metadata
 type OrganizationMetadata struct {
+<<<<<<< Updated upstream
 	Address    string                                       `json:"address"`
 	Domain     string                                       `json:"domain"`
 	Workgroups map[uuid.UUID]*OrganizationWorkgroupMetadata `json:"workgroups"`
+=======
+	Address           string                                       `json:"address"`
+	BPIEndpoint       string                                       `json:"api_endpoint"`
+	Domain            string                                       `json:"domain"`
+	MessagingEndpoint string                                       `json:"messaging_endpoint"`
+	Workgroups        map[uuid.UUID]*OrganizationWorkgroupMetadata `json:"workgroups"`
+>>>>>>> Stashed changes
 }
 
 // Organization workgroup metadata

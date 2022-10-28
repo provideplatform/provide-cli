@@ -430,9 +430,15 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 		}
 
 		if APIEndpoint != "" {
+<<<<<<< Updated upstream
 			org.Metadata["api_endpoint"] = APIEndpoint
 		} else {
 			org.Metadata["api_endpoint"] = "http://localhost:8080"
+=======
+			Organization.Metadata.BPIEndpoint = APIEndpoint
+		} else {
+			Organization.Metadata.BPIEndpoint = "http://localhost:8080"
+>>>>>>> Stashed changes
 		}
 
 		if MessagingEndpoint != "" {
