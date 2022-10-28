@@ -452,9 +452,9 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 		ResolvedBaselineOrgAddress = *key.Address
 
 		if APIEndpoint != "" {
-			Organization.Metadata.APIEndpoint = APIEndpoint
+			Organization.Metadata.BPIEndpoint = APIEndpoint
 		} else {
-			Organization.Metadata.APIEndpoint = "http://localhost:8080"
+			Organization.Metadata.BPIEndpoint = "http://localhost:8080"
 		}
 
 		if MessagingEndpoint != "" {
