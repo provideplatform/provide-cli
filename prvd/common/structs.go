@@ -35,6 +35,7 @@ type WorkgroupType struct {
 type WorkgroupConfig struct {
 	Environment        *string      `json:"environment"`
 	L2NetworkID        *uuid.UUID   `json:"l2_network_id"`
+	L3NetworkID        *uuid.UUID   `json:"l3_network_id"`
 	OnboardingComplete bool         `json:"onboarding_complete"`
 	SystemSecretIDs    []*uuid.UUID `json:"system_secret_ids"`
 	VaultID            *uuid.UUID   `json:"vault_id"`
