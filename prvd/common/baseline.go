@@ -463,9 +463,8 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 			Organization.Metadata.MessagingEndpoint = "nats://localhost:4222"
 		}
 
-		Organization.Metadata.Domain = "baseline.local"
-
-		Organization.Metadata.Workgroups[wgID].BPIEndpoint = &APIEndpoint
+		Organization.Metadata.Domain = "baseline.local" // FIXME-- read domain from args...
+		Organization.Metadata.Workgroups[wgID].BPIEndpoint = &Organization.Metadata.BPIEndpoint
 
 		var org map[string]interface{}
 		raw, _ := json.Marshal(Organization)
@@ -475,8 +474,8 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 			log.Printf("WARNING: failed to update organization; %s", err.Error())
 			os.Exit(1)
 		}
-
-		log.Printf("successfully set BPI endpoint %s on organization %s\n", APIEndpoint, OrganizationID)
+		log.Printf("successfully set BPI endpoint: %s; messaging endpoint: %s on organization %s\n",
+			Organization.Metadata.BPIEndpoint, Organization.Metadata.MessagingEndpoint, OrganizationID)
 
 		if fn != nil {
 			fn()
