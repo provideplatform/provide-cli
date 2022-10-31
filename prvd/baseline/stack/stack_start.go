@@ -1230,6 +1230,7 @@ func runElasticsearch(docker *client.Client, wg *sync.WaitGroup) {
 		&[]string{"CMD", "nc", "-zv", "localhost", fmt.Sprintf("%d", elasticPort)},
 		&[]string{
 			fmt.Sprintf("ELASTIC_PASSWORD=%s", elasticPassword),
+			"discovery.type=single-node",
 			// "bootstrap.memory_lock=true",
 			// "-p", fmt.Sprintf("%d", elasticContainerPort),
 			// "--ulimit", "nofile=65535:65535",
