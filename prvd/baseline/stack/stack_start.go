@@ -36,9 +36,11 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/go-connections/nat"
 	uuid "github.com/kthomas/go.uuid"
 	"github.com/manifoldco/promptui"
+	"github.com/mitchellh/go-homedir"
 	"github.com/provideplatform/provide-cli/prvd/common"
 	"github.com/provideplatform/provide-go/api/baseline"
 	"github.com/provideplatform/provide-go/api/ident"
@@ -50,6 +52,7 @@ import (
 )
 
 const baselineContainerImage = "provide/baseline"
+const localBaselineContainerImage = "baseline_dev"
 const identContainerImage = "provide/ident"
 const nchainContainerImage = "provide/nchain"
 const privacyContainerImage = "provide/privacy"
@@ -198,6 +201,9 @@ var withLocalPrivacy bool
 var withoutRequireOrganizationKeys bool
 var withoutRequireSubjectAccount bool
 var withoutRequireWorkgroup bool
+
+var withLocalBaselineBuild bool
+var baselineDirPath string
 
 var startBaselineStackCmd = &cobra.Command{
 	Use:   "start",
@@ -415,6 +421,10 @@ func runStackStart(cmd *cobra.Command, args []string) {
 			if withLocalVault {
 				wg.Add(1)
 				go runVaultAPI(docker, wg)
+			}
+
+			if withLocalBaselineBuild {
+				useLocalBaselineBuild(docker)
 			}
 
 			// run BPI
@@ -887,11 +897,16 @@ func containerEnvironmentFactory(listenPort *int) []string {
 }
 
 func runBaselineAPI(docker *client.Client, wg *sync.WaitGroup) {
+	image := baselineContainerImage
+	if withLocalBaselineBuild {
+		image = localBaselineContainerImage
+	}
+
 	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-api", strings.ReplaceAll(name, " ", "")),
 		apiHostname,
-		baselineContainerImage,
+		image,
 		&[]string{"./ops/run_api.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", apiHostname, apiContainerPort)},
@@ -917,11 +932,16 @@ func runBaselineAPI(docker *client.Client, wg *sync.WaitGroup) {
 }
 
 func runBaselineConsumer(docker *client.Client, wg *sync.WaitGroup) {
+	image := baselineContainerImage
+	if withLocalBaselineBuild {
+		image = localBaselineContainerImage
+	}
+
 	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-consumer", strings.ReplaceAll(name, " ", "")),
 		consumerHostname,
-		baselineContainerImage,
+		image,
 		&[]string{"./ops/run_consumer.sh"},
 		nil,
 		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", apiHostname, port)},
@@ -1467,6 +1487,7 @@ func runContainer(
 				},
 			},
 			&network.NetworkingConfig{},
+			nil,
 			strings.ReplaceAll(name, " ", ""),
 		)
 
@@ -1493,6 +1514,31 @@ func runContainer(
 	}
 
 	return nil
+}
+
+func useLocalBaselineBuild(docker *client.Client) {
+	filePath, _ := homedir.Expand(baselineDirPath)
+	fileCtx, err := archive.TarWithOptions(filePath, &archive.TarOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	imageBuildResponse, err := docker.ImageBuild(
+		context.Background(),
+		fileCtx,
+		types.ImageBuildOptions{
+			Dockerfile: "Dockerfile",
+			Tags:       []string{"baseline_dev"},
+		})
+	if err != nil {
+		log.Fatalf("failed to build image; %s", err.Error())
+	}
+	defer imageBuildResponse.Body.Close()
+
+	_, err = io.Copy(os.Stdout, imageBuildResponse.Body) // TODO-- pretty print this
+	if err != nil {
+		log.Fatalf("failed to read image build response; %s", err.Error())
+	}
 }
 
 func organizationAuthPrompt() {
@@ -1693,6 +1739,9 @@ func init() {
 	startBaselineStackCmd.Flags().BoolVar(&withoutRequireOrganizationKeys, "without-require-organization-keys", false, "when true, no initial keys are required for the organization upon starting the stack")
 	startBaselineStackCmd.Flags().BoolVar(&withoutRequireSubjectAccount, "without-require-subject-account", false, "when true, no initial subject account is required upon starting the stack")
 	startBaselineStackCmd.Flags().BoolVar(&withoutRequireWorkgroup, "without-require-workgroup", false, "when true, no workgroup is required to start the stack")
+
+	startBaselineStackCmd.Flags().BoolVar(&withLocalBaselineBuild, "with-local-baseline-build", false, "when true, the baseline docker image will be built from your local baseline directory")
+	startBaselineStackCmd.Flags().StringVar(&baselineDirPath, "baseline-dir-path", "~/provide/baseline", "the local file path to your baseline directory")
 
 	defaultBaselineOrganizationAddress := "0x"
 	if os.Getenv("BASELINE_ORGANIZATION_ADDRESS") != "" {
