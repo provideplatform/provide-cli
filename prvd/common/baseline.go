@@ -466,6 +466,7 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 
 		Organization.Metadata.Domain = "baseline.local" // FIXME-- read domain from args...
 		Organization.Metadata.Workgroups[wgID].BPIEndpoint = &Organization.Metadata.BPIEndpoint
+		Organization.Metadata.Workgroups[wgID].MessagingEndpoint = &Organization.Metadata.MessagingEndpoint
 
 		var org map[string]interface{}
 		raw, _ := json.Marshal(Organization)
