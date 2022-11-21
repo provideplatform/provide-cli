@@ -28,4 +28,5 @@ _cgo_export.*
 .vscode/
 vendor/
 
+bin/
 nats-server.conf
