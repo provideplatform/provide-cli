@@ -83,8 +83,9 @@ const requireOrganizationAPIEndpointTimeout = time.Second * 10
 const requireOrganizationMessagingEndpointTimeout = time.Second * 10
 
 var Tunnel bool
-var APIEndpoint string
-var ExposeAPITunnel bool
+var WithoutTunnels bool
+var BPIEndpoint string
+var ExposeBPITunnel bool
 var ExposeMessagingTunnel bool
 var ExposeWebsocketMessagingTunnel bool
 var MessagingEndpoint string
@@ -451,8 +452,8 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 		Organization.Metadata.Address = *key.Address
 		ResolvedBaselineOrgAddress = *key.Address
 
-		if APIEndpoint != "" {
-			Organization.Metadata.BPIEndpoint = APIEndpoint
+		if BPIEndpoint != "" {
+			Organization.Metadata.BPIEndpoint = BPIEndpoint
 		} else {
 			Organization.Metadata.BPIEndpoint = "http://localhost:8080"
 		}
@@ -483,18 +484,23 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 	}
 
 	if Tunnel {
-		ExposeAPITunnel = true
+		ExposeBPITunnel = true
 		ExposeMessagingTunnel = true
 	}
 
-	if !ExposeAPITunnel && !ExposeMessagingTunnel {
+	if WithoutTunnels && (ExposeBPITunnel || ExposeMessagingTunnel || ExposeWebsocketMessagingTunnel) {
+		log.Printf("WARNING: conflicting tunnel arguments provided; --without-tunnels must not be contradicted")
+		os.Exit(1)
+	}
+
+	if !ExposeBPITunnel && !ExposeMessagingTunnel {
 		publicIP, err := util.ResolvePublicIP()
 		if err != nil {
 			log.Printf("WARNING: failed to resolve public IP")
 			os.Exit(1)
 		}
 
-		APIEndpoint = fmt.Sprintf("http://%s:%d", *publicIP, apiPort)
+		BPIEndpoint = fmt.Sprintf("http://%s:%d", *publicIP, apiPort)
 		MessagingEndpoint = fmt.Sprintf("nats://%s:%d", *publicIP, messagingPort)
 
 		run()
@@ -549,7 +555,7 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 				os.Exit(1)
 			}
 
-			if ExposeAPITunnel {
+			if ExposeBPITunnel {
 				tunnel, _ := tunnelClient.TunnelFactory(
 					fmt.Sprintf("%s-api", OrganizationID),
 					fmt.Sprintf("127.0.0.1:%d", apiPort),
@@ -591,13 +597,13 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 				os.Exit(1)
 			}
 
-			if ExposeAPITunnel {
+			if ExposeBPITunnel {
 				for tunnelClient.Tunnels[0].RemoteAddr == nil {
 					time.Sleep(time.Millisecond * 10)
 				}
 
-				APIEndpoint = *tunnelClient.Tunnels[0].RemoteAddr
-				log.Printf("established tunnel connection for API endpoint: %s\n", APIEndpoint)
+				BPIEndpoint = *tunnelClient.Tunnels[0].RemoteAddr
+				log.Printf("established tunnel connection for API endpoint: %s\n", BPIEndpoint)
 			}
 
 			if ExposeMessagingTunnel {
@@ -615,10 +621,10 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 			}
 		}()
 
-		if ExposeAPITunnel {
+		if ExposeBPITunnel {
 			go func() {
 				startTime := time.Now()
-				for APIEndpoint == "" {
+				for BPIEndpoint == "" {
 					if startTime.Add(requireOrganizationAPIEndpointTimeout).Before(time.Now()) {
 						log.Printf("WARNING: organization API endpoint tunnel timed out")
 						os.Exit(1)
@@ -641,7 +647,7 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 			}()
 		}
 
-		for (ExposeAPITunnel && APIEndpoint == "") || (ExposeMessagingTunnel && MessagingEndpoint == "") {
+		for (ExposeBPITunnel && BPIEndpoint == "") || (ExposeMessagingTunnel && MessagingEndpoint == "") {
 			time.Sleep(time.Millisecond * 10)
 		}
 

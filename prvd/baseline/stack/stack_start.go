@@ -570,7 +570,7 @@ func requireBPISubjectAccount() error {
 			// OrganizationDomain *string `json:"organization_domain,omitempty"`
 			OrganizationID:                &common.OrganizationID,
 			OrganizationMessagingEndpoint: &common.MessagingEndpoint,
-			OrganizationProxyEndpoint:     &common.APIEndpoint,
+			OrganizationProxyEndpoint:     &common.BPIEndpoint,
 			OrganizationRefreshToken:      &organizationRefreshToken,
 			// OrganizationWebsocketEndpoint *string `json:"organization_websocket_endpoint,omitempty"`
 			RegistryContractAddress: &baselineRegistryContractAddress,
@@ -919,7 +919,7 @@ func runBaselineAPI(docker *client.Client, wg *sync.WaitGroup) {
 	)
 
 	if err != nil {
-		log.Printf("failed to create local BPI API container; %s", err.Error())
+		log.Printf("failed to create local BPI container; %s", err.Error())
 		os.Exit(1)
 	}
 
@@ -1559,7 +1559,7 @@ func organizationAuthPrompt() {
 }
 
 func tunnelAPIPrompt() {
-	if common.ExposeAPITunnel || common.APIEndpoint != "" {
+	if common.WithoutTunnels || common.ExposeBPITunnel || common.BPIEndpoint != "" {
 		return
 	}
 
@@ -1575,12 +1575,12 @@ func tunnelAPIPrompt() {
 	}
 
 	if strings.ToLower(result) == "y" {
-		common.ExposeAPITunnel = true
+		common.ExposeBPITunnel = true
 	}
 }
 
 func tunnelMessagingPrompt() {
-	if common.ExposeMessagingTunnel || common.MessagingEndpoint != "" {
+	if common.WithoutTunnels || common.ExposeMessagingTunnel || common.MessagingEndpoint != "" {
 		return
 	}
 
@@ -1660,10 +1660,11 @@ func init() {
 	startBaselineStackCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	// runBaselineStackCmd.MarkFlagRequired("organization")
 
-	startBaselineStackCmd.Flags().StringVar(&common.APIEndpoint, "api-endpoint", "", "local BPI API endpoint for use by one or more authorized systems of record")
+	startBaselineStackCmd.Flags().StringVar(&common.BPIEndpoint, "bpi-endpoint", "", "local BPI endpoint for use by one or more authorized systems of record")
 	startBaselineStackCmd.Flags().StringVar(&common.MessagingEndpoint, "messaging-endpoint", "", "public messaging endpoint used for sending and receiving protocol messages")
 	startBaselineStackCmd.Flags().BoolVar(&common.Tunnel, "tunnel", false, "when true, a tunnel is established to expose the API and messaging endpoints to the WAN")
-	startBaselineStackCmd.Flags().BoolVar(&common.ExposeAPITunnel, "api-tunnel", false, "when true, a tunnel is established to expose the API endpoint to the WAN")
+	startBaselineStackCmd.Flags().BoolVar(&common.WithoutTunnels, "without-tunnels", false, "when false, no tunnels will be established to expose the API and messaging endpoints to the WAN")
+	startBaselineStackCmd.Flags().BoolVar(&common.ExposeBPITunnel, "bpi-tunnel", false, "when true, a tunnel is established to expose the API endpoint to the WAN")
 	startBaselineStackCmd.Flags().BoolVar(&common.ExposeMessagingTunnel, "messaging-tunnel", false, "when true, a tunnel is established to expose the messaging endpoint to the WAN")
 	startBaselineStackCmd.Flags().BoolVar(&common.ExposeWebsocketMessagingTunnel, "websocket-tunnel", false, "when true, a tunnel is established to expose the websocket messaging endpoint to the WAN")
 
@@ -1671,8 +1672,8 @@ func init() {
 	startBaselineStackCmd.Flags().StringVar(&sorURL, "sor-url", "https://", "url of the primary internal system of record being baselined")
 	startBaselineStackCmd.Flags().StringVar(&sorOrganizationCode, "sor-organization-code", "", "organization code specific to the system of record")
 
-	startBaselineStackCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the local BPI API container")
-	startBaselineStackCmd.Flags().IntVar(&port, "port", 8080, "host port on which to expose the local BPI API service")
+	startBaselineStackCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the local BPI container")
+	startBaselineStackCmd.Flags().IntVar(&port, "port", 8080, "host port on which to expose the local BPI service")
 
 	startBaselineStackCmd.Flags().StringVar(&elasticHostname, "elasticsearch-hostname", fmt.Sprintf("%s-elasticsearch", name), "hostname for the local BPI elasticsearch container")
 	startBaselineStackCmd.Flags().IntVar(&elasticPort, "elasticsearch-port", 9200, "host port on which to expose the local elasticsearch service")

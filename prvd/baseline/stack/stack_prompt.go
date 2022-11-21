@@ -55,8 +55,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			if name == "" {
 				name = common.FreeInput("Name", "", common.NoValidation)
 			}
-			if common.APIEndpoint == "" {
-				common.APIEndpoint = common.FreeInput("API endpoint", "", common.NoValidation)
+			if common.BPIEndpoint == "" {
+				common.BPIEndpoint = common.FreeInput("API endpoint", "", common.NoValidation)
 			}
 			if common.MessagingEndpoint == "" {
 				common.MessagingEndpoint = common.FreeInput("Messaging endpoint", "", common.NoValidation)
@@ -64,8 +64,8 @@ func generalPrompt(cmd *cobra.Command, args []string, currentStep string) {
 			if !common.Tunnel {
 				common.Tunnel = common.SelectInput(boolPromptArgs, tunnelPromptLabel) == "Yes"
 			}
-			if !common.ExposeAPITunnel {
-				common.ExposeAPITunnel = common.SelectInput(boolPromptArgs, tunnelAPIPromptLabel) == "Yes"
+			if !common.ExposeBPITunnel {
+				common.ExposeBPITunnel = common.SelectInput(boolPromptArgs, tunnelAPIPromptLabel) == "Yes"
 			}
 			if !common.ExposeMessagingTunnel {
 				common.ExposeMessagingTunnel = common.SelectInput(boolPromptArgs, tunnelMessagingPromptLabel) == "Yes"
