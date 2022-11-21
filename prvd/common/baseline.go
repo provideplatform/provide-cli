@@ -500,8 +500,13 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 			os.Exit(1)
 		}
 
-		BPIEndpoint = fmt.Sprintf("http://%s:%d", *publicIP, apiPort)
-		MessagingEndpoint = fmt.Sprintf("nats://%s:%d", *publicIP, messagingPort)
+		if BPIEndpoint == "" {
+			BPIEndpoint = fmt.Sprintf("http://%s:%d", *publicIP, apiPort)
+		}
+
+		messagingPort == "" {
+			MessagingEndpoint = fmt.Sprintf("nats://%s:%d", *publicIP, messagingPort)
+		}
 
 		run()
 	} else {
