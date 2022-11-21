@@ -60,6 +60,7 @@ type OrganizationMetadata struct {
 // Organization workgroup metadata
 type OrganizationWorkgroupMetadata struct {
 	BPIEndpoint              *string                 `json:"bpi_endpoint"`
+	MessagingEndpoint        *string                 `json:"messaging_endpoint"`
 	OperatorSeparationDegree uint32                  `json:"operator_separation_degree"`
 	Privacy                  *WorkgroupMetadataLegal `json:"privacy,omitempty"`
 	SystemSecretIDs          []*uuid.UUID            `json:"system_secret_ids"`
