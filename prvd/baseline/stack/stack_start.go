@@ -25,6 +25,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -83,6 +84,9 @@ PUl1cxrvY7BHh4obNa6Bf8ECAwEAAQ==
 -----END PUBLIC KEY-----`
 
 const defaultNATSStreamingClusterID = "provide"
+
+const dockerNetworkDriverBridge = "bridge"
+const dockerNetworkDriverNAT = "nat"
 
 const apiContainerPort = 8080
 const elasticContainerPort = 9200
@@ -614,12 +618,17 @@ func requireOrganizationKeys() {
 }
 
 func configureNetwork(docker *client.Client) {
+	driver := dockerNetworkDriverBridge
+	if runtime.GOOS == "windows" {
+		driver = dockerNetworkDriverNAT
+	}
+
 	network, err := docker.NetworkCreate(
 		context.Background(),
 		name,
 		types.NetworkCreate{
 			// CheckDuplicate bool
-			Driver: "bridge",
+			Driver: driver,
 			// Scope          string
 			// EnableIPv6     bool
 			IPAM: &network.IPAM{},
