@@ -858,7 +858,7 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("DATABASE_LOGGING=%s", databaseLogging),
 		fmt.Sprintf("ELASTICSEARCH_ACCEPT_SELF_SIGNED_CERTIFICATE=%t", elasticAcceptSelfSignedCertificate),
 		fmt.Sprintf("ELASTICSEARCH_API_SCHEME=%s", elasticAPIScheme),
-		fmt.Sprintf("ELASTICSEARCH_HOSTS=%s:%d", elasticHostname, elasticPort),
+		fmt.Sprintf("ELASTICSEARCH_HOSTS=%s:%d", elasticHostname, elasticContainerPort),
 		fmt.Sprintf("ELASTICSEARCH_USERNAME=%s", elasticUsername),
 		fmt.Sprintf("ELASTICSEARCH_PASSWORD=%s", elasticPassword),
 		fmt.Sprintf("IDENT_API_HOST=%s", identAPIHost),
