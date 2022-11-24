@@ -115,6 +115,7 @@ var elasticUsername string
 var elasticPassword string
 var elasticAPIScheme string
 var elasticAcceptSelfSignedCertificate bool
+var elasticMemory string
 
 var natsPort int
 var natsWebsocketPort int
@@ -1249,6 +1250,27 @@ func runElasticsearch(docker *client.Client, wg *sync.WaitGroup) {
 	// 	mountPoints[*cfgPath] = "/etc/elasticsearch.conf"
 	// }
 
+	env := []string{
+		fmt.Sprintf("ELASTIC_PASSWORD=%s", elasticPassword),
+		"discovery.type=single-node",
+		"bootstrap.memory_lock=true",
+		// "-p", fmt.Sprintf("%d", elasticContainerPort),
+		// "--ulimit", "nofile=65535:65535",
+		// "http.host=0.0.0.0",
+		// "transport.host=0.0.0.0",
+		// "xpack.security.enabled=false",
+		// "xpack.security.http.ssl.enabled=false",
+	}
+
+	if elasticMemory != "" {
+		_elasticMemory, err := strconv.ParseUint(strings.Replace(elasticMemory, "GB", "", -1), 10, 64)
+		if err != nil {
+			log.Printf("failed to parse provided elasticsearch memory allocation; %s", err.Error())
+			os.Exit(1)
+		}
+		env = append(env, fmt.Sprintf("ES_JAVA_OPTS=-Xms%dm -Xmx%dm", _elasticMemory*1024, _elasticMemory*1024))
+	}
+
 	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-elasticsearch", strings.ReplaceAll(name, " ", "")),
@@ -1257,17 +1279,7 @@ func runElasticsearch(docker *client.Client, wg *sync.WaitGroup) {
 		nil,
 		nil,
 		&[]string{"CMD", "nc", "-zv", "localhost", fmt.Sprintf("%d", elasticPort)},
-		&[]string{
-			fmt.Sprintf("ELASTIC_PASSWORD=%s", elasticPassword),
-			"discovery.type=single-node",
-			// "bootstrap.memory_lock=true",
-			// "-p", fmt.Sprintf("%d", elasticContainerPort),
-			// "--ulimit", "nofile=65535:65535",
-			// "http.host=0.0.0.0",
-			// "transport.host=0.0.0.0",
-			// "xpack.security.enabled=false",
-			// "xpack.security.http.ssl.enabled=false",
-		},
+		&env,
 		mountPoints,
 		[]portMapping{
 			{
@@ -1684,12 +1696,13 @@ func init() {
 	startBaselineStackCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the local BPI container")
 	startBaselineStackCmd.Flags().IntVar(&port, "port", 8080, "host port on which to expose the local BPI service")
 
+	startBaselineStackCmd.Flags().StringVar(&elasticAPIScheme, "elasticsearch-scheme", "https", "protocol scheme of the elasticsearch service")
 	startBaselineStackCmd.Flags().StringVar(&elasticHostname, "elasticsearch-hostname", fmt.Sprintf("%s-elasticsearch", name), "hostname for the local BPI elasticsearch container")
 	startBaselineStackCmd.Flags().IntVar(&elasticPort, "elasticsearch-port", 9200, "host port on which to expose the local elasticsearch service")
 	startBaselineStackCmd.Flags().StringVar(&elasticUsername, "elasticsearch-username", "elastic", "username of the local elasticsearch service for basic authorization")
 	startBaselineStackCmd.Flags().StringVar(&elasticPassword, "elasticsearch-password", "3l4s71c", "password of the local elasticsearch service for basic authorization")
 	startBaselineStackCmd.Flags().BoolVar(&elasticAcceptSelfSignedCertificate, "elasticsearch-ssl-insecure", false, "accept self-signed certificate when connecting to the local elasticsearch service")
-	startBaselineStackCmd.Flags().StringVar(&elasticAPIScheme, "elasticsearch-scheme", "https", "protocol scheme of the elasticsearch service")
+	startBaselineStackCmd.Flags().StringVar(&elasticMemory, "elasticsearch-memory", "", "amount of RAM allocated to the local elasticsearch service")
 
 	startBaselineStackCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the local BPI consumer container")
 	startBaselineStackCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the local BPI NATS container")
