@@ -62,6 +62,7 @@ const elasticContainerImage = "docker.elastic.co/elasticsearch/elasticsearch:7.1
 const postgresContainerImage = "postgres"
 const natsContainerImage = "provide/nats-server:2.7.2-PRVD"
 const redisContainerImage = "redis"
+const defaultContainerReachabilityTimeout = time.Millisecond * 2500
 const defaultBPIStackName = "baseline-local"
 const defaultElasticReachabilityTimeout = time.Second * 5
 const defaultNatsServerName = "prvd"
@@ -1450,9 +1451,24 @@ func runContainer(
 	ports ...portMapping,
 ) error {
 	log.Printf("running local BPI container image: %s", image)
+
+	isReachable := func(host string, port int) bool {
+		addr := fmt.Sprintf("%s:%d", host, port)
+		conn, err := net.DialTimeout("tcp", addr, defaultContainerReachabilityTimeout)
+		if err == nil {
+			defer conn.Close()
+		}
+		return err == nil
+	}
+
 	portBinding := nat.PortMap{}
 	for _, mapping := range ports {
 		port, _ := nat.NewPort("tcp", strconv.Itoa(mapping.containerPort))
+		if isReachable("0.0.0.0", mapping.hostPort) {
+			log.Printf("failed to run local BPI container image: %s; bind for 0.0.0.0:%d failed; port is already allocated", image, mapping.hostPort)
+			os.Exit(1)
+		}
+
 		portBinding[port] = []nat.PortBinding{{
 			HostIP:   "0.0.0.0",
 			HostPort: strconv.Itoa(mapping.hostPort),
