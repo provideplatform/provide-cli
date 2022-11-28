@@ -632,28 +632,29 @@ func requireOrganizationKeys() {
 }
 
 func configureNetwork(docker *client.Client) {
-	driver := dockerNetworkDriverBridge
-	if runtime.GOOS == "windows" {
-		driver = dockerNetworkDriverNAT
+	opts := types.NetworkCreate{
+		// CheckDuplicate bool
+		// Driver		  string
+		// Scope          string
+		// EnableIPv6     bool
+		IPAM: &network.IPAM{},
+		// Internal       bool
+		// Attachable     bool
+		// Ingress        bool
+		// ConfigOnly     bool
+		// ConfigFrom     *network.ConfigReference
+		// Options        map[string]string
+		// Labels         map[string]string
+	}
+
+	if !strings.EqualFold(runtime.GOOS, "windows") {
+		opts.Driver = dockerNetworkDriverBridge
 	}
 
 	network, err := docker.NetworkCreate(
 		context.Background(),
 		name,
-		types.NetworkCreate{
-			// CheckDuplicate bool
-			Driver: driver,
-			// Scope          string
-			// EnableIPv6     bool
-			IPAM: &network.IPAM{},
-			// Internal       bool
-			// Attachable     bool
-			// Ingress        bool
-			// ConfigOnly     bool
-			// ConfigFrom     *network.ConfigReference
-			// Options        map[string]string
-			// Labels         map[string]string
-		},
+		opts,
 	)
 
 	if err != nil {
