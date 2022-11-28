@@ -90,12 +90,12 @@ const defaultNATSStreamingClusterID = "provide"
 const dockerNetworkDriverBridge = "bridge"
 const dockerNetworkDriverNAT = "nat"
 
-const apiContainerPort = 8080
-const elasticContainerPort = 9200
-const natsContainerPort = 4222
-const natsWebsocketContainerPort = 4221
-const postgresContainerPort = 5432
-const redisContainerPort = 6379
+const defaultBPIContainerPort = 8080
+const defaultElasticContainerPort = 9200
+const defaultNATSContainerPort = 4222
+const defaultNATSWebsocketContainerPort = 4221
+const defaultPostgresContainerPort = 5432
+const defaultRedisContainerPort = 6379
 
 type portMapping struct {
 	hostPort      int
@@ -105,6 +105,7 @@ type portMapping struct {
 var dockerNetworkID string
 var Optional bool
 var name string
+var containerPort int
 var port int
 var identPort int
 var nchainPort int
@@ -112,6 +113,7 @@ var privacyPort int
 var vaultPort int
 
 var elasticHostname string
+var elasticContainerPort int
 var elasticPort int
 var elasticUsername string
 var elasticPassword string
@@ -119,10 +121,14 @@ var elasticAPIScheme string
 var elasticAcceptSelfSignedCertificate bool
 var elasticMemory string
 
+var natsContainerPort int
 var natsPort int
+var natsWebsocketContainerPort int
 var natsWebsocketPort int
 var natsWebsocketTLS bool
+var postgresContainerPort int
 var postgresPort int
+var redisContainerPort int
 var redisPort int
 
 var apiHostname string
@@ -164,14 +170,17 @@ var natsAuthToken string
 
 var identAPIHost string
 var identAPIScheme string
+var identContainerPort int
 
 var nchainAPIHost string
 var nchainAPIScheme string
+var nchainContainerPort int
 
 var organizationRefreshToken string
 
 var privacyAPIHost string
 var privacyAPIScheme string
+var privacyContainerPort int
 
 var sorID string
 var sorURL string
@@ -179,6 +188,7 @@ var sorOrganizationCode string
 
 var vaultAPIHost string
 var vaultAPIScheme string
+var vaultContainerPort int
 var vaultRefreshToken string
 var vaultSealUnsealKey string
 
@@ -848,7 +858,7 @@ func applyFlags() {
 	// HACK
 	if strings.HasSuffix(redisHostname, "-redis") {
 		redisHostname = fmt.Sprintf("%s-redis", name)
-		redisHosts = fmt.Sprintf("%s:%d", redisHostname, redisContainerPort)
+		redisHosts = fmt.Sprintf("%s:%d", redisHostname, redisPort)
 	}
 
 	// HACK
@@ -878,7 +888,7 @@ func containerEnvironmentFactory(listenPort *int) []string {
 	env := make([]string, 0)
 	for _, envvar := range []string{
 		fmt.Sprintf("DATABASE_HOST=%s", postgresHostname),
-		fmt.Sprintf("DATABASE_PORT=%d", postgresPort),
+		fmt.Sprintf("DATABASE_PORT=%d", postgresContainerPort),
 		fmt.Sprintf("DATABASE_USER=%s", postgresUser),
 		fmt.Sprintf("DATABASE_PASSWORD=%s", postgresPassword),
 		fmt.Sprintf("DATABASE_NAME=%s", postgresDatabase),
@@ -938,12 +948,12 @@ func runBaselineAPI(docker *client.Client, wg *sync.WaitGroup) {
 		image,
 		&[]string{"./ops/run_api.sh"},
 		nil,
-		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", apiHostname, apiContainerPort)},
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", apiHostname, containerPort)},
 		nil,
 		map[string]string{},
 		[]portMapping{{
 			hostPort:      port,
-			containerPort: apiContainerPort,
+			containerPort: containerPort,
 		}}...,
 	)
 
@@ -997,12 +1007,12 @@ func runIdentAPI(docker *client.Client, wg *sync.WaitGroup) {
 		identContainerImage,
 		&[]string{"./ops/run_api.sh"},
 		nil,
-		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", identHostname, apiContainerPort)},
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", identHostname, identContainerPort)},
 		nil,
 		map[string]string{},
 		[]portMapping{{
 			hostPort:      identPort,
-			containerPort: apiContainerPort,
+			containerPort: identContainerPort,
 		}}...,
 	)
 
@@ -1024,7 +1034,7 @@ func runIdentConsumer(docker *client.Client, wg *sync.WaitGroup) {
 		identContainerImage,
 		&[]string{"./ops/run_consumer.sh"},
 		nil,
-		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", identHostname, apiContainerPort)},
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", identHostname, identContainerPort)},
 		nil,
 		map[string]string{},
 		[]portMapping{}...,
@@ -1048,12 +1058,12 @@ func runNChainAPI(docker *client.Client, wg *sync.WaitGroup) {
 		nchainContainerImage,
 		&[]string{"./ops/run_api.sh"},
 		nil,
-		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, apiContainerPort)},
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, nchainContainerPort)},
 		nil,
 		map[string]string{},
 		[]portMapping{{
 			hostPort:      nchainPort,
-			containerPort: apiContainerPort,
+			containerPort: nchainContainerPort,
 		}}...,
 	)
 
@@ -1075,7 +1085,7 @@ func runNChainConsumer(docker *client.Client, wg *sync.WaitGroup) {
 		nchainContainerImage,
 		&[]string{"./ops/run_consumer.sh"},
 		nil,
-		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, apiContainerPort)},
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, nchainContainerPort)},
 		nil,
 		map[string]string{},
 		[]portMapping{}...,
@@ -1099,7 +1109,7 @@ func runStatsdaemon(docker *client.Client, wg *sync.WaitGroup) {
 		nchainContainerImage,
 		&[]string{"./ops/run_statsdaemon.sh"},
 		nil,
-		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, apiContainerPort)},
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, nchainContainerPort)},
 		nil,
 		map[string]string{},
 		[]portMapping{}...,
@@ -1123,7 +1133,7 @@ func runReachabilitydaemon(docker *client.Client, wg *sync.WaitGroup) {
 		nchainContainerImage,
 		&[]string{"./ops/run_reachabilitydaemon.sh"},
 		nil,
-		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, apiContainerPort)},
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", nchainHostname, nchainContainerPort)},
 		nil,
 		map[string]string{},
 		[]portMapping{}...,
@@ -1147,12 +1157,12 @@ func runPrivacyAPI(docker *client.Client, wg *sync.WaitGroup) {
 		privacyContainerImage,
 		&[]string{"./ops/run_api.sh"},
 		nil,
-		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", privacyHostname, apiContainerPort)},
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", privacyHostname, privacyContainerPort)},
 		nil,
 		map[string]string{},
 		[]portMapping{{
 			hostPort:      privacyPort,
-			containerPort: apiContainerPort,
+			containerPort: privacyContainerPort,
 		}}...,
 	)
 
@@ -1174,7 +1184,7 @@ func runPrivacyConsumer(docker *client.Client, wg *sync.WaitGroup) {
 		privacyContainerImage,
 		&[]string{"./ops/run_consumer.sh"},
 		nil,
-		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", privacyHostname, apiContainerPort)},
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", privacyHostname, privacyContainerPort)},
 		nil,
 		map[string]string{},
 		[]portMapping{}...,
@@ -1198,12 +1208,12 @@ func runVaultAPI(docker *client.Client, wg *sync.WaitGroup) {
 		vaultContainerImage,
 		&[]string{"./ops/run_api.sh"},
 		nil,
-		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", vaultHostname, apiContainerPort)},
+		&[]string{"CMD", "curl", "-f", fmt.Sprintf("http://%s:%d/status", vaultHostname, vaultContainerPort)},
 		nil,
 		map[string]string{},
 		[]portMapping{{
 			hostPort:      vaultPort,
-			containerPort: apiContainerPort,
+			containerPort: vaultContainerPort,
 		}}...,
 	)
 
@@ -1217,32 +1227,10 @@ func runVaultAPI(docker *client.Client, wg *sync.WaitGroup) {
 	}
 }
 
-func writeElasticserarchConfig() *string {
-	cfg := []byte("max_payload: 100Mb\nmax_pending: 104857600\n")
-	if !natsWebsocketTLS {
-		cfg = []byte("max_payload: 100Mb\nmax_pending: 104857600\nwebsocket {\n    listen: \"0.0.0.0:4221\"\n    no_tls: true\n}\n")
-	}
-	path := strings.Split(os.TempDir(), string(os.PathSeparator))
-	path = append(path, "nats-server.conf")
-	sep := []string{string(os.PathSeparator)}
-	path = append(sep, path...)
-	tmp := filepath.Join(path...)
-	err := ioutil.WriteFile(filepath.FromSlash(strings.ReplaceAll(tmp, string(os.PathSeparator), "/")), cfg, 0644)
-	if err != nil {
-		log.Printf("failed to write local nats-server.conf; %s", err.Error())
-		os.Exit(1)
-	}
-
-	if tmp == "" {
-		return nil
-	}
-	return &tmp
-}
-
 func writeNATSConfig() *string {
 	cfg := []byte("max_payload: 100Mb\nmax_pending: 104857600\n")
 	if !natsWebsocketTLS {
-		cfg = []byte("max_payload: 100Mb\nmax_pending: 104857600\nwebsocket {\n    listen: \"0.0.0.0:4221\"\n    no_tls: true\n}\n")
+		cfg = []byte(fmt.Sprintf("max_payload: 100Mb\nmax_pending: 104857600\nwebsocket {\n    listen: \"0.0.0.0:%d\"\n    no_tls: true\n}\n", natsWebsocketContainerPort))
 	}
 	path := strings.Split(os.TempDir(), string(os.PathSeparator))
 	path = append(path, "nats-server.conf")
@@ -1463,12 +1451,12 @@ func runContainer(
 
 	portBinding := nat.PortMap{}
 	for _, mapping := range ports {
-		port, _ := nat.NewPort("tcp", strconv.Itoa(mapping.containerPort))
 		if isReachable("0.0.0.0", mapping.hostPort) {
 			log.Printf("failed to run local BPI container image: %s; bind for 0.0.0.0:%d failed; port is already allocated", image, mapping.hostPort)
 			os.Exit(1)
 		}
 
+		port, _ := nat.NewPort("tcp", strconv.Itoa(mapping.containerPort))
 		portBinding[port] = []nat.PortBinding{{
 			HostIP:   "0.0.0.0",
 			HostPort: strconv.Itoa(mapping.hostPort),
@@ -1729,9 +1717,11 @@ func init() {
 
 	startBaselineStackCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the local BPI container")
 	startBaselineStackCmd.Flags().IntVar(&port, "port", 8080, "host port on which to expose the local BPI service")
+	startBaselineStackCmd.Flags().IntVar(&containerPort, "container-port", defaultBPIContainerPort, "container port on which to expose the BPI service")
 
 	startBaselineStackCmd.Flags().StringVar(&elasticAPIScheme, "elasticsearch-scheme", "https", "protocol scheme of the elasticsearch service")
 	startBaselineStackCmd.Flags().StringVar(&elasticHostname, "elasticsearch-hostname", fmt.Sprintf("%s-elasticsearch", name), "hostname for the local BPI elasticsearch container")
+	startBaselineStackCmd.Flags().IntVar(&elasticContainerPort, "elasticsearch-container-port", defaultElasticContainerPort, "container port on which to expose the elasticsearch service")
 	startBaselineStackCmd.Flags().IntVar(&elasticPort, "elasticsearch-port", 9200, "host port on which to expose the local elasticsearch service")
 	startBaselineStackCmd.Flags().StringVar(&elasticUsername, "elasticsearch-username", "elastic", "username of the local elasticsearch service for basic authorization")
 	startBaselineStackCmd.Flags().StringVar(&elasticPassword, "elasticsearch-password", "3l4s71c", "password of the local elasticsearch service for basic authorization")
@@ -1739,18 +1729,22 @@ func init() {
 	startBaselineStackCmd.Flags().StringVar(&elasticMemory, "elasticsearch-memory", "", "amount of RAM allocated to the local elasticsearch service")
 
 	startBaselineStackCmd.Flags().StringVar(&consumerHostname, "consumer-hostname", fmt.Sprintf("%s-consumer", name), "hostname for the local BPI consumer container")
+	startBaselineStackCmd.Flags().IntVar(&natsContainerPort, "nats-container-port", defaultNATSContainerPort, "container port on which to expose the NATS service")
+	startBaselineStackCmd.Flags().IntVar(&natsWebsocketContainerPort, "nats-ws-container-port", defaultNATSWebsocketContainerPort, "container port on which to expose the NATS websocket service")
 	startBaselineStackCmd.Flags().StringVar(&natsHostname, "nats-hostname", fmt.Sprintf("%s-nats", name), "hostname for the local BPI NATS container")
 	startBaselineStackCmd.Flags().IntVar(&natsPort, "nats-port", 4222, "host port on which to expose the local NATS service")
 	startBaselineStackCmd.Flags().BoolVar(&natsWebsocketTLS, "nats-ws-tls", false, "when true, NATS websocket service uses TLS")
 	startBaselineStackCmd.Flags().IntVar(&natsWebsocketPort, "nats-ws-port", 4221, "host port on which to expose the local NATS websocket service")
 	startBaselineStackCmd.Flags().StringVar(&natsAuthToken, "nats-auth-token", "testtoken", "authorization token for the local BPI NATS service; will be passed as the -auth argument to NATS")
 
+	startBaselineStackCmd.Flags().IntVar(&postgresContainerPort, "postgres-container-port", defaultPostgresContainerPort, "container port on which to expose the postgres service")
 	startBaselineStackCmd.Flags().StringVar(&postgresDatabase, "postgres-database", "baseline", "name for the local postgres database")
 	startBaselineStackCmd.Flags().StringVar(&postgresHostname, "postgres-hostname", fmt.Sprintf("%s-postgres", name), "hostname for the local postgres container")
 	startBaselineStackCmd.Flags().IntVar(&postgresPort, "postgres-port", 5432, "host port on which to expose the local postgres service")
 	startBaselineStackCmd.Flags().StringVar(&postgresUser, "postgres-user", "baseline", "name for the local postgres user")
 	startBaselineStackCmd.Flags().StringVar(&postgresPassword, "postgres-password", "prvdp455", "password for the local postgres user")
 
+	startBaselineStackCmd.Flags().IntVar(&redisContainerPort, "redis-container-port", defaultRedisContainerPort, "container port on which to expose the redis service")
 	startBaselineStackCmd.Flags().StringVar(&redisHostname, "redis-hostname", fmt.Sprintf("%s-redis", name), "hostname for the local BPI redis container")
 	startBaselineStackCmd.Flags().IntVar(&redisPort, "redis-port", 6379, "host port on which to expose the local redis service")
 	startBaselineStackCmd.Flags().StringVar(&redisHosts, "redis-hosts", fmt.Sprintf("%s:%d", redisHostname, redisContainerPort), "list of clustered redis hosts in the local BPI stack")
@@ -1766,15 +1760,19 @@ func init() {
 
 	startBaselineStackCmd.Flags().StringVar(&identAPIHost, "ident-host", "ident.provide.services", "hostname of the ident service")
 	startBaselineStackCmd.Flags().StringVar(&identAPIScheme, "ident-scheme", "https", "protocol scheme of the ident service")
+	startBaselineStackCmd.Flags().IntVar(&identContainerPort, "ident-container-port", 8080, "container port on which to expose the ident service")
 
 	startBaselineStackCmd.Flags().StringVar(&nchainAPIHost, "nchain-host", "nchain.provide.services", "hostname of the nchain service")
 	startBaselineStackCmd.Flags().StringVar(&nchainAPIScheme, "nchain-scheme", "https", "protocol scheme of the nchain service")
+	startBaselineStackCmd.Flags().IntVar(&nchainContainerPort, "nchain-container-port", 8080, "container port on which to expose the nchain service")
 
 	startBaselineStackCmd.Flags().StringVar(&privacyAPIHost, "privacy-host", "privacy.provide.services", "hostname of the privacy service")
 	startBaselineStackCmd.Flags().StringVar(&privacyAPIScheme, "privacy-scheme", "https", "protocol scheme of the privacy service")
+	startBaselineStackCmd.Flags().IntVar(&privacyContainerPort, "privacy-container-port", 8080, "container port on which to expose the privacy service")
 
 	startBaselineStackCmd.Flags().StringVar(&vaultAPIHost, "vault-host", "vault.provide.services", "hostname of the vault service")
 	startBaselineStackCmd.Flags().StringVar(&vaultAPIScheme, "vault-scheme", "https", "protocol scheme of the vault service")
+	startBaselineStackCmd.Flags().IntVar(&vaultContainerPort, "vault-container-port", 8080, "container port on which to expose the vault service")
 	startBaselineStackCmd.Flags().StringVar(&vaultRefreshToken, "vault-refresh-token", os.Getenv("VAULT_REFRESH_TOKEN"), "refresh token to vend access tokens for use with vault")
 	startBaselineStackCmd.Flags().StringVar(&vaultSealUnsealKey, "vault-seal-unseal-key", os.Getenv("VAULT_SEAL_UNSEAL_KEY"), "seal/unseal key for the vault service")
 
