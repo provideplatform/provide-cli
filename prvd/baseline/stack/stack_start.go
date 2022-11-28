@@ -62,6 +62,7 @@ const elasticContainerImage = "docker.elastic.co/elasticsearch/elasticsearch:7.1
 const postgresContainerImage = "postgres"
 const natsContainerImage = "provide/nats-server:2.7.2-PRVD"
 const redisContainerImage = "redis"
+const defaultBPIStackName = "baseline-local"
 const defaultElasticReachabilityTimeout = time.Second * 5
 const defaultNatsServerName = "prvd"
 const defaultNatsReachabilityTimeout = time.Second * 5
@@ -231,6 +232,7 @@ func runStackStart(cmd *cobra.Command, args []string) {
 	go common.PurgeContainers(docker, name, prune)
 
 	authorizeContext()
+	normalizeHostnames()
 	sorPrompt()
 	tunnelAPIPrompt()
 	tunnelMessagingPrompt()
@@ -650,6 +652,22 @@ func configureNetwork(docker *client.Client) {
 
 	dockerNetworkID = network.ID
 	log.Printf("configured network for local BPI instance: %s", name)
+}
+
+func normalizeHostnames() {
+	apiHostname = strings.Replace(apiHostname, defaultBPIStackName, name, -1)
+	consumerHostname = strings.Replace(consumerHostname, defaultBPIStackName, name, -1)
+	elasticHostname = strings.Replace(elasticHostname, defaultBPIStackName, name, -1)
+	identHostname = strings.Replace(identHostname, defaultBPIStackName, name, -1)
+	identConsumerHostname = strings.Replace(identConsumerHostname, defaultBPIStackName, name, -1)
+	natsHostname = strings.Replace(natsHostname, defaultBPIStackName, name, -1)
+	nchainHostname = strings.Replace(nchainHostname, defaultBPIStackName, name, -1)
+	nchainConsumerHostname = strings.Replace(nchainConsumerHostname, defaultBPIStackName, name, -1)
+	postgresHostname = strings.Replace(postgresHostname, defaultBPIStackName, name, -1)
+	privacyHostname = strings.Replace(privacyHostname, defaultBPIStackName, name, -1)
+	privacyConsumerHostname = strings.Replace(privacyConsumerHostname, defaultBPIStackName, name, -1)
+	redisHostname = strings.Replace(redisHostname, defaultBPIStackName, name, -1)
+	vaultHostname = strings.Replace(vaultHostname, defaultBPIStackName, name, -1)
 }
 
 func authorizeContext() {
@@ -1676,7 +1694,7 @@ func sorURLPrompt() {
 }
 
 func init() {
-	startBaselineStackCmd.Flags().StringVar(&name, "name", "baseline-local", "name of the baseline stack instance")
+	startBaselineStackCmd.Flags().StringVar(&name, "name", defaultBPIStackName, "name of the baseline stack instance")
 
 	startBaselineStackCmd.Flags().StringVar(&common.OrganizationID, "organization", os.Getenv("PROVIDE_ORGANIZATION_ID"), "organization identifier")
 	// runBaselineStackCmd.MarkFlagRequired("organization")
