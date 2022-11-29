@@ -88,6 +88,7 @@ PUl1cxrvY7BHh4obNa6Bf8ECAwEAAQ==
 const defaultNATSStreamingClusterID = "provide"
 
 const dockerNetworkDriverBridge = "bridge"
+const dockerNetworkDriverDefault = "default"
 const dockerNetworkDriverNAT = "nat"
 
 const defaultBPIContainerPort = 8080
@@ -1517,19 +1518,25 @@ func runContainer(
 	}
 
 	if containerID == "" {
+		hostConfig := &container.HostConfig{
+			AutoRemove:   autoRemove,
+			ExtraHosts:   []string{"host.docker.internal:host-gateway"},
+			Mounts:       mountedVolumes,
+			NetworkMode:  dockerNetworkDriverDefault,
+			PortBindings: portBinding,
+			RestartPolicy: container.RestartPolicy{
+				Name: "unless-stopped",
+			},
+		}
+
+		if !strings.EqualFold(runtime.GOOS, "windows") {
+			hostConfig.NetworkMode = dockerNetworkDriverBridge
+		}
+
 		container, err := docker.ContainerCreate(
 			context.Background(),
 			containerConfig,
-			&container.HostConfig{
-				AutoRemove:   autoRemove,
-				ExtraHosts:   []string{"host.docker.internal:host-gateway"},
-				Mounts:       mountedVolumes,
-				NetworkMode:  "bridge",
-				PortBindings: portBinding,
-				RestartPolicy: container.RestartPolicy{
-					Name: "unless-stopped",
-				},
-			},
+			hostConfig,
 			&network.NetworkingConfig{},
 			nil,
 			strings.ReplaceAll(name, " ", ""),
