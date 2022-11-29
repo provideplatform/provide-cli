@@ -216,6 +216,7 @@ var withLocalIdent bool
 var withLocalNChain bool
 var withLocalPrivacy bool
 
+var withoutPrivateSubnet bool
 var withoutRequireOrganizationKeys bool
 var withoutRequireSubjectAccount bool
 var withoutRequireWorkgroup bool
@@ -633,6 +634,11 @@ func requireOrganizationKeys() {
 }
 
 func configureNetwork(docker *client.Client) {
+	if withoutPrivateSubnet {
+		log.Printf("skipping initialization of a private subnet")
+		return
+	}
+
 	opts := types.NetworkCreate{
 		// CheckDuplicate bool
 		// Driver		  string
@@ -1800,6 +1806,7 @@ func init() {
 	startBaselineStackCmd.Flags().StringVar(&organizationRefreshToken, "organization-refresh-token", os.Getenv("PROVIDE_ORGANIZATION_REFRESH_TOKEN"), "refresh token to vend access tokens for use with the local organization")
 
 	startBaselineStackCmd.Flags().BoolVar(&withoutRequireOrganizationKeys, "without-require-organization-keys", false, "when true, no initial keys are required for the organization upon starting the stack")
+	startBaselineStackCmd.Flags().BoolVar(&withoutPrivateSubnet, "without-private-subnet", false, "when false, no private subnet will be initialized and services will be attached to appropriate default network if possible")
 	startBaselineStackCmd.Flags().BoolVar(&withoutRequireSubjectAccount, "without-require-subject-account", false, "when true, no initial subject account is required upon starting the stack")
 	startBaselineStackCmd.Flags().BoolVar(&withoutRequireWorkgroup, "without-require-workgroup", false, "when true, no workgroup is required to start the stack")
 
