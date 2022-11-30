@@ -1520,7 +1520,7 @@ func runContainer(
 	if containerID == "" {
 		hostConfig := &container.HostConfig{
 			AutoRemove:   autoRemove,
-			ExtraHosts:   []string{"host.docker.internal:host-gateway"},
+			ExtraHosts:   []string{},
 			Mounts:       mountedVolumes,
 			NetworkMode:  dockerNetworkDriverDefault,
 			PortBindings: portBinding,
@@ -1530,6 +1530,7 @@ func runContainer(
 		}
 
 		if !strings.EqualFold(runtime.GOOS, "windows") {
+			hostConfig.ExtraHosts = []string{"host.docker.internal:host-gateway"}
 			hostConfig.NetworkMode = dockerNetworkDriverBridge
 		}
 
