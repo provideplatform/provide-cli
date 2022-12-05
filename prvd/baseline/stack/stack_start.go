@@ -922,16 +922,18 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("VAULT_API_SCHEME=%s", vaultAPIScheme),
 		fmt.Sprintf("VAULT_REFRESH_TOKEN=%s", vaultRefreshToken),
 		fmt.Sprintf("VAULT_SEAL_UNSEAL_KEY=%s", vaultSealUnsealKey),
-
-		"SERVICENOW_LIST_SCHEMAS_API_PATH=api/x_prot9_provide/setup_configuration/ListSchemas",
-		"SERVICENOW_SCHEMA_DETAILS_API_PATH=api/x_prot9_provide/setup_configuration/GetSchemaDetails",
-		"SERVICENOW_HEALTHCHECK_API_PATH=api/now/branding",
 	} {
 		env = append(env, envvar)
 	}
 
 	if listenPort != nil {
 		env = append(env, fmt.Sprintf("PORT=%d", *listenPort))
+	}
+
+	if serviceNowAPIHost != "" {
+		env = append(env, "SERVICENOW_HEALTHCHECK_API_PATH=api/now/branding")
+		env = append(env, "SERVICENOW_LIST_SCHEMAS_API_PATH=setup_configuration/ListSchemas")
+		env = append(env, "SERVICENOW_SCHEMA_DETAILS_API_PATH=setup_configuration/GetSchemaDetails")
 	}
 
 	return env
@@ -1847,7 +1849,7 @@ func initSORFlags() {
 
 	startBaselineStackCmd.Flags().StringVar(&serviceNowAPIHost, "servicenow-api-host", "", "hostname of the ServiceNow service")
 	startBaselineStackCmd.Flags().StringVar(&serviceNowAPIScheme, "servicenow-api-scheme", "https", "protocol scheme of the ServiceNow service")
-	startBaselineStackCmd.Flags().StringVar(&serviceNowAPIPath, "servicenow-api-path", "api/now/table", "base path of the ServiceNow API")
+	// startBaselineStackCmd.Flags().StringVar(&serviceNowAPIPath, "servicenow-api-path", "api/now/table", "base path of the ServiceNow API")
 	startBaselineStackCmd.Flags().StringVar(&serviceNowAPIUsername, "servicenow-api-username", "", "username to use for basic authorization against the ServiceNow API")
 	startBaselineStackCmd.Flags().StringVar(&serviceNowAPIPassword, "servicenow-api-password", "", "password to use for basic authorization against the ServiceNow API")
 }
