@@ -158,6 +158,7 @@ var prune bool
 var databaseLogging string
 var logLevel string
 var syslogEndpoint string
+var upstreamDNS string
 
 var baselineOrganizationAddress string
 
@@ -1528,6 +1529,10 @@ func runContainer(
 			},
 		}
 
+		if upstreamDNS != "" {
+			hostConfig.DNS = append(hostConfig.DNS, strings.Split(upstreamDNS, ",")...)
+		}
+
 		if !strings.EqualFold(runtime.GOOS, "windows") {
 			hostConfig.ExtraHosts = []string{"host.docker.internal:host-gateway"}
 			hostConfig.NetworkMode = dockerNetworkDriverBridge
@@ -1726,6 +1731,7 @@ func init() {
 	startBaselineStackCmd.Flags().StringVar(&apiHostname, "hostname", fmt.Sprintf("%s-api", name), "hostname for the local BPI container")
 	startBaselineStackCmd.Flags().IntVar(&port, "port", 8080, "host port on which to expose the local BPI service")
 	startBaselineStackCmd.Flags().IntVar(&containerPort, "container-port", defaultBPIContainerPort, "container port on which to expose the BPI service")
+	startBaselineStackCmd.Flags().StringVar(&upstreamDNS, "upstream-dns", "", "comma-delimited list of upstream DNS servers to be used by the BPI-internal DNS server")
 
 	startBaselineStackCmd.Flags().StringVar(&elasticAPIScheme, "elasticsearch-scheme", "https", "protocol scheme of the elasticsearch service")
 	startBaselineStackCmd.Flags().StringVar(&elasticHostname, "elasticsearch-hostname", fmt.Sprintf("%s-elasticsearch", name), "hostname for the local BPI elasticsearch container")
