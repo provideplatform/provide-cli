@@ -1316,6 +1316,10 @@ func runNATS(docker *client.Client, wg *sync.WaitGroup) {
 		mountPoints[*cfgPath] = "/etc/nats-server.conf"
 	}
 
+	env := []string{
+		fmt.Sprintf("JWT_SIGNER_PUBLIC_KEY=%s", strings.ReplaceAll(jwtSignerPublicKey, "\\n", "\n")),
+	}
+
 	err := runContainer(
 		docker,
 		fmt.Sprintf("%s-nats", strings.ReplaceAll(name, " ", "")),
@@ -1331,7 +1335,7 @@ func runNATS(docker *client.Client, wg *sync.WaitGroup) {
 			"-DVV",
 		},
 		&[]string{"CMD", "nc", "-zv", "localhost", fmt.Sprintf("%d", natsContainerPort)},
-		nil,
+		&env,
 		mountPoints,
 		[]portMapping{
 			{
