@@ -122,7 +122,7 @@ var elasticAPIScheme string
 var elasticAcceptSelfSignedCertificate bool
 var elasticMemory string
 
-var dockerRegistryURL string
+var dockerRegistry string
 
 var natsContainerPort int
 var natsPort int
@@ -337,8 +337,8 @@ func runStackStart(cmd *cobra.Command, args []string) {
 		wg.Add(1)
 		go func() {
 			canonicalImage := img
-			if dockerRegistryURL != "" {
-				canonicalImage = fmt.Sprintf("%s/%s", dockerRegistryURL, img)
+			if dockerRegistry != "" {
+				canonicalImage = fmt.Sprintf("%s/%s", dockerRegistry, img)
 			}
 			err := pullImage(docker, canonicalImage)
 			if err != nil {
@@ -1743,7 +1743,7 @@ func init() {
 	startBaselineStackCmd.Flags().IntVar(&containerPort, "container-port", defaultBPIContainerPort, "container port on which to expose the BPI service")
 	startBaselineStackCmd.Flags().StringVar(&upstreamDNS, "upstream-dns", "", "comma-delimited list of upstream DNS servers to be used by the BPI-internal DNS server")
 
-	startBaselineStackCmd.Flags().StringVar(&dockerRegistryURL, "docker-registry-url", "", "url of the docker registry")
+	startBaselineStackCmd.Flags().StringVar(&dockerRegistry, "docker-registry", "", "DNS name of the docker registry if non-standard")
 
 	startBaselineStackCmd.Flags().StringVar(&elasticAPIScheme, "elasticsearch-scheme", "https", "protocol scheme of the elasticsearch service")
 	startBaselineStackCmd.Flags().StringVar(&elasticHostname, "elasticsearch-hostname", fmt.Sprintf("%s-elasticsearch", name), "hostname for the local BPI elasticsearch container")
