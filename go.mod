@@ -3,10 +3,9 @@ module github.com/provideplatform/provide-cli
 go 1.13
 
 require (
-	github.com/Microsoft/hcsshim v0.9.5 // indirect
 	github.com/blang/semver/v4 v4.0.0
 	github.com/c-bata/go-prompt v0.2.6
-	github.com/containerd/containerd v1.6.9 // indirect
+	github.com/containerd/containerd v1.6.18 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/docker/docker v20.10.21+incompatible
 	github.com/docker/go-connections v0.4.0
