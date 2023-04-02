@@ -21,17 +21,17 @@ import (
 
 	uuid "github.com/kthomas/go.uuid"
 
-	"github.com/provideplatform/provide-go/api/baseline"
+	"github.com/provideplatform/provide-go/api/axiom"
 	"github.com/provideplatform/provide-go/api/ident"
 )
 
-// Workgroup is a baseline workgroup context; called WorkgroupType because Workgroup is already declared in common
+// Workgroup is a axiom workgroup context; called WorkgroupType because Workgroup is already declared in common
 type WorkgroupType struct {
-	baseline.Workgroup
+	axiom.Workgroup
 	Config *WorkgroupConfig `json:"config"`
 }
 
-// WorkgroupConfig is a baseline workgroup configuration object
+// WorkgroupConfig is a axiom workgroup configuration object
 type WorkgroupConfig struct {
 	Environment        *string      `json:"environment"`
 	L2NetworkID        *uuid.UUID   `json:"l2_network_id"`

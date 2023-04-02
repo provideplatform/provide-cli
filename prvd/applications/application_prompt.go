@@ -30,8 +30,8 @@ const promptStepList = "List"
 var emptyPromptArgs = []string{promptStepInit, promptStepList}
 var emptyPromptLabel = "What would you like to do"
 
-var baselinePromptArgs = []string{"Yes", "No"}
-var baselinePromptLabel = "Would you like to make the application baseline compliant"
+var axiomPromptArgs = []string{"Yes", "No"}
+var axiomPromptLabel = "Would you like to make the application axiom compliant"
 
 var accountPromptArgs = []string{"Yes", "No"}
 var accountPromptLabel = "Would you like to make an account"
@@ -54,17 +54,17 @@ func generalPrompt(cmd *cobra.Command, args []string, step string) {
 			if applicationType == "" {
 				applicationType = common.FreeInput("Application Type", "", common.NoValidation)
 			}
-			if !baseline {
-				result := common.SelectInput(baselinePromptArgs, baselinePromptLabel)
-				baseline = result == "Yes"
+			if !axiom {
+				result := common.SelectInput(axiomPromptArgs, axiomPromptLabel)
+				axiom = result == "Yes"
 			}
 			if !withoutAccount {
 				result := common.SelectInput(accountPromptArgs, accountPromptLabel)
-				baseline = result == "Yes"
+				axiom = result == "Yes"
 			}
 			if !withoutWallet {
 				result := common.SelectInput(walletPromptArgs, walletPromptLabel)
-				baseline = result == "Yes"
+				axiom = result == "Yes"
 			}
 		}
 		createApplication(cmd, args)

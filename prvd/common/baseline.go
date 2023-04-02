@@ -178,11 +178,11 @@ func InitWorkgroupContract(contractAddress string) *nchain.Contract {
 	}
 
 	if compiledArtifact == nil {
-		log.Printf("failed to resolve global baseline organization registry contract artifact")
+		log.Printf("failed to resolve global axiom organization registry contract artifact")
 		os.Exit(1)
 	}
 
-	log.Printf("deploying global baseline organization registry contract: %s", defaultBaselineRegistryContractName)
+	log.Printf("deploying global axiom organization registry contract: %s", defaultBaselineRegistryContractName)
 	contract, err := nchain.CreateContract(OrganizationAccessToken, map[string]interface{}{
 		"address":    contractAddress,
 		"name":       contractName,
@@ -366,8 +366,8 @@ func resolveBaselineRegistryContractArtifact() *nchain.CompiledArtifact {
 	}
 
 	var registryArtifact *nchain.CompiledArtifact
-	if baseline, baselineOk := capabilities["baseline"].(map[string]interface{}); baselineOk {
-		if contracts, contractsOk := baseline["contracts"].([]interface{}); contractsOk {
+	if axiom, axiomOk := capabilities["axiom"].(map[string]interface{}); axiomOk {
+		if contracts, contractsOk := axiom["contracts"].([]interface{}); contractsOk {
 			for _, contract := range contracts {
 				isShuttleContract := false
 				if name, nameOk := contract.(map[string]interface{})["name"].(string); nameOk && strings.ToLower(name) == "shuttle" {
@@ -398,8 +398,8 @@ func resolveBaselineOrgRegistryContractArtifact() *nchain.CompiledArtifact {
 	}
 
 	var registryArtifact *nchain.CompiledArtifact
-	if baseline, baselineOk := capabilities["baseline"].(map[string]interface{}); baselineOk {
-		if contracts, contractsOk := baseline["contracts"].([]interface{}); contractsOk {
+	if axiom, axiomOk := capabilities["axiom"].(map[string]interface{}); axiomOk {
+		if contracts, contractsOk := axiom["contracts"].([]interface{}); contractsOk {
 			var artifact nchain.CompiledArtifact
 			raw, _ := json.Marshal(contracts[1])
 			json.Unmarshal(raw, &artifact)
@@ -464,7 +464,7 @@ func RequireOrganizationEndpoints(fn func(), tunnelShutdownFn func(*string), api
 			Organization.Metadata.MessagingEndpoint = "nats://localhost:4222"
 		}
 
-		Organization.Metadata.Domain = "baseline.local" // FIXME-- read domain from args...
+		Organization.Metadata.Domain = "axiom.local" // FIXME-- read domain from args...
 		Organization.Metadata.Workgroups[wgID].BPIEndpoint = &Organization.Metadata.BPIEndpoint
 		Organization.Metadata.Workgroups[wgID].MessagingEndpoint = &Organization.Metadata.MessagingEndpoint
 

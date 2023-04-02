@@ -27,7 +27,7 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
-	"github.com/provideplatform/provide-go/api/baseline"
+	"github.com/provideplatform/provide-go/api/axiom"
 	"github.com/provideplatform/provide-go/api/ident"
 	"github.com/provideplatform/provide-go/api/nchain"
 	"github.com/provideplatform/provide-go/api/vault"
@@ -124,7 +124,7 @@ func RequireWorkgroup() error {
 			return err
 		}
 
-		wg, err := baseline.GetWorkgroupDetails(*token.AccessToken, WorkgroupID, map[string]interface{}{})
+		wg, err := axiom.GetWorkgroupDetails(*token.AccessToken, WorkgroupID, map[string]interface{}{})
 		if err != nil {
 			return err
 		}
@@ -152,7 +152,7 @@ func RequireWorkgroup() error {
 	}
 
 	opts := make([]string, 0)
-	workgroups, _ := baseline.ListWorkgroups(token, map[string]interface{}{})
+	workgroups, _ := axiom.ListWorkgroups(token, map[string]interface{}{})
 	for _, app := range workgroups {
 		opts = append(opts, *app.Name)
 	}

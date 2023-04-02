@@ -19,7 +19,7 @@ require (
 	github.com/moby/sys/mount v0.3.3 // indirect
 	github.com/opencontainers/runc v1.1.4 // indirect
 	github.com/ory/viper v1.7.5
-	github.com/provideplatform/provide-go v0.0.0-20220910051809-21bba3ba0a3c
+	github.com/provideplatform/provide-go v0.0.0-20230402033044-2ea8560d1e46
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1

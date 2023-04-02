@@ -25,7 +25,7 @@ import (
 	"github.com/provideplatform/provide-cli/prvd/accounts"
 	"github.com/provideplatform/provide-cli/prvd/api_tokens"
 	"github.com/provideplatform/provide-cli/prvd/applications"
-	"github.com/provideplatform/provide-cli/prvd/baseline"
+	axiom "github.com/provideplatform/provide-cli/prvd/axiom"
 	"github.com/provideplatform/provide-cli/prvd/common"
 	"github.com/provideplatform/provide-cli/prvd/connectors"
 	"github.com/provideplatform/provide-cli/prvd/contracts"
@@ -66,7 +66,7 @@ func init() {
 	rootCmd.AddCommand(api_tokens.APITokensCmd)
 	rootCmd.AddCommand(applications.ApplicationsCmd)
 	rootCmd.AddCommand(users.AuthenticateCmd)
-	rootCmd.AddCommand(baseline.BaselineCmd)
+	rootCmd.AddCommand(axiom.BaselineCmd)
 	rootCmd.AddCommand(connectors.ConnectorsCmd)
 	rootCmd.AddCommand(contracts.ContractsCmd)
 	rootCmd.AddCommand(networks.NetworksCmd)

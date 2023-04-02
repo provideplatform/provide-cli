@@ -52,7 +52,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&common.CfgFile, "config", "c", "", "config file (default is $HOME/.provide-cli.yaml)")
 
 	rootCmd.AddCommand(accounts.AccountsCmd)
-	// rootCmd.AddCommand(baseline.BaselineCmd)
+	// rootCmd.AddCommand(axiom.BaselineCmd)
 	// rootCmd.AddCommand(networks.NetworksCmd)
 	// rootCmd.AddCommand(nodes.NodesCmd)
 	// rootCmd.AddCommand(shell.ShellCmd)

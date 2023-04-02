@@ -31,7 +31,7 @@ import (
 
 var applicationName string
 var applicationType string
-var baseline bool
+var axiom bool
 var withoutAPIToken bool
 var withoutAccount bool
 var withoutWallet bool
@@ -39,7 +39,7 @@ var optional bool
 var paginate bool
 
 var applicationsInitCmd = &cobra.Command{
-	Use:   "init --name 'my app' --network 024ff1ef-7369-4dee-969c-1918c6edb5d4 [--baseline]",
+	Use:   "init --name 'my app' --network 024ff1ef-7369-4dee-969c-1918c6edb5d4 [--axiom]",
 	Short: "Initialize a new application",
 	Long:  `Initialize a new application targeting a specified mainnet`,
 	Run:   createApplication,
@@ -64,8 +64,8 @@ func createApplication(cmd *cobra.Command, args []string) {
 	}
 	token := common.RequireAPIToken()
 	cfg := applicationConfigFactory()
-	if baseline {
-		cfg["baseline"] = true
+	if axiom {
+		cfg["axiom"] = true
 	}
 	params := map[string]interface{}{
 		"name":   applicationName,
@@ -110,7 +110,7 @@ func init() {
 	applicationsInitCmd.Flags().StringVar(&common.NetworkID, "network", "", "target network id")
 	// applicationsInitCmd.MarkFlagRequired("network")
 
-	applicationsInitCmd.Flags().BoolVar(&baseline, "baseline", false, "setup a baseline workgroup")
+	applicationsInitCmd.Flags().BoolVar(&axiom, "axiom", false, "setup a axiom workgroup")
 
 	applicationsInitCmd.Flags().BoolVar(&withoutAccount, "without-account", false, "do not create a new account (signing identity) for this application")
 	applicationsInitCmd.Flags().BoolVar(&withoutWallet, "without-wallet", false, "do not create a new HD wallet for this application")
