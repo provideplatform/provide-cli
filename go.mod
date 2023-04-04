@@ -8,7 +8,7 @@ require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/containerd/containerd v1.6.9 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/docker/docker v20.10.21+incompatible
+	github.com/docker/docker v20.10.24+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/kthomas/go-pgputil v0.0.0-20200602073402-784e96083943
 	github.com/kthomas/go.uuid v1.2.1-0.20190324131420-28d1fa77e9a4
