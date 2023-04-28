@@ -919,7 +919,7 @@ func containerEnvironmentFactory(listenPort *int) []string {
 		fmt.Sprintf("NATS_URL=%s", fmt.Sprintf("nats://%s:%d", natsHostname, natsContainerPort)),
 		fmt.Sprintf("NCHAIN_API_HOST=%s", nchainAPIHost),
 		fmt.Sprintf("NCHAIN_API_SCHEME=%s", nchainAPIScheme),
-		fmt.Sprintf("NCHAIN_BASELINE_NETWORK_ID=%s", nchainBaselineNetworkID),
+		fmt.Sprintf("NCHAIN_AXIOM_NETWORK_ID=%s", nchainBaselineNetworkID),
 		fmt.Sprintf("PRIVACY_API_HOST=%s", privacyAPIHost),
 		fmt.Sprintf("PRIVACY_API_SCHEME=%s", privacyAPIScheme),
 		fmt.Sprintf("PRIVACY_API_SCHEME=%s", privacyAPIScheme),
@@ -973,8 +973,8 @@ func runBaselineAPI(docker *client.Client, wg *sync.WaitGroup) {
 		os.Exit(1)
 	}
 
-	os.Setenv("BASELINE_API_HOST", fmt.Sprintf("localhost:%d", port))
-	os.Setenv("BASELINE_API_SCHEME", "http")
+	os.Setenv("AXIOM_API_HOST", fmt.Sprintf("localhost:%d", port))
+	os.Setenv("AXIOM_API_SCHEME", "http")
 
 	if wg != nil {
 		wg.Done()
@@ -1825,18 +1825,18 @@ func init() {
 	startBaselineStackCmd.Flags().StringVar(&axiomDirPath, "axiom-dir-path", "~/provide/axiom", "the local file path to your axiom directory")
 
 	defaultBaselineOrganizationAddress := "0x"
-	if os.Getenv("BASELINE_ORGANIZATION_ADDRESS") != "" {
-		defaultBaselineOrganizationAddress = os.Getenv("BASELINE_ORGANIZATION_ADDRESS")
+	if os.Getenv("AXIOM_ORGANIZATION_ADDRESS") != "" {
+		defaultBaselineOrganizationAddress = os.Getenv("AXIOM_ORGANIZATION_ADDRESS")
 	}
 
 	defaultBaselineRegistryContractAddress := "0x"
-	if os.Getenv("BASELINE_REGISTRY_CONTRACT_ADDRESS") != "" {
-		defaultBaselineRegistryContractAddress = os.Getenv("BASELINE_REGISTRY_CONTRACT_ADDRESS")
+	if os.Getenv("AXIOM_REGISTRY_CONTRACT_ADDRESS") != "" {
+		defaultBaselineRegistryContractAddress = os.Getenv("AXIOM_REGISTRY_CONTRACT_ADDRESS")
 	}
 
 	// defaultNChainBaselineNetworkID := "66d44f30-9092-4182-a3c4-bc02736d6ae5"
-	// if os.Getenv("NCHAIN_BASELINE_NETWORK_ID") != "" {
-	// 	defaultNChainBaselineNetworkID = os.Getenv("NCHAIN_BASELINE_NETWORK_ID")
+	// if os.Getenv("NCHAIN_AXIOM_NETWORK_ID") != "" {
+	// 	defaultNChainBaselineNetworkID = os.Getenv("NCHAIN_AXIOM_NETWORK_ID")
 	// }
 
 	startBaselineStackCmd.Flags().StringVar(&axiomOrganizationAddress, "organization-address", defaultBaselineOrganizationAddress, "public axiom regsitry address of the organization")
